@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Ninja: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 3, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 12, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 2, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
         Sorceress: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 1, mp: 3, str: 0, def: 0, int: 2, mnd: 2 } },
-        Bishop: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1'], growth: { hp: 1, mp: 5, str: 0, def: 0, int: 2, mnd: 2 } }
+        Bishop: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 1, mp: 5, str: 0, def: 0, int: 2, mnd: 2 } }
     };
     const POWER_DATA = {
     // Existing spell entries remain unchanged
@@ -35,10 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Updated and new prayer entries
         Heal1: { level: 1, cost: 5, type: 'Prayer', effect: 'Heal', target: 'ally' },
         Empower1: { level: 1, cost: 5, type: 'Prayer', effect: 'Empower', statusName: 'Empower1', turns: 4, target: 'ally', damageMultiplier: 1.5 },
-    //    Restore1: { level: 1, cost: 5, type: 'Prayer', effect: 'Restore', chance: 0.33, target: 'ally' },
+        Restore1: { level: 1, cost: 5, type: 'Prayer', effect: 'Restore', chance: 0.33, target: 'ally' },
         Heal2: { level: 2, cost: 15, type: 'Prayer', effect: 'Heal', target: 'ally' },
         Empower2: { level: 2, cost: 15, type: 'Prayer', effect: 'Empower', statusName: 'Empower2', turns: 4, target: 'ally', damageMultiplier: 3.0 },
-     //   Restore2: { level: 2, cost: 15, type: 'Prayer', effect: 'Restore', chance: 0.66, target: 'ally' },
+        Restore2: { level: 2, cost: 15, type: 'Prayer', effect: 'Restore', chance: 0.66, target: 'ally' },
         Revive: { level: 2, cost: 15, type: 'Prayer', effect: 'Revive', hpPercent: 0.25, target: 'ally_ko' },
         Fury: { level: 2, cost: 20, type: 'Prayer', effect: 'Fury', statusName: 'Fury', turns: 4, target: 'ally' },
         Lifelink: { level: 2, cost: 20, type: 'Prayer', effect: 'Lifelink', statusName: 'Lifelink', turns: 4, target: 'ally', healPercent: 0.5 },
@@ -48,17 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const UNLOCK_SCHEDULE = {
         10: { Sorceress: ['Fire2'], Bishop: ['Heal2'] }, 
-        16: { Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1'] }, 
+        16: { Valkyrie: ['Empower1', 'Restore1'], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1', 'Restore1'] }, 
         18: { Sorceress: ['Frost2','Hydro2'], Bishop: ['Empower2'] }, 
-        24: { Sorceress: ['Shock2'],  
+        24: { Sorceress: ['Shock2'], Bishop: ['Restore2'] }, 
         25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'] }, 
         28: { Bishop: ['Fury'] },
         30: { Sorceress: ['Slow'], Bishop: ['Revive'] }, 
         32: { Valkyrie: ['Empower2'], Ninja: ['Frost2'] }, 
         33: { Shaman: ['Empower2', 'Frost2'] }, 
         35: { Valkyrie: ['Fury'], Shaman: ['Fury'] },
-        38: { Ninja: ['Shock2'] }, 
-        39: { Shaman: ['Shock2'] }, 
+        38: { Valkyrie: ['Restore2'], Ninja: ['Shock2'] }, 
+        39: { Shaman: ['Restore2', 'Shock2'] }, 
         40: { Sorceress: ['Fire3'], Bishop: ['Heal3'] },
         42: { Bishop: ['Lifelink'] },
         44: { Valkyrie: ['Revive'], Ninja: ['Slow'] }, 
