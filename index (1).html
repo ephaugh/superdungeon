@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Rogue</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Background Layer (New) -->
+        <div class="game-background" id="game-background"></div>
+
+        <!-- Title Screen (Starts Visible) -->
+        <div class="screen-overlay" id="title-screen">
+             <h1>Everett's Superdungeon</h1>
+             <p class="pulsate">Press ENTER to Begin</p>
+        </div>
+
+        <!-- Party Selection Screen (Starts Hidden) -->
+        <div class="screen-overlay" id="party-select-screen" style="display: none;">
+             <h2>Choose Your Party</h2>
+             <div id="party-select-slots">
+                 <!-- JS Populates -->
+             </div>
+             <p class="instructions">Use ARROW KEYS to change Class.<br>Press ENTER to Confirm.<br>Press SHIFT/ESC to Go Back.</p>
+        </div>
+
+        <!-- Action Announcement Bar (Starts Hidden) -->
+        <div id="action-announcement-bar" style="display: none;">
+            <span id="action-announcement-text"></span>
+        </div>
+
+        <!-- Battlefield Areas -->
+        <div id="battlefield-enemy-area" style="display: none;">
+            <!-- Enemy sprites added by JS -->
+        </div>
+        <div id="battlefield-party-area" style="display: none;">
+             <!-- Party sprites added by JS -->
+        </div>
+
+        <!-- Main Combat UI Box (Grid Layout) -->
+        <div id="ui-main-box" style="display: none;">
+
+            <!-- Action Menu Area (Left Side - Holds dynamic content) -->
+            <div id="action-menu-area">
+                <div id="dynamic-menu-content">
+                    <!-- JS will populate this with specific menu boxes -->
+                </div>
+            </div>
+
+            <!-- Party Status Area (Right Side) -->
+            <div id="party-status-area">
+                <!-- JS Populates this based on grid layout -->
+                <!-- Example Row Structure (Conceptual) -->
+                 <div class="character-status-box" id="char-status-1">
+                    <span class="char-name">Char1</span><span class="char-status">OK</span><span class="char-hp"><span class="hp-value">--</span>/<span class="hp-max">--</span></span><span class="char-mp"><span class="mp-value">--</span>/<span class="mp-max">--</span></span>
+                 </div>
+                 <div class="character-status-box" id="char-status-2">
+                    <span class="char-name">Char2</span><span class="char-status">OK</span><span class="char-hp"><span class="hp-value">--</span>/<span class="hp-max">--</span></span><span class="char-mp"><span class="mp-value">--</span>/<span class="mp-max">--</span></span>
+                 </div>
+                 <div class="character-status-box" id="char-status-3">
+                     <span class="char-name">Char3</span><span class="char-status">OK</span><span class="char-hp"><span class="hp-value">--</span>/<span class="hp-max">--</span></span><span class="char-mp"><span class="mp-value">--</span>/<span class="mp-max">--</span></span>
+                 </div>
+                 <div class="character-status-box" id="char-status-4">
+                     <span class="char-name">Char4</span><span class="char-status">OK</span><span class="char-hp"><span class="hp-value">--</span>/<span class="hp-max">--</span></span><span class="char-mp"><span class="mp-value">--</span>/<span class="mp-max">--</span></span>
+                 </div>
+            </div>
+
+            <!-- Combat Log Area - Removed -->
+
+        </div> <!-- End ui-main-box -->
+
+        <!-- Other Overlays -->
+        <div class="screen-overlay" id="item-choice-screen" style="display: none;">
+             <h2>Wave Cleared! Choose an item:</h2>
+             <div id="item-options"></div>
+        </div>
+        <div class="screen-overlay" id="tavern-screen" style="display: none;">
+             <h2>Welcome to the Tavern!</h2>
+             <p>Your party is fully restored.</p>
+             <div id="class-change-area"></div>
+             <button id="proceed-button">Enter Next Dungeon</button>
+        </div>
+         <div class="screen-overlay" id="game-over-screen" style="display: none;">
+             <h2>GAME OVER</h2>
+             <p>Your journey ends here...</p>
+             <button id="restart-button">Try Again</button>
+         </div>
+
+    </div> <!-- End game-container -->
+
+    <script src="game.js"></script>
+</body>
+</html>
