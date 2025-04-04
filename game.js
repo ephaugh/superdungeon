@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Constants ---
     const DUNGEON_BACKGROUNDS = [
-    "C:\Users\everett.haugh\Downloads\dungeon1_bg.png", // Dungeon 1
+    "https://github.com/ephaugh/RogueRPG/blob/main/assets/images/backgrounds/dungeon1_bg.png?raw=true", // Dungeon 1
     //"url_to_dungeon2_background", // Dungeon 2 (placeholder)
    // "url_to_dungeon3_background"  // Dungeon 3 (placeholder)
 ];
@@ -191,108 +191,284 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const WAVE_COMPOSITIONS = [ "W", "WW", "B", "WB", "BB", "C", "CW", "BWW", "CBW", "CC", "WWWW", "BBC", "WWBC", "CBC" ];
 
-    // --- Character Class ---
-    class Character {
-        constructor(id, className) { this.id = id; this.name = className; this.className = className; this.level = 0; const d = CLASS_DATA[this.className]; this.baseHp = d.baseHp; this.baseMp = d.baseMp; this.baseStr = d.baseStr; this.baseDef = d.baseDef; this.baseInt = d.baseInt; this.baseMnd = d.baseMnd; this.maxHp = d.baseHp; this.maxMp = d.baseMp; this.str = d.baseStr; this.def = d.baseDef; this.int = d.baseInt; this.mnd = d.baseMnd; this.currentHp = this.maxHp; this.currentMp = this.maxMp; this.statusEffects = []; this.isAlive = true; this.isRaging = false; this.powers = [...d.initialPowers]; this.commands = [...d.commands]; }
-        recalculateStats() { const d = CLASS_DATA[this.className]; this.maxHp = d.baseHp; this.maxMp = d.baseMp; this.str = d.baseStr; this.def = d.baseDef; this.int = d.baseInt; this.mnd = d.baseMnd; const sL = this.level; this.level = 0; for (let i = 1; i <= sL; i++) this.applyLevelUpGrowth(i); this.level = sL; if (this.className === 'Barbarian') this.maxMp = 0; this.fullRestore(); }
-        applyLevelUpGrowth = function(lvl) { 
-            this.level = lvl; 
-            const g = CLASS_DATA[this.className].growth; 
-            let hp = 0, mp = 0, str = 1, def = 1, int = 1, mnd = 1; 
+   // --- Character Class ---
+class Character {
+    constructor(id, className) { 
+        this.id = id; 
+        this.name = className; 
+        this.className = className; 
+        this.level = 0; 
+        
+        const d = CLASS_DATA[this.className]; 
+        this.baseHp = d.baseHp; 
+        this.baseMp = d.baseMp; 
+        this.baseStr = d.baseStr; 
+        this.baseDef = d.baseDef; 
+        this.baseInt = d.baseInt; 
+        this.baseMnd = d.baseMnd; 
+        
+        this.maxHp = d.baseHp; 
+        this.maxMp = d.baseMp; 
+        this.str = d.baseStr; 
+        this.def = d.baseDef; 
+        this.int = d.baseInt; 
+        this.mnd = d.baseMnd; 
+        
+        this.currentHp = this.maxHp; 
+        this.currentMp = this.maxMp; 
+        this.statusEffects = []; 
+        this.isAlive = true; 
+        this.isRaging = false; 
+        this.powers = [...d.initialPowers]; 
+        this.commands = [...d.commands]; 
+    }
     
-            hp += g.hp || 0; 
-            mp += g.mp || 0; 
+    // Only used during class changes in the tavern
+    recalculateStats() { 
+        // Store original values for debugging
+        const oldMaxHp = this.maxHp;
+        const oldMaxMp = this.maxMp;
+        
+        // Get the base data for the current class
+        const classData = CLASS_DATA[this.className]; 
+        
+        // Completely reset stats to base values for the new class
+        this.baseHp = classData.baseHp; 
+        this.baseMp = classData.baseMp; 
+        this.baseStr = classData.baseStr; 
+        this.baseDef = classData.baseDef; 
+        this.baseInt = classData.baseInt; 
+        this.baseMnd = classData.baseMnd; 
+        
+        // Reset current stats to base values
+        this.maxHp = classData.baseHp; 
+        this.maxMp = classData.baseMp; 
+        this.str = classData.baseStr; 
+        this.def = classData.baseDef; 
+        this.int = classData.baseInt; 
+        this.mnd = classData.baseMnd; 
+        
+        // Store current level, reset to 0
+        const storedLevel = this.level; 
+        this.level = 0; 
+        
+        // Apply level-ups from scratch for the new class
+        for (let i = 1; i <= storedLevel; i++) {
+            this.applyLevelUpGrowth(i); 
+        }
+        
+        // Restore the level
+        this.level = storedLevel; 
+        
+        // Ensure Barbarians have 0 MP regardless of level
+        if (this.className === 'Barbarian') {
+            this.maxMp = 0;
+            this.baseMp = 0;
+        }
+        
+        // Reset powers to the class defaults
+        const d = CLASS_DATA[this.className];
+        this.powers = [...d.initialPowers];
+        this.commands = [...d.commands];
+        
+        // Add powers based on level unlocks
+        for (let i = 1; i <= this.level; i++) {
+            if (UNLOCK_SCHEDULE[i]?.[this.className]) {
+                UNLOCK_SCHEDULE[i][this.className].forEach(p => {
+                    if (!this.powers.includes(p)) {
+                        this.powers.push(p);
+                    }
+                });
+            }
+        }
+        
+        // Restore HP/MP to max after recalculation
+        this.fullRestore(); 
+        
+        console.log(`Recalculated stats for ${this.name} (${this.className}): HP=${this.maxHp} (was ${oldMaxHp}), MP=${this.maxMp} (was ${oldMaxMp}), STR=${this.str}, DEF=${this.def}, INT=${this.int}, MND=${this.mnd}`);
+    }
     
-            if (this.className === 'Barbarian') { 
+    applyLevelUpGrowth(lvl) { 
+        this.level = lvl; 
+        const g = CLASS_DATA[this.className].growth; 
+        let hp = 0, mp = 0, str = 1, def = 1, int = 1, mnd = 1; 
+    
+        hp += g.hp || 0; 
+        mp += g.mp || 0; 
+    
+        if (this.className === 'Barbarian') { 
             str += g.str; 
-        def += g.def; 
-    } else if (this.className === 'Sorceress' || this.className === 'Bishop') { 
-        int += g.int; 
-        mnd += g.mnd; 
-    } else if (this.className === 'Valkyrie' || this.className === 'Ninja') { 
-        if (lvl % 2 === 0) { 
-            str += 1; 
-            int += 1; 
-        } else { 
-            def += 1; 
-            mnd += 1; 
+            def += g.def; 
+        } else if (this.className === 'Sorceress' || this.className === 'Bishop') { 
+            int += g.int; 
+            mnd += g.mnd; 
+        } else if (this.className === 'Valkyrie' || this.className === 'Ninja') { 
+            if (lvl % 2 === 0) { 
+                str += 1; 
+                int += 1; 
+            } else { 
+                def += 1; 
+                mnd += 1; 
+            } 
+        } else if (this.className === 'Shaman') { 
+            int += g.int; 
+            if (lvl % 2 === 0) mnd += 1; 
+            else def += 1; 
         } 
-    } else if (this.className === 'Shaman') { 
-        int += g.int; 
-        if (lvl % 2 === 0) mnd += 1; 
-        else def += 1; 
-    } 
     
-    if (lvl > 1) { 
-        // Reduced HP growth from 10% to 6% per level
-        this.maxHp = Math.round(this.maxHp * 1.06); 
-        if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
-    } 
+        if (lvl > 1) { 
+            // Reduced HP growth from 10% to 6% per level
+            this.maxHp = Math.round(this.maxHp * 1.06); 
+            if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
+        } 
     
-    this.maxHp += hp; 
-    this.maxMp += mp; 
-    this.str += str; 
-    this.def += def; 
-    this.int += int; 
-    this.mnd += mnd; 
+        this.maxHp += hp; 
+        this.maxMp += mp; 
+        this.str += str; 
+        this.def += def; 
+        this.int += int; 
+        this.mnd += mnd; 
     
-    // Cap HP at 9999 and MP at 999
-    this.maxHp = Math.min(this.maxHp, 9999);
-    this.maxMp = Math.min(this.maxMp, 999);
-};
-        levelUp() { const nL = this.level + 1; this.applyLevelUpGrowth(nL); if (UNLOCK_SCHEDULE[this.level]?.[this.className]) { UNLOCK_SCHEDULE[this.level][this.className].forEach(p => { if (!this.powers.includes(p)) { this.powers.push(p); gameState.addLogMessage(`${this.name} learned ${p}!`); } }); } console.log(`Lvl Up ${this.level}: ${this.name} HP:${this.maxHp} MP:${this.maxMp} STR:${this.str} DEF:${this.def} INT:${this.int} MND:${this.mnd}`); }
-    fullRestore = function() { 
-    this.currentHp = this.maxHp; 
-    this.currentMp = this.maxMp; 
-    this.statusEffects = this.statusEffects.filter(s => s.isPermanent); 
-    this.isAlive = this.currentHp > 0; 
-    this.isRaging = false; 
-    // Clear all the buffs
-    this.removeStatus('Empower1');
-    this.removeStatus('Empower2');
-    this.removeStatus('Fury');
-    this.removeStatus('Lifelink');
-    this.removeStatus('Slow');
-    this.removeStatus('Poison');
-};        getCurrentStat(sName) { let val = this[sName]; this.statusEffects.forEach(e => { if (e[`${sName}Bonus`]) val += e[`${sName}Bonus`]; }); return Math.max(0, val); }
-        takeDamage(amt) { if (!this.isAlive) return 0; const damageMultiplier = this.isRaging ? 2 : 1; const finalAmount = Math.max(0, amt) * damageMultiplier; this.currentHp -= Math.round(finalAmount); if (this.currentHp <= 0) { this.currentHp = 0; this.isAlive = false; this.isRaging = false; this.statusEffects = this.statusEffects.filter(s => s.isPermanent); gameState.addLogMessage(`${this.name} KO!`); } return Math.round(finalAmount); }
-        heal(amt) { if (!this.isAlive) return 0; const heal = Math.max(0, amt); const prev = this.currentHp; this.currentHp = Math.min(this.maxHp, this.currentHp + heal); return this.currentHp - prev; }
-        useMp(amt) { if (this.currentMp < amt) return false; this.currentMp -= amt; return true; }
-        restoreMp(amt) { if (!this.isAlive) return 0; const r = Math.max(0, amt); const p = this.currentMp; this.currentMp = Math.min(this.maxMp, this.currentMp + r); return this.currentMp - p; }
-        addStatus(effect) { 
-            const idx = this.statusEffects.findIndex(s => s.type === effect.type); 
+        // Cap HP at 9999 and MP at 999
+        this.maxHp = Math.min(this.maxHp, 9999);
+        this.maxMp = Math.min(this.maxMp, 999);
+    }
     
-            if (idx !== -1) { 
-        // For Bolster effects, keep the special handling
-        if (effect.type.startsWith('Bolster')) { 
-            const existingLevel = parseInt(this.statusEffects[idx].type.replace('Bolster', ''));
-            const newLevel = parseInt(effect.type.replace('Bolster', '')); 
-            if (newLevel >= existingLevel) {
+    levelUp() { 
+        const nL = this.level + 1; 
+        this.applyLevelUpGrowth(nL); 
+        
+        if (UNLOCK_SCHEDULE[this.level]?.[this.className]) { 
+            UNLOCK_SCHEDULE[this.level][this.className].forEach(p => { 
+                if (!this.powers.includes(p)) { 
+                    this.powers.push(p); 
+                    gameState.addLogMessage(`${this.name} learned ${p}!`); 
+                } 
+            }); 
+        } 
+        
+        console.log(`Lvl Up ${this.level}: ${this.name} HP:${this.maxHp} MP:${this.maxMp} STR:${this.str} DEF:${this.def} INT:${this.int} MND:${this.mnd}`); 
+    }
+    
+    fullRestore() { 
+        // Restore HP and MP to maximum
+        this.currentHp = this.maxHp; 
+        this.currentMp = this.maxMp; 
+        
+        // Clear status effects except permanent ones
+        this.statusEffects = this.statusEffects.filter(s => s.isPermanent); 
+        
+        // Reset alive state and rage mode
+        this.isAlive = this.currentHp > 0; 
+        this.isRaging = false; 
+        
+        // Clear all the buffs
+        this.removeStatus('Empower1');
+        this.removeStatus('Empower2');
+        this.removeStatus('Fury');
+        this.removeStatus('Lifelink');
+        this.removeStatus('Slow');
+        this.removeStatus('Poison');
+    }
+    
+    getCurrentStat(sName) { 
+        let val = this[sName]; 
+        this.statusEffects.forEach(e => { 
+            if (e[`${sName}Bonus`]) val += e[`${sName}Bonus`]; 
+        }); 
+        return Math.max(0, val); 
+    }
+    
+    takeDamage(amt) { 
+        if (!this.isAlive) return 0; 
+        const damageMultiplier = this.isRaging ? 2 : 1; 
+        const finalAmount = Math.max(0, amt) * damageMultiplier; 
+        this.currentHp -= Math.round(finalAmount); 
+        
+        if (this.currentHp <= 0) { 
+            this.currentHp = 0; 
+            this.isAlive = false; 
+            this.isRaging = false; 
+            this.statusEffects = this.statusEffects.filter(s => s.isPermanent); 
+            gameState.addLogMessage(`${this.name} KO!`); 
+        } 
+        
+        return Math.round(finalAmount); 
+    }
+    
+    heal(amt) { 
+        if (!this.isAlive) return 0; 
+        const heal = Math.max(0, amt); 
+        const prev = this.currentHp; 
+        this.currentHp = Math.min(this.maxHp, this.currentHp + heal); 
+        return this.currentHp - prev; 
+    }
+    
+    useMp(amt) { 
+        if (this.currentMp < amt) return false; 
+        this.currentMp -= amt; 
+        return true; 
+    }
+    
+    restoreMp(amt) { 
+        if (!this.isAlive) return 0; 
+        const r = Math.max(0, amt); 
+        const p = this.currentMp; 
+        this.currentMp = Math.min(this.maxMp, this.currentMp + r); 
+        return this.currentMp - p; 
+    }
+    
+    addStatus(effect) { 
+        const idx = this.statusEffects.findIndex(s => s.type === effect.type); 
+    
+        if (idx !== -1) { 
+            // For Bolster effects, keep the special handling
+            if (effect.type.startsWith('Bolster')) { 
+                const existingLevel = parseInt(this.statusEffects[idx].type.replace('Bolster', ''));
+                const newLevel = parseInt(effect.type.replace('Bolster', '')); 
+                if (newLevel >= existingLevel) {
+                    this.statusEffects.splice(idx, 1);
+                } else {
+                    return false; 
+                } 
+            } 
+            // For buff effects (Empower, Fury, Lifelink), always replace with the new buff
+            else if (effect.type === 'Empower1' || effect.type === 'Empower2' || 
+                     effect.type === 'Fury' || effect.type === 'Lifelink') {
+                // Remove the old buff
                 this.statusEffects.splice(idx, 1);
-            } else {
+                // The new buff will be added below
+            }
+            // For other status effects (like debuffs), keep original behavior
+            else { 
+                return false; 
+            }
+        }
+        
+        // Add the new effect
+        this.statusEffects.push({ ...effect }); 
+        return true; 
+    }
+    
+    removeStatus(sType) { 
+        const l = this.statusEffects.length; 
+        this.statusEffects = this.statusEffects.filter(s => s.type !== sType); 
+        return this.statusEffects.length < l; 
+    }
+    
+    clearNegativeStatuses() { 
+        const neg = ['Poison', 'Slow']; 
+        let r = false; 
+        this.statusEffects = this.statusEffects.filter(s => { 
+            if (neg.includes(s.type)) { 
+                r = true; 
                 return false; 
             } 
-        } 
-               // For buff effects (Empower, Fury, Lifelink), always replace with the new buff
-        else if (effect.type === 'Empower1' || effect.type === 'Empower2' || 
-                 effect.type === 'Fury' || effect.type === 'Lifelink') {
-            // Remove the old buff
-            this.statusEffects.splice(idx, 1);
-            // The new buff will be added below
-        }
-        // For other status effects (like debuffs), keep original behavior
-        else { 
-            return false; 
-        }
+            return true; 
+        }); 
+        return r; 
     }
-    
-    // Add the new effect
-    this.statusEffects.push({ ...effect }); 
-    return true; 
-} 
-        removeStatus(sType) { const l = this.statusEffects.length; this.statusEffects = this.statusEffects.filter(s => s.type !== sType); return this.statusEffects.length < l; }
-        clearNegativeStatuses() { const neg = ['Poison', 'Slow']; let r = false; this.statusEffects = this.statusEffects.filter(s => { if (neg.includes(s.type)) { r = true; return false; } return true; }); return r; }
-    }
+}
 
     // --- Game State Manager ---
     const gameState = {
@@ -328,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'TAVERN': document.getElementById('tavern-screen').style.display = 'flex'; enterTavern(); break;
                 case 'GAME_OVER': document.getElementById('game-over-screen').style.display = 'flex'; handleGameOver(); break;
             }
+            updateProgressDisplay();
         }
     };
 
@@ -513,26 +690,48 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateEnemySpritesUI() { const enemyArea = document.getElementById('battlefield-enemy-area'); enemyArea.innerHTML = ''; gameState.enemies.forEach((e, i) => { const d = document.createElement('div'); d.className = 'sprite enemy'; d.id = e.id; d.style.left = `${20 + i * 20}%`; d.style.top = '50%'; d.style.transform = 'translateY(-50%)'; d.textContent = e.name.substring(0, 3); d.title = `${e.name}(HP:${e.currentHp}/${e.maxHp})`; if (!e.isAlive) d.classList.add('ko'); enemyArea.appendChild(d); }); const partyArea = document.getElementById('battlefield-party-area'); partyArea.innerHTML = ''; gameState.party.forEach((p, i) => { const d = document.createElement('div'); d.className = 'sprite party-member'; d.id = p.id + "-sprite"; d.style.left = `${20 + i * 20}%`; d.textContent = p.name.substring(0, 3); d.title = `${p.name}(HP:${p.currentHp}/${p.maxHp})`; if (!p.isAlive) d.classList.add('ko'); partyArea.appendChild(d); }); }
     function updatePartySelectUI() { const cont = document.getElementById('party-select-slots'); cont.innerHTML = ''; for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'party-select-slot'; d.id = `select-slot-${i}`; let cN = '', conf = false, act = (i === gameState.partySelectionIndex); if (i < gameState.partySelectionIndex) { cN = gameState.selectedClasses[i]; conf = true; } else if (i === gameState.partySelectionIndex) { cN = gameState.tempSelectedClass; } else { cN = '---'; } d.innerHTML = `Character ${i + 1}: <span class="selected-class"></span>`; const s = d.querySelector('.selected-class'); s.textContent = cN; CLASS_LIST.forEach(c => s.classList.remove(c)); if (cN !== '---' && CLASS_DATA[cN]) s.classList.add(cN); if (act) d.classList.add('active'); if (conf) d.classList.add('confirmed'); cont.appendChild(d); } }
     function highlightActivePartyStatus(index) { document.querySelectorAll('#party-status-area > .character-status-box').forEach((b, i) => { if (i === index && gameState.party[index]?.isAlive) { b.classList.add('highlighted'); } else { b.classList.remove('highlighted'); } }); }
+    // Dungeon Background function
     function updateDungeonBackground() {
-        const bgElement = document.getElementById('game-background');
-        if (!bgElement) {
-            console.error("Background element not found!");
-            return;
-        }
-        
-        // Remove all existing background classes
-        bgElement.classList.remove('dungeon1-background', 'dungeon2-background', 'dungeon3-background');
-        
-        // Calculate the current dungeon index (0-based)
-        const dungeonIndex = Math.min(2, Math.floor((gameState.currentWave - 1) / 15));
-        
-        // Add the appropriate class for the current dungeon
-        if (dungeonIndex >= 0) {
-            const className = `dungeon${dungeonIndex + 1}-background`;
-            bgElement.classList.add(className);
-            console.log(`Applied background class: ${className}`);
-        }
+    const bgElement = document.getElementById('game-background');
+    if (!bgElement) return;
+    
+    const dungeonIndex = Math.min(DUNGEON_BACKGROUNDS.length - 1, Math.floor((gameState.currentWave - 1) / 15));
+    const backgroundUrl = DUNGEON_BACKGROUNDS[dungeonIndex];
+    
+    if (backgroundUrl) {
+        bgElement.style.backgroundImage = `url('${backgroundUrl}')`;
+    } else {
+        bgElement.style.backgroundImage = 'none';
     }
+}
+    // Function to update the progress display
+function updateProgressDisplay() {
+    const progressDisplay = document.getElementById('progress-info-display');
+    const currentWaveSpan = document.getElementById('current-wave');
+    const dungeonNameDiv = document.getElementById('dungeon-name');
+    
+    if (!progressDisplay || !currentWaveSpan || !dungeonNameDiv) return;
+    
+    // Only show progress info during gameplay, not on title or other screens
+    if (gameState.currentState === 'PLAYER_COMMAND' || 
+        gameState.currentState === 'ACTION_RESOLUTION' || 
+        gameState.currentState === 'BETWEEN_WAVES') {
+        progressDisplay.style.display = 'block';
+    } else {
+        progressDisplay.style.display = 'none';
+        return;
+    }
+    
+    // Update wave counter
+    const currentWave = gameState.currentWave;
+    const waveInDungeon = ((currentWave - 1) % 15) + 1;
+    currentWaveSpan.textContent = waveInDungeon;
+    
+    // Update dungeon name
+    const dungeonIndex = Math.floor((currentWave - 1) / 15);
+    const dungeonNames = ["Overworld", "Desert", "Catacombs"];
+    dungeonNameDiv.textContent = dungeonNames[dungeonIndex] || `Dungeon ${dungeonIndex + 1}`;
+}
     // --- Visual Effect Helpers ---
     function getCorrectElementId(actorOrTargetId) { return gameState.party.some(p => p.id === actorOrTargetId) ? actorOrTargetId + "-sprite" : actorOrTargetId; }
     function flashSprite(id, color = 'white', dur = 150) { const elementId = getCorrectElementId(id); const e = document.getElementById(elementId); if (e) { const oF = e.style.filter; e.style.transition = 'filter 0.05s ease-in-out'; e.style.filter = 'brightness(3) contrast(2)'; setTimeout(() => { e.style.filter = oF || 'none'; setTimeout(() => e.style.transition = '', 50); }, dur); } }
@@ -630,21 +829,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function finalizePartySelection() { console.log("Finalizing party:", gameState.selectedClasses); gameState.party = []; gameState.selectedClasses.forEach((cN, i) => { if (!cN) cN = 'Barbarian'; const c = new Character(`party-${i + 1}`, cN); c.applyLevelUpGrowth(1); c.fullRestore(); gameState.party.push(c); }); console.log("Party Created:", gameState.party); gameState.setState('COMBAT_LOADING'); setupCombatButtonListeners(); startNextWave(); }
     
     function startNextWave() { 
-    gameState.currentWave++; 
-    console.log(`Start Wave ${gameState.currentWave}`); 
-    gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
-    
-    // Add this line to update the background
-    updateDungeonBackground();
-    
-    gameState.enemies = generateEnemiesForWave(gameState.currentWave); 
-    console.log("Enemies:", gameState.enemies); 
-    gameState.actionQueue = []; 
-    gameState.nextWaveEffect = null; 
-    gameState.activeCharacterIndex = 0; 
-    gameState.setState('PLAYER_COMMAND'); 
-    prepareCommandPhase(); 
-}
+        gameState.currentWave++; 
+        console.log(`Start Wave ${gameState.currentWave}`); 
+        gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
+        
+        // Added dungeon background functionality
+        updateDungeonBackground();
+        
+        // Add this line to update the progress display
+        updateProgressDisplay();
+        
+        gameState.enemies = generateEnemiesForWave(gameState.currentWave); 
+        console.log("Enemies:", gameState.enemies); 
+        gameState.actionQueue = []; 
+        gameState.nextWaveEffect = null; 
+        gameState.activeCharacterIndex = 0; 
+        gameState.setState('PLAYER_COMMAND'); 
+        prepareCommandPhase(); 
+    }
     function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'FinalDragon'; if (dungeonIndex === 0) bossName = 'WhiteDragon'; else if (dungeonIndex === 1) bossName = 'BlueDragon'; else if (dungeonIndex === 2) bossName = 'BlackDragon'; const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.50), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
     // Modified calculateEnemyStats function to limit HP growth to 8% per wave
 // and add +5 stat growth to Str, Def, Int, and Mnd every 15 rounds
@@ -1431,7 +1633,7 @@ function calculateEnemyStats(wave) {
             } 
             highlightActivePartyStatus(-1); 
         }
-else if (p.effect === 'Restore') { const ch = p.chance || 1.0; if (Math.random() < ch) { let rem = false; if ('clearNegativeStatuses' in t) { rem = t.clearNegativeStatuses(); } else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('clearNegativeStatuses' in t) updatePartyStatusUI(); } else { gameState.addLogMessage(`${pN} no effect.`); } highlightActivePartyStatus(-1); } }); }
+else if (p.effect === 'Restore') { const ch = p.chance || 1.0; if (Math.random() < ch) { let rem = false; if ('Statuses' in t) { rem = t.Statuses(); } else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('Statuses' in t) updatePartyStatusUI(); } else { gameState.addLogMessage(`${pN} no effect.`); } highlightActivePartyStatus(-1); } }); }
     function performDragonBreath(c) { gameState.addLogMessage(`${c.name} uses Dragon Breath!`); const targets = gameState.party.filter(p => p.isAlive); targets.forEach(t => { const dmg = Math.round(t.maxHp * 0.25); const targetElementId = getCorrectElementId(t.id); setTimeout(() => { showFloatingNumber(targetElementId, dmg, 'damage'); gameState.addLogMessage(`${t.name} takes ${dmg} breath dmg!`); t.takeDamage(dmg); updatePartyStatusUI(); highlightActivePartyStatus(-1); if (checkLoseCondition()) handleGameOver(); }, 100); }); }
     function endRound() { console.log("Round End."); gameState.actionQueue = []; if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } processEndOfRound(); if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } gameState.activeCharacterIndex = 0; gameState.setState('PLAYER_COMMAND'); prepareCommandPhase(); }
     function processEndOfRound() { 
@@ -1709,101 +1911,124 @@ else if (p.effect === 'Restore') { const ch = p.chance || 1.0; if (Math.random()
         updatePartyStatusUI(); 
     }
     
-    function enterTavern() { 
-        gameState.addLogMessage("Tavern..."); 
-        console.log("Tavern"); 
-        
-        gameState.party.forEach(c => c.fullRestore()); 
-        gameState.addLogMessage("Party restored!"); 
-        updatePartyStatusUI(); 
-        
-        const area = document.getElementById('class-change-area'); 
-        area.innerHTML = ''; 
-        
-        gameState.party.forEach((c, i) => { 
-            const d = document.createElement('div'); 
-            d.style.marginBottom = '10px'; 
-            
-            const l = document.createElement('span'); 
-            l.textContent = `Char ${i + 1}(${c.name}): `; 
-            d.appendChild(l); 
-            
-            const s = document.createElement('select'); 
-            s.id = `class-select-${i + 1}`; 
-            s.dataset.characterIndex = i; 
-            
-            Object.keys(CLASS_DATA).forEach(cN => { 
-                const o = document.createElement('option'); 
-                o.value = cN; 
-                o.textContent = cN; 
-                if (cN === c.className) o.selected = true; 
-                s.appendChild(o); 
-            }); 
-            
-            d.appendChild(s); 
-            area.appendChild(d); 
-        }); 
-        
-        const b = document.getElementById('proceed-button'); 
-        b.replaceWith(b.cloneNode(true)); 
-        document.getElementById('proceed-button').addEventListener('click', handleTavernProceed); 
-    }
+  function enterTavern() { 
+    gameState.addLogMessage("Tavern..."); 
+    console.log("Tavern"); 
     
-    function handleTavernProceed() { 
-        const sels = document.querySelectorAll('#class-change-area select'); 
+    // Fully restore each party member (HP, MP, remove status effects, revive fallen)
+    gameState.party.forEach(c => {
+        // Store previous HP to check if character was revived
+        const wasAlive = c.isAlive;
         
-        sels.forEach(s => { 
-            const idx = parseInt(s.dataset.characterIndex); 
-            const nCN = s.value; 
-            const char = gameState.party[idx]; 
-            
-            if (char.className !== nCN) { 
-                gameState.addLogMessage(`Char ${idx + 1} -> ${nCN}.`); 
-                
-                const lvl = char.level; 
-                gameState.party[idx] = new Character(char.id, nCN); 
-                gameState.party[idx].level = 0; 
-                
-                for (let i = 1; i <= lvl; i++) 
-                    gameState.party[idx].applyLevelUpGrowth(i); 
-                
-                for (let l = 1; l <= lvl; l++) { 
-                    if (UNLOCK_SCHEDULE[l]?.[nCN]) 
-                        UNLOCK_SCHEDULE[l][nCN].forEach(p => { 
-                            if (!gameState.party[idx].powers.includes(p)) 
-                                gameState.party[idx].powers.push(p); 
-                        }); 
-                } 
-                
-                gameState.party[idx].fullRestore(); 
-            } 
+        // Full restoration
+        c.fullRestore(); 
+        
+        // If character was dead and is now alive, add a specific message
+        if (!wasAlive) {
+            gameState.addLogMessage(`${c.name} revived!`);
+        }
+    }); 
+    
+    gameState.addLogMessage("Party fully restored!"); 
+    
+    // Update all UI elements to reflect restored state
+    updatePartyStatusUI(); 
+    updateEnemySpritesUI();
+    
+    // Update battlefield sprite visuals to remove any buff effects
+    gameState.party.forEach(c => {
+        const spriteElement = document.getElementById(getCorrectElementId(c.id + "-sprite"));
+        if (spriteElement) {
+            // Remove all buff-related classes
+            spriteElement.classList.remove('buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed');
+            spriteElement.classList.remove('empower-pulse', 'fury-pulse', 'lifelink-pulse');
+            spriteElement.classList.remove('ko');
+        }
+    });
+    
+    // Setup class change UI
+    const area = document.getElementById('class-change-area'); 
+    area.innerHTML = ''; 
+    
+    gameState.party.forEach((c, i) => { 
+        const d = document.createElement('div'); 
+        d.style.marginBottom = '10px'; 
+        
+        const l = document.createElement('span'); 
+        l.textContent = `Char ${i + 1}(${c.name}): `; 
+        d.appendChild(l); 
+        
+        const s = document.createElement('select'); 
+        s.id = `class-select-${i + 1}`; 
+        s.dataset.characterIndex = i; 
+        
+        Object.keys(CLASS_DATA).forEach(cN => { 
+            const o = document.createElement('option'); 
+            o.value = cN; 
+            o.textContent = cN; 
+            if (cN === c.className) o.selected = true; 
+            s.appendChild(o); 
         }); 
         
-        // Handle background transition between dungeons
-        const bgElement = document.getElementById('game-background');
-        if (bgElement) {
-            const oldDungeonIndex = Math.floor((gameState.currentWave - 1) / 15);
-            const newDungeonIndex = Math.floor(gameState.currentWave / 15);
+        d.appendChild(s); 
+        area.appendChild(d); 
+    }); 
+    
+    const b = document.getElementById('proceed-button'); 
+    b.replaceWith(b.cloneNode(true)); 
+    document.getElementById('proceed-button').addEventListener('click', handleTavernProceed); 
+}
+    
+    function handleTavernProceed() {
+    // Process class changes for each character
+    gameState.party.forEach((character, index) => {
+        const selectElement = document.getElementById(`class-select-${index + 1}`);
+        if (selectElement) {
+            const newClassName = selectElement.value;
             
-            // If we're transitioning to a new dungeon
-            if (oldDungeonIndex !== newDungeonIndex) {
-                // Apply a fade transition
-                bgElement.style.opacity = '0';
+            // Only apply changes if the class has actually changed
+            if (newClassName !== character.className) {
+                const oldClassName = character.className;
+                console.log(`Changing ${character.name} from ${oldClassName} to ${newClassName}`);
                 
-                setTimeout(() => {
-                    // Remove old classes and add new one
-                    bgElement.classList.remove('dungeon1-background', 'dungeon2-background', 'dungeon3-background');
-                    bgElement.classList.add(`dungeon${newDungeonIndex + 1}-background`);
-                    
-                    // Fade back in
-                    bgElement.style.opacity = '0.9';
-                }, 500);
+                // Store original level before change
+                const originalLevel = character.level;
+                
+                // Update character class
+                character.className = newClassName;
+                character.name = newClassName; // Update name to match class
+                
+                // Recalculate stats for the new class and level
+                character.recalculateStats();
+                
+                gameState.addLogMessage(`${oldClassName} changed to ${newClassName}!`);
             }
         }
+    });
+    
+    // Update UI with new stats and class names
+    updatePartyStatusUI();
+    
+    // Handle background transition for new dungeon
+    const backgroundElement = document.getElementById('game-background');
+    if (backgroundElement) {
+        const oldDungeonIndex = Math.floor((gameState.currentWave - 1) / 15);
+        const newDungeonIndex = Math.floor(gameState.currentWave / 15);
         
-        gameState.setState('COMBAT_LOADING'); 
-        startNextWave(); 
+        // If we're transitioning to a new dungeon
+        if (oldDungeonIndex !== newDungeonIndex) {
+            // Apply a transition effect for the background change
+            backgroundElement.style.opacity = '0';
+            setTimeout(() => {
+                updateDungeonBackground();
+                backgroundElement.style.opacity = '0.9';
+            }, 500);
+        }
     }
+    
+    gameState.setState('COMBAT_LOADING');
+    startNextWave();
+}
     
     function handleGameOver() { 
         console.error("GAME OVER!"); 
