@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dungeon Rogue</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="WIPstyle.css">
 </head>
 <body>
 
     <div id="game-container">
-        <!-- Background Layer (New) -->
-        <div class="game-background" id="game-background"></div>
 
         <!-- Title Screen (Starts Visible) -->
         <div class="screen-overlay" id="title-screen">
@@ -30,6 +28,12 @@
         <!-- Action Announcement Bar (Starts Hidden) -->
         <div id="action-announcement-bar" style="display: none;">
             <span id="action-announcement-text"></span>
+        </div>
+
+        <!-- Progress Info Display (Starts Hidden) -->
+        <div id="progress-info-display" style="display: none;">
+            <div id="dungeon-name">Goblin Caves</div>
+            <div id="wave-counter">Wave <span id="current-wave">1</span></div>
         </div>
 
         <!-- Battlefield Areas -->
@@ -91,6 +95,6 @@
 
     </div> <!-- End game-container -->
 
-    <script src="game.js"></script>
+    <script src="WIPgame.js"></script>
 </body>
 </html>
