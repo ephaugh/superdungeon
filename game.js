@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Goblin', 
                 archetype: 'Bruiser', 
                 abilities: [{ 
-                    name: "Goblin Bash", 
+                    name: "GoblinPunch", 
                     chance: 0.50, 
                     type: 'BruiserAbility'
                 }] 
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: 'Ooze', 
                 archetype: 'Bruiser', 
                 abilities: [{ 
-                    name: "Acid Splash", 
+                    name: "AcidSplash", 
                     chance: 0.50, 
                     type: 'BruiserAbility'
                 }]
@@ -571,123 +571,215 @@ class Character {
 
     // --- UI Update Functions ---
     function updatePartyStatusUI() {
-    gameState.party.forEach((c, i) => {
-        const b = document.getElementById(`char-status-${i + 1}`);
-        if (!b) return;
-        
-        // Remove existing classes
-        b.classList.remove('ko', 'hp-critical', 'buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed');
-        b.querySelectorAll('span').forEach(span => 
-            span.classList.remove('hp-critical', 'hp-ko', 'buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed')
-        );
-        
-        // Get DOM elements
-        const nameSpan = b.querySelector('.char-name') || b.children[0];
-        const statusSpan = b.querySelector('.char-status') || b.children[1];
-        const hpSpan = b.querySelector('.char-hp') || b.children[2];
-        const mpSpan = b.querySelector('.char-mp') || b.children[3];
-        
-        // Update basic status info
-        if (nameSpan) nameSpan.textContent = c.name;
-        if (hpSpan) hpSpan.innerHTML = `HP: <span class="hp-value">${c.currentHp}</span>/<span class="hp-max">${c.maxHp}</span>`;
-        if (mpSpan) mpSpan.innerHTML = `MP: <span class="mp-value">${c.currentMp}</span>/<span class="mp-max">${c.maxMp}</span>`;
-        
-        // Check for buffs
-        const hasEmpowerBuff = c.statusEffects.some(e => e.type === 'Empower1' || e.type === 'Empower2');
-        const hasFuryBuff = c.statusEffects.some(e => e.type === 'Fury');
-        const hasLifelinkBuff = c.statusEffects.some(e => e.type === 'Lifelink');
-        const hasAnyBuff = hasEmpowerBuff || hasFuryBuff || hasLifelinkBuff;
-        
-        // Also update sprites with buff classes
-        const spriteElement = document.getElementById(getCorrectElementId(c.id + "-sprite"));
-        if (spriteElement) {
-            spriteElement.classList.remove('buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed');
-            spriteElement.classList.remove('empower-pulse', 'fury-pulse', 'lifelink-pulse');
+        gameState.party.forEach((character, index) => {
+            const statusBox = document.getElementById(`char-status-${index + 1}`);
+            if (!statusBox) return;
             
-            if (hasEmpowerBuff) {
-                spriteElement.classList.add('buffed', 'empower-buffed', 'empower-pulse');
-            }
-            if (hasFuryBuff) {
-                spriteElement.classList.add('buffed', 'fury-buffed', 'fury-pulse');
-            }
-            if (hasLifelinkBuff) {
-                spriteElement.classList.add('buffed', 'lifelink-buffed', 'lifelink-pulse');
-            }
-        }
-        
-        // Update status text and apply buff styling
-        if (statusSpan) {
-            if (!c.isAlive) {
-                statusSpan.textContent = "KO";
-                statusSpan.style.color = '#ff6666';
-            } else {
-                let statusText = '';
+            // Remove existing classes
+            statusBox.classList.remove('ko', 'hp-critical', 'buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed');
+            statusBox.querySelectorAll('span').forEach(span => 
+                span.classList.remove('hp-critical', 'hp-ko', 'buffed', 'empower-buffed', 'fury-buffed', 'lifelink-buffed')
+            );
+            
+            // Get DOM elements
+            const nameSpan = statusBox.querySelector('.char-name') || statusBox.children[0];
+            const statusSpan = statusBox.querySelector('.char-status') || statusBox.children[1];
+            const hpSpan = statusBox.querySelector('.char-hp') || statusBox.children[2];
+            const mpSpan = statusBox.querySelector('.char-mp') || statusBox.children[3];
+            
+            // Update basic status info
+            if (nameSpan) nameSpan.textContent = character.name;
+            if (hpSpan) hpSpan.innerHTML = `HP: <span class="hp-value">${character.currentHp}</span>/<span class="hp-max">${character.maxHp}</span>`;
+            if (mpSpan) mpSpan.innerHTML = `MP: <span class="mp-value">${character.currentMp}</span>/<span class="mp-max">${character.maxMp}</span>`;
+            
+            // Check for buffs
+            const hasEmpowerBuff = character.statusEffects.some(e => e.type === 'Empower1' || e.type === 'Empower2');
+            const hasFuryBuff = character.statusEffects.some(e => e.type === 'Fury');
+            const hasLifelinkBuff = character.statusEffects.some(e => e.type === 'Lifelink');
+            const hasAnyBuff = hasEmpowerBuff || hasFuryBuff || hasLifelinkBuff;
+            
+            // MODIFIED: Find the sprite but don't manipulate position properties
+            const spriteElement = document.getElementById(`${character.id}-sprite`);
+            if (spriteElement) {
+                // CRITICAL: Reset any transforms that might have been applied
+                spriteElement.style.bottom = '5px';
+                spriteElement.style.position = 'absolute';
+                spriteElement.style.transform = 'none';
                 
-                // Collect buff names
-                const buffs = [];
-                if (hasEmpowerBuff) {
-                    const buff = c.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2');
-                    buffs.push(`E${buff.damageMultiplier}x`);
-                    b.classList.add('buffed', 'empower-buffed');
+                // Just add visual classes but not position-affecting ones
+                spriteElement.classList.toggle('empower-pulse', hasEmpowerBuff);
+                spriteElement.classList.toggle('fury-pulse', hasFuryBuff);
+                spriteElement.classList.toggle('lifelink-pulse', hasLifelinkBuff);
+                spriteElement.classList.toggle('buffed', hasAnyBuff);
+                
+                // Set high z-index for buffed characters to make them visually stand out
+                if (hasAnyBuff) {
+                    spriteElement.style.zIndex = '4';
+                } else {
+                    spriteElement.style.zIndex = '3';
                 }
-                
-                if (hasFuryBuff) {
-                    buffs.push('FURY');
-                    b.classList.add('buffed', 'fury-buffed');
-                }
-                
-                if (hasLifelinkBuff) {
-                    buffs.push('LIFE');
-                    b.classList.add('buffed', 'lifelink-buffed');
-                }
-                
-                // Add negative statuses
-                const negatives = c.statusEffects
-                    .filter(e => e.type === 'Poison' || e.type === 'Slow')
-                    .map(e => e.type);
-                
-                // Combined status text
-                if (buffs.length > 0) {
-                    statusText = buffs.join('+');
-                    if (negatives.length > 0) {
-                        statusText += ' ' + negatives.join(' ');
+            }
+            
+            // Update status text and apply buff styling
+            if (statusSpan) {
+                if (!character.isAlive) {
+                    statusSpan.textContent = "KO";
+                    statusSpan.style.color = '#ff6666';
+                } else {
+                    let statusText = '';
+                    
+                    // Collect buff names
+                    const buffs = [];
+                    if (hasEmpowerBuff) {
+                        const buff = character.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2');
+                        buffs.push(`E${buff.damageMultiplier}x`);
+                        statusBox.classList.add('buffed', 'empower-buffed');
                     }
                     
-                    // Add buff visual class
-                    statusSpan.classList.add('buffed');
-                    statusSpan.style.color = '#ffffff';
-                } else if (negatives.length > 0) {
-                    statusText = negatives.join(' ');
-                    statusSpan.style.color = '#ffee88';
-                } else {
-                    statusText = 'OK';
-                    statusSpan.style.color = '#ffee88';
+                    if (hasFuryBuff) {
+                        buffs.push('FURY');
+                        statusBox.classList.add('buffed', 'fury-buffed');
+                    }
+                    
+                    if (hasLifelinkBuff) {
+                        buffs.push('LIFE');
+                        statusBox.classList.add('buffed', 'lifelink-buffed');
+                    }
+                    
+                    // Add negative statuses
+                    const negatives = character.statusEffects
+                        .filter(e => e.type === 'Poison' || e.type === 'Slow')
+                        .map(e => e.type);
+                    
+                    // Combined status text
+                    if (buffs.length > 0) {
+                        statusText = buffs.join('+');
+                        if (negatives.length > 0) {
+                            statusText += ' ' + negatives.join(' ');
+                        }
+                        
+                        // Add buff visual class
+                        statusSpan.classList.add('buffed');
+                        statusSpan.style.color = '#ffffff';
+                    } else if (negatives.length > 0) {
+                        statusText = negatives.join(' ');
+                        statusSpan.style.color = '#ffee88';
+                    } else {
+                        statusText = 'OK';
+                        statusSpan.style.color = '#ffee88';
+                    }
+                    
+                    statusSpan.textContent = statusText;
                 }
-                
-                statusSpan.textContent = statusText;
             }
-        }
-        
-        // Apply KO and critical HP styles
-        if (!c.isAlive) {
-            if (nameSpan) nameSpan.classList.add('hp-ko');
-            if (hpSpan) hpSpan.classList.add('hp-ko');
-            if (mpSpan) mpSpan.classList.add('hp-ko');
-            b.classList.add('ko');
-        } else if (c.maxHp > 0 && c.currentHp / c.maxHp < 0.33) {
-            if (nameSpan) nameSpan.classList.add('hp-critical');
-            if (hpSpan) hpSpan.classList.add('hp-critical');
-            if (mpSpan) mpSpan.classList.add('hp-critical');
-            b.classList.add('hp-critical');
-        }
-        
-        // Set opacity based on alive status
-        b.style.opacity = c.isAlive ? 1 : 0.6;
-    });
- }    
+            
+            // Apply KO and critical HP styles
+            if (!character.isAlive) {
+                if (nameSpan) nameSpan.classList.add('hp-ko');
+                if (hpSpan) hpSpan.classList.add('hp-ko');
+                if (mpSpan) mpSpan.classList.add('hp-ko');
+                statusBox.classList.add('ko');
+            } else if (character.maxHp > 0 && character.currentHp / character.maxHp < 0.33) {
+                if (nameSpan) nameSpan.classList.add('hp-critical');
+                if (hpSpan) hpSpan.classList.add('hp-critical');
+                if (mpSpan) mpSpan.classList.add('hp-critical');
+                statusBox.classList.add('hp-critical');
+            }
+            
+            // Set opacity based on alive status
+            statusBox.style.opacity = character.isAlive ? 1 : 0.6;
+        });
+    }
+    
     function updateCombatLogUI() { /* Log area removed */ }
     function updateActionMenuUI(char) { const box = document.querySelector('#dynamic-menu-content .action-menu-box'); if (!box) return; const btns = box.querySelectorAll('button'); if (!char || !char.isAlive) { btns.forEach(b => { b.style.display = 'none'; b.disabled = true; }); return; } btns.forEach(b => { const a = b.dataset.action; if (!a) return; let available = char.commands.includes(a); if (a === 'Spell' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spell')) available = false; if (a === 'Prayer' && !char.powers.some(p => POWER_DATA[p]?.type === 'Prayer')) available = false; b.style.display = available ? 'block' : 'none'; b.disabled = !available; }); }
-    function updateEnemySpritesUI() { const enemyArea = document.getElementById('battlefield-enemy-area'); enemyArea.innerHTML = ''; gameState.enemies.forEach((e, i) => { const d = document.createElement('div'); d.className = 'sprite enemy'; d.id = e.id; d.style.left = `${20 + i * 20}%`; d.style.top = '50%'; d.style.transform = 'translateY(-50%)'; d.textContent = e.name.substring(0, 3); d.title = `${e.name}(HP:${e.currentHp}/${e.maxHp})`; if (!e.isAlive) d.classList.add('ko'); enemyArea.appendChild(d); }); const partyArea = document.getElementById('battlefield-party-area'); partyArea.innerHTML = ''; gameState.party.forEach((p, i) => { const d = document.createElement('div'); d.className = 'sprite party-member'; d.id = p.id + "-sprite"; d.style.left = `${20 + i * 20}%`; d.textContent = p.name.substring(0, 3); d.title = `${p.name}(HP:${p.currentHp}/${p.maxHp})`; if (!p.isAlive) d.classList.add('ko'); partyArea.appendChild(d); }); }
+    function updateEnemySpritesUI() {
+        // --- PART 1: HANDLE ENEMY SPRITES ---
+        const enemyArea = document.getElementById('battlefield-enemy-area');
+        enemyArea.innerHTML = '';
+        
+        gameState.enemies.forEach((enemy, index) => {
+            const sprite = document.createElement('div');
+            sprite.className = 'sprite enemy';
+            sprite.id = enemy.id;
+            sprite.style.left = `${20 + index * 20}%`;
+            sprite.style.top = '50%';
+            sprite.style.transform = 'translateY(-50%)';
+            
+            sprite.textContent = enemy.name.substring(0, 3);
+            sprite.title = `${enemy.name}(HP:${enemy.currentHp}/${enemy.maxHp})`;
+            
+            if (!enemy.isAlive) {
+                sprite.classList.add('ko');
+            }
+            
+            enemyArea.appendChild(sprite);
+        });
+        
+        // --- PART 2: HANDLE PARTY SPRITES WITH STRICT POSITIONING ---
+        const partyArea = document.getElementById('battlefield-party-area');
+        partyArea.innerHTML = '';
+        
+        gameState.party.forEach((character, index) => {
+            // Create the basic sprite
+            const sprite = document.createElement('div');
+            sprite.className = 'sprite party-member';
+            sprite.id = character.id + "-sprite";
+            
+            // CRITICAL: Set precise position in inline styles with !important
+            sprite.style.cssText = `
+                left: ${20 + index * 20}% !important;
+                bottom: 5px !important;
+                position: absolute !important;
+            `;
+            
+            sprite.textContent = character.name.substring(0, 3);
+            sprite.title = `${character.name}(HP:${character.currentHp}/${character.maxHp})`;
+            
+            // Add KO class if needed
+            if (!character.isAlive) {
+                sprite.classList.add('ko');
+            }
+            
+            // Check for buffs - but don't let them affect positioning
+            const hasEmpowerBuff = character.statusEffects.some(e => e.type === 'Empower1' || e.type === 'Empower2');
+            const hasFuryBuff = character.statusEffects.some(e => e.type === 'Fury');
+            const hasLifelinkBuff = character.statusEffects.some(e => e.type === 'Lifelink');
+            
+            // Instead of classes, add inline styles for buff visuals
+            if (hasEmpowerBuff) {
+                sprite.classList.add('buffed', 'empower-buffed', 'empower-pulse');
+                // Ensure z-index to appear above other elements
+                sprite.style.zIndex = '4';
+            }
+            if (hasFuryBuff) {
+                sprite.classList.add('buffed', 'fury-buffed', 'fury-pulse');
+                sprite.style.zIndex = '4';
+            }
+            if (hasLifelinkBuff) {
+                sprite.classList.add('buffed', 'lifelink-buffed', 'lifelink-pulse');
+                sprite.style.zIndex = '4';
+            }
+            
+            // For non-buffed characters
+            if (!hasEmpowerBuff && !hasFuryBuff && !hasLifelinkBuff) {
+                sprite.style.zIndex = '3';
+            }
+            
+            // Add to the party area
+            partyArea.appendChild(sprite);
+            
+            // Extra step: set these properties again after appending
+            // This is a failsafe to make sure they're applied
+            setTimeout(() => {
+                if (sprite.parentNode) {
+                    sprite.style.bottom = '5px';
+                    sprite.style.position = 'absolute';
+                    sprite.style.transform = 'none';
+                }
+            }, 0);
+        });
+    }    
     function updatePartySelectUI() { const cont = document.getElementById('party-select-slots'); cont.innerHTML = ''; for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'party-select-slot'; d.id = `select-slot-${i}`; let cN = '', conf = false, act = (i === gameState.partySelectionIndex); if (i < gameState.partySelectionIndex) { cN = gameState.selectedClasses[i]; conf = true; } else if (i === gameState.partySelectionIndex) { cN = gameState.tempSelectedClass; } else { cN = '---'; } d.innerHTML = `Character ${i + 1}: <span class="selected-class"></span>`; const s = d.querySelector('.selected-class'); s.textContent = cN; CLASS_LIST.forEach(c => s.classList.remove(c)); if (cN !== '---' && CLASS_DATA[cN]) s.classList.add(cN); if (act) d.classList.add('active'); if (conf) d.classList.add('confirmed'); cont.appendChild(d); } }
     function highlightActivePartyStatus(index) { document.querySelectorAll('#party-status-area > .character-status-box').forEach((b, i) => { if (i === index && gameState.party[index]?.isAlive) { b.classList.add('highlighted'); } else { b.classList.remove('highlighted'); } }); }
     // Dungeon Background function
@@ -733,9 +825,89 @@ function updateProgressDisplay() {
     dungeonNameDiv.textContent = dungeonNames[dungeonIndex] || `Dungeon ${dungeonIndex + 1}`;
 }
     // --- Visual Effect Helpers ---
-    function getCorrectElementId(actorOrTargetId) { return gameState.party.some(p => p.id === actorOrTargetId) ? actorOrTargetId + "-sprite" : actorOrTargetId; }
-    function flashSprite(id, color = 'white', dur = 150) { const elementId = getCorrectElementId(id); const e = document.getElementById(elementId); if (e) { const oF = e.style.filter; e.style.transition = 'filter 0.05s ease-in-out'; e.style.filter = 'brightness(3) contrast(2)'; setTimeout(() => { e.style.filter = oF || 'none'; setTimeout(() => e.style.transition = '', 50); }, dur); } }
-    function shimmerSprite(id, color = 'gold', dur = 1400) { const elementId = getCorrectElementId(id); const e = document.getElementById(elementId); if (e) { const sD = document.createElement('div'); sD.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0.7;border-radius:50%;box-shadow:0 0 15px 8px ${color};transition:opacity ${dur / 1000}s ease-out;`; e.style.position = 'relative'; e.appendChild(sD); requestAnimationFrame(() => { setTimeout(() => sD.style.opacity = '0', 50); }); setTimeout(() => { if (e.contains(sD)) e.removeChild(sD); e.style.position = ''; }, dur); } }
+    function getCorrectElementId(actorOrTargetId) { 
+        return gameState.party.some(p => p.id === actorOrTargetId) ? actorOrTargetId + "-sprite" : actorOrTargetId; 
+    }
+    function flashSprite(id, color = 'white', dur = 150) { 
+        const elementId = getCorrectElementId(id); 
+        const element = document.getElementById(elementId); 
+        
+        if (element) {
+            // Create a flash effect overlay div that doesn't affect position
+            const flashEffect = document.createElement('div');
+            flashEffect.className = 'flash-effect';
+            flashEffect.style.backgroundColor = color;
+            flashEffect.style.opacity = '0.7'; // Start visible
+            
+            // Add the flash effect as a child of the sprite
+            element.appendChild(flashEffect);
+            
+            // Animate out and remove after duration
+            setTimeout(() => {
+                flashEffect.style.opacity = '0';
+                flashEffect.style.transition = `opacity ${dur/2}ms ease-out`;
+                
+                // Remove after transition completes
+                setTimeout(() => {
+                    if (element.contains(flashEffect)) {
+                        element.removeChild(flashEffect);
+                    }
+                }, dur/2);
+            }, dur/2);
+        }
+    }
+    
+    function shimmerSprite(id, color = 'gold', dur = 1400) { 
+        const elementId = getCorrectElementId(id); 
+        const element = document.getElementById(elementId); 
+        
+        if (element) {
+            // Create shimmer effect as an absolute positioned child element
+            // This won't affect the sprite's position
+            const shimmerDiv = document.createElement('div');
+            shimmerDiv.className = 'shimmer-effect';
+            shimmerDiv.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 5;
+                border-radius: 5px;
+                box-shadow: 0 0 15px 8px ${color};
+                opacity: 0.7;
+                transition: opacity ${dur/1000}s ease-out;
+            `;
+            
+            // Ensure parent has relative positioning without changing its position
+            const originalPosition = window.getComputedStyle(element).position;
+            if (originalPosition === 'static') {
+                element.style.position = 'relative';
+            }
+            
+            element.appendChild(shimmerDiv);
+            
+            // Fade out
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    shimmerDiv.style.opacity = '0';
+                }, 50);
+            });
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (element.contains(shimmerDiv)) {
+                    element.removeChild(shimmerDiv);
+                    
+                    // Restore original position if we changed it
+                    if (originalPosition === 'static') {
+                        element.style.position = originalPosition;
+                    }
+                }
+            }, dur);
+        }
+    }
     function showFloatingNumber(targetId, amount, type = 'damage') { const elementId = getCorrectElementId(targetId); const tE = document.getElementById(elementId); if (!tE) { console.warn("FloatNum Target Sprite not found:", elementId); return; } const nE = document.createElement('span'); nE.textContent = Math.abs(amount); nE.className = `floating-number ${type}`; const cont = document.getElementById('game-container'); const targetRect = tE.getBoundingClientRect(); const contRect = cont.getBoundingClientRect(); let sX = targetRect.left - contRect.left + (targetRect.width / 2); let sY = targetRect.top - contRect.top; sX += Math.random() * 20 - 10; nE.style.left = `${sX - 15}px`; nE.style.top = `${sY}px`; cont.appendChild(nE); nE.addEventListener('animationend', () => { if (nE.parentNode === cont) cont.removeChild(nE); }, { once: true }); }
     let announcementTimeout = null; function showActionAnnouncement(text, duration = 1500) { const bar = document.getElementById('action-announcement-bar'); const barText = document.getElementById('action-announcement-text'); if (!bar || !barText) return; if (announcementTimeout) clearTimeout(announcementTimeout); barText.textContent = text; bar.style.display = 'block'; announcementTimeout = setTimeout(() => { bar.style.display = 'none'; announcementTimeout = null; }, duration); }
 
@@ -1454,185 +1626,208 @@ function calculateEnemyStats(wave) {
     }, 300);
 }
      function performRage(c) { /* Effect handled elsewhere */ console.log(`${c.name} executing Rage action.`); updatePartyStatusUI(); highlightActivePartyStatus(-1); }
-  function performPower(c, pN, resolvedTargets) { 
-    const p = POWER_DATA[pN]; 
-    if (!p) return; 
-    
-    gameState.addLogMessage(`${c.name} casts ${pN}!`); 
-    
-    if (resolvedTargets.length === 0 && (p.target === 'ally' || p.target === 'ally_ko' || p.target === 'enemy')) { 
-        gameState.addLogMessage(`No valid targets remain.`); 
-        highlightActivePartyStatus(-1); 
-        return; 
-    } 
-    
-    resolvedTargets.forEach(t => { 
-        if (!t) return; 
-        const targetElementId = getCorrectElementId(t.id); 
+     function performPower(c, pN, resolvedTargets) { 
+        const p = POWER_DATA[pN]; 
+        if (!p) return; 
         
-        if (p.element) { 
-            const dmg = calculateMagicDamage(c, t, p.level); 
-            setTimeout(() => { 
-                showFloatingNumber(targetElementId, dmg, 'damage'); 
-                gameState.addLogMessage(`${t.name} takes ${dmg} ${p.element} dmg.`); 
+        gameState.addLogMessage(`${c.name} casts ${pN}!`); 
+        
+        if (resolvedTargets.length === 0 && (p.target === 'ally' || p.target === 'ally_ko' || p.target === 'enemy')) { 
+            gameState.addLogMessage(`No valid targets remain.`); 
+            highlightActivePartyStatus(-1); 
+            return; 
+        } 
+        
+        // Determine element color for spell animations
+        let elementColor = 'purple'; // Default color
+        if (p.element) {
+            // Set color based on elemental type
+            switch(p.element) {
+                case 'Fire': elementColor = 'orange'; break;
+                case 'Frost': elementColor = 'aqua'; break;
+                case 'Hydro': elementColor = 'blue'; break;
+                case 'Shock': elementColor = 'yellow'; break;
+            }
+            
+            // Apply shimmer effect on caster based on the spell's element
+            shimmerSprite(getCorrectElementId(c.id), elementColor, 800);
+        }
+        
+        resolvedTargets.forEach((t, index) => { 
+            if (!t) return; 
+            const targetElementId = getCorrectElementId(t.id); 
+            
+            if (p.element) { 
+                const dmg = calculateMagicDamage(c, t, p.level); 
                 
-                let damageApplied = false; 
-                if ('takeDamage' in t) { 
-                    t.takeDamage(dmg); 
-                    damageApplied = true; 
+                // For elemental spells, apply flashSprite with a delay
+                setTimeout(() => {
+                    // Flash the target with the elemental color
+                    flashSprite(targetElementId, elementColor, 250);
+                    
+                    // Show floating damage with a slight delay
+                    setTimeout(() => { 
+                        showFloatingNumber(targetElementId, dmg, 'damage'); 
+                        gameState.addLogMessage(`${t.name} takes ${dmg} ${p.element} dmg.`); 
+                        
+                        let damageApplied = false; 
+                        if ('takeDamage' in t) { 
+                            t.takeDamage(dmg); 
+                            damageApplied = true; 
+                            updatePartyStatusUI(); 
+                        } else { 
+                            t.currentHp -= dmg; 
+                            if (t.currentHp <= 0) { 
+                                t.currentHp = 0; 
+                                t.isAlive = false; 
+                                gameState.addLogMessage(`${t.name} defeated!`); 
+                            } 
+                            damageApplied = true; 
+                            updateEnemySpritesUI(); 
+                        } 
+                        
+                        if (damageApplied) { 
+                            highlightActivePartyStatus(-1); 
+                            if (checkWinCondition()) handleWinWave(); 
+                            if (checkLoseCondition()) handleGameOver(); 
+                        } 
+                    }, 150);
+                }, index * 200); // Stagger the effects if multiple targets
+            } 
+            else if (p.effect === 'Heal') { 
+                let healAmount; 
+                if (pN === 'Heal1') healAmount = calculateHeal1Amount(c); 
+                else healAmount = calculateHealing(c, p.level); 
+                
+                const hd = t.heal(healAmount); 
+                if (hd > 0) showFloatingNumber(targetElementId, hd, 'heal'); 
+                gameState.addLogMessage(`${t.name} +${hd} HP.`); 
+                updatePartyStatusUI(); 
+                highlightActivePartyStatus(-1); 
+            } 
+            else if (p.effect === 'Revive') { 
+                if (!t.isAlive) { 
+                    t.isAlive = true; 
+                    const hp = Math.round(t.maxHp * p.hpPercent); 
+                    t.heal(hp); 
+                    showFloatingNumber(targetElementId, hp, 'heal'); 
+                    gameState.addLogMessage(`${t.name} revived!`); 
                     updatePartyStatusUI(); 
                 } else { 
-                    t.currentHp -= dmg; 
-                    if (t.currentHp <= 0) { 
-                        t.currentHp = 0; 
-                        t.isAlive = false; 
-                        gameState.addLogMessage(`${t.name} defeated!`); 
+                    gameState.addLogMessage(`${t.name} alive.`); 
+                } 
+                highlightActivePartyStatus(-1); 
+            } 
+            else if (p.effect === 'Poison' || p.effect === 'Slow') { 
+                const ch = p.chance || 1.0; 
+                if (Math.random() < ch) { 
+                    const dur = p.duration || 5; 
+                    if ('addStatus' in t) { 
+                        const suc = t.addStatus({ type: p.effect, turns: dur }); 
+                        if (suc) gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
+                        else gameState.addLogMessage(`${t.name} resists.`); 
+                        updatePartyStatusUI(); 
+                    } else if (t.statusEffects) { 
+                        if (!t.statusEffects.some(s => s.type === p.effect)) { 
+                            t.statusEffects.push({ type: p.effect, turns: dur }); 
+                            gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
+                        } else gameState.addLogMessage(`${t.name} resists.`); 
                     } 
-                    damageApplied = true; 
-                    updateEnemySpritesUI(); 
+                } else { 
+                    gameState.addLogMessage(`${t.name} resists.`); 
                 } 
+                highlightActivePartyStatus(-1); 
+            } 
+            else if (p.effect === 'Empower') { 
+                const statusName = p.statusName;
+                const damageMultiplier = p.damageMultiplier || 1.5;
                 
-                if (damageApplied) { 
-                    highlightActivePartyStatus(-1); 
-                    if (checkWinCondition()) handleWinWave(); 
-                    if (checkLoseCondition()) handleGameOver(); 
-                } 
-            }, 300); 
-        } 
-        else if (p.effect === 'Heal') { 
-            let healAmount; 
-            if (pN === 'Heal1') healAmount = calculateHeal1Amount(c); 
-            else healAmount = calculateHealing(c, p.level); 
-            
-            const hd = t.heal(healAmount); 
-            if (hd > 0) showFloatingNumber(targetElementId, hd, 'heal'); 
-            gameState.addLogMessage(`${t.name} +${hd} HP.`); 
-            updatePartyStatusUI(); 
-            highlightActivePartyStatus(-1); 
-        } 
-        else if (p.effect === 'Revive') { 
-            if (!t.isAlive) { 
-                t.isAlive = true; 
-                const hp = Math.round(t.maxHp * p.hpPercent); 
-                t.heal(hp); 
-                showFloatingNumber(targetElementId, hp, 'heal'); 
-                gameState.addLogMessage(`${t.name} revived!`); 
+                const hadBuff = t.statusEffects.some(s => s.type === statusName);
+                
+                const suc = t.addStatus({ 
+                    type: statusName, 
+                    turns: p.turns || 4, 
+                    isPhysicalBuff: true,
+                    damageMultiplier: damageMultiplier,
+                    visualEffect: 'active'
+                }); 
+                
+                if (suc) {
+                    if (hadBuff) {
+                        gameState.addLogMessage(`${t.name}'s ${statusName} refreshed! (Damage x${damageMultiplier})`);
+                    } else {
+                        gameState.addLogMessage(`${t.name} empowered! (Damage x${damageMultiplier})`);
+                    }
+                    shimmerSprite(getCorrectElementId(t.id), 'white', 1200);
+                }
                 updatePartyStatusUI(); 
-            } else { 
-                gameState.addLogMessage(`${t.name} alive.`); 
-            } 
-            highlightActivePartyStatus(-1); 
-        } 
-        else if (p.effect === 'Poison' || p.effect === 'Slow') { 
-            const ch = p.chance || 1.0; 
-            if (Math.random() < ch) { 
-                const dur = p.duration || 5; 
-                if ('addStatus' in t) { 
-                    const suc = t.addStatus({ type: p.effect, turns: dur }); 
-                    if (suc) gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
-                    else gameState.addLogMessage(`${t.name} resists.`); 
-                    updatePartyStatusUI(); 
-                } else if (t.statusEffects) { 
-                    if (!t.statusEffects.some(s => s.type === p.effect)) { 
-                        t.statusEffects.push({ type: p.effect, turns: dur }); 
-                        gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
-                    } else gameState.addLogMessage(`${t.name} resists.`); 
+                highlightActivePartyStatus(-1); 
+            }
+            else if (p.effect === 'Fury') { 
+                const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
+                
+                const suc = t.addStatus({ 
+                    type: p.statusName, 
+                    turns: p.turns || 4, 
+                    isPhysicalBuff: true,
+                    doubleAttack: true,
+                    visualEffect: 'active'
+                }); 
+                
+                if (suc) {
+                    if (hadBuff) {
+                        gameState.addLogMessage(`${t.name}'s Fury refreshed! (Double attack)`);
+                    } else {
+                        gameState.addLogMessage(`${t.name} gains Fury! (Double attack)`);
+                    }
+                    shimmerSprite(getCorrectElementId(t.id), '#FF8080', 1200);
+                }
+                updatePartyStatusUI(); 
+                highlightActivePartyStatus(-1); 
+            }
+            else if (p.effect === 'Lifelink') { 
+                const healPercent = p.healPercent || 0.5;
+                
+                const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
+                
+                const suc = t.addStatus({ 
+                    type: p.statusName, 
+                    turns: p.turns || 4, 
+                    isPhysicalBuff: true,
+                    lifeStealPercent: healPercent,
+                    visualEffect: 'active'
+                }); 
+                
+                if (suc) {
+                    if (hadBuff) {
+                        gameState.addLogMessage(`${t.name}'s Lifelink refreshed! (${Math.round(healPercent * 100)}% life steal)`);
+                    } else {
+                        gameState.addLogMessage(`${t.name} gains Lifelink! (${Math.round(healPercent * 100)}% life steal)`);
+                    }
+                    shimmerSprite(getCorrectElementId(t.id), '#80FF80', 1200);
+                }
+                updatePartyStatusUI(); 
+                highlightActivePartyStatus(-1); 
+            }
+            else if (p.effect === 'Restore') { 
+                const ch = p.chance || 1.0; 
+                if (Math.random() < ch) { 
+                    let rem = false; 
+                    if ('clearNegativeStatuses' in t) { 
+                        rem = t.clearNegativeStatuses(); 
+                    } else if (t.statusEffects) { 
+                        const len = t.statusEffects.length; 
+                        t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); 
+                        rem = t.statusEffects.length < len; 
+                    } 
+                    if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); 
+                    else gameState.addLogMessage(`${pN} no effect.`); 
+                    if ('clearNegativeStatuses' in t) updatePartyStatusUI(); 
+                } else { 
+                    gameState.addLogMessage(`${pN} no effect.`); 
                 } 
-            } else { 
-                gameState.addLogMessage(`${t.name} resists.`); 
-            } 
-            highlightActivePartyStatus(-1); 
-        } 
-        else if (p.effect === 'Empower') { 
-            const statusName = p.statusName;
-            const damageMultiplier = p.damageMultiplier || 1.5;
-            
-            const hadBuff = t.statusEffects.some(s => s.type === statusName);
-            
-            const suc = t.addStatus({ 
-                type: statusName, 
-                turns: p.turns || 4, 
-                isPhysicalBuff: true,
-                damageMultiplier: damageMultiplier,
-                visualEffect: 'active'
-            }); 
-            
-            if (suc) {
-                if (hadBuff) {
-                    gameState.addLogMessage(`${t.name}'s ${statusName} refreshed! (Damage x${damageMultiplier})`);
-                } else {
-                    gameState.addLogMessage(`${t.name} empowered! (Damage x${damageMultiplier})`);
-                }
-                shimmerSprite(getCorrectElementId(t.id), 'white', 1200);
+                highlightActivePartyStatus(-1); 
             }
-            updatePartyStatusUI(); 
-            highlightActivePartyStatus(-1); 
-        }
-        else if (p.effect === 'Fury') { 
-            const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
-            
-            const suc = t.addStatus({ 
-                type: p.statusName, 
-                turns: p.turns || 4, 
-                isPhysicalBuff: true,
-                doubleAttack: true,
-                visualEffect: 'active'
-            }); 
-            
-            if (suc) {
-                if (hadBuff) {
-                    gameState.addLogMessage(`${t.name}'s Fury refreshed! (Double attack)`);
-                } else {
-                    gameState.addLogMessage(`${t.name} gains Fury! (Double attack)`);
-                }
-                shimmerSprite(getCorrectElementId(t.id), '#FF8080', 1200);
-            }
-            updatePartyStatusUI(); 
-            highlightActivePartyStatus(-1); 
-        }
-        else if (p.effect === 'Lifelink') { 
-            const healPercent = p.healPercent || 0.5;
-            
-            const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
-            
-            const suc = t.addStatus({ 
-                type: p.statusName, 
-                turns: p.turns || 4, 
-                isPhysicalBuff: true,
-                lifeStealPercent: healPercent,
-                visualEffect: 'active'
-            }); 
-            
-            if (suc) {
-                if (hadBuff) {
-                    gameState.addLogMessage(`${t.name}'s Lifelink refreshed! (${Math.round(healPercent * 100)}% life steal)`);
-                } else {
-                    gameState.addLogMessage(`${t.name} gains Lifelink! (${Math.round(healPercent * 100)}% life steal)`);
-                }
-                shimmerSprite(getCorrectElementId(t.id), '#80FF80', 1200);
-            }
-            updatePartyStatusUI(); 
-            highlightActivePartyStatus(-1); 
-        }
-        else if (p.effect === 'Restore') { 
-            const ch = p.chance || 1.0; 
-            if (Math.random() < ch) { 
-                let rem = false; 
-                if ('clearNegativeStatuses' in t) { 
-                    rem = t.clearNegativeStatuses(); 
-                } else if (t.statusEffects) { 
-                    const len = t.statusEffects.length; 
-                    t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); 
-                    rem = t.statusEffects.length < len; 
-                } 
-                if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); 
-                else gameState.addLogMessage(`${pN} no effect.`); 
-                if ('clearNegativeStatuses' in t) updatePartyStatusUI(); 
-            } else { 
-                gameState.addLogMessage(`${pN} no effect.`); 
-            } 
-            highlightActivePartyStatus(-1); 
-        }
 else if (p.effect === 'Restore') { const ch = p.chance || 1.0; if (Math.random() < ch) { let rem = false; if ('Statuses' in t) { rem = t.Statuses(); } else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('Statuses' in t) updatePartyStatusUI(); } else { gameState.addLogMessage(`${pN} no effect.`); } highlightActivePartyStatus(-1); } }); }
     function performDragonBreath(c) { gameState.addLogMessage(`${c.name} uses Dragon Breath!`); const targets = gameState.party.filter(p => p.isAlive); targets.forEach(t => { const dmg = Math.round(t.maxHp * 0.25); const targetElementId = getCorrectElementId(t.id); setTimeout(() => { showFloatingNumber(targetElementId, dmg, 'damage'); gameState.addLogMessage(`${t.name} takes ${dmg} breath dmg!`); t.takeDamage(dmg); updatePartyStatusUI(); highlightActivePartyStatus(-1); if (checkLoseCondition()) handleGameOver(); }, 100); }); }
     function endRound() { console.log("Round End."); gameState.actionQueue = []; if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } processEndOfRound(); if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } gameState.activeCharacterIndex = 0; gameState.setState('PLAYER_COMMAND'); prepareCommandPhase(); }
