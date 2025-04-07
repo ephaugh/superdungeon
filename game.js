@@ -3,9 +3,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Constants ---
     const DUNGEON_BACKGROUNDS = [
-    "https://github.com/ephaugh/RogueRPG/blob/main/assets/images/backgrounds/dungeon1_bg.png?raw=true", // Dungeon 1
-    //"url_to_dungeon2_background", // Dungeon 2 (placeholder)
-   // "url_to_dungeon3_background"  // Dungeon 3 (placeholder)
+    "https://i.imgur.com/T9bj9OD.png", // Dungeon 1 (overworld)
+    "https://i.imgur.com/fHe9ijy.png", // Dungeon 2 (desert)
+    "https://i.imgur.com/nTXhNin.png",  // Dungeon 3 (catacomb)
+    "https://i.imgur.com/e7190yY.png", // Dungeon 4 (jungle)
 ];
     const CLASS_DATA = {
         Barbarian: { baseHp: 20, baseMp: 0, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
@@ -188,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
         }
     ];
+    
     
     const WAVE_COMPOSITIONS = [ "W", "WW", "B", "WB", "BB", "C", "CW", "BWW", "CBW", "CC", "WWWW", "BBC", "WWBC", "CBC" ];
 
@@ -469,7 +471,78 @@ class Character {
         return r; 
     }
 }
+const ENEMY_SPRITES = {
+    // Dungeon 1 - Overworld
+    'Rat': {
+        src: 'https://i.imgur.com/e4JnC9d.png',
+        width: 64,
+        height: 64,
+        fallbackText: 'Rat',
+    },
+    'Goblin': {
+        src: 'https://i.imgur.com/Xcu9zE2.png',
+        width: 64,
+        height: 64,
+        fallbackText: 'Gob',
+    },
+    'Kobold': {
+        src: 'https://i.imgur.com/6pzi1E0.png',
+        width: 64,
+        height: 64,
+        fallbackText: 'Kob',
+    },
+    'White Dragon': {
+        src: 'https://i.imgur.com/nE029Hy.png',
+        width: 128,
+        height: 128,
+        fallbackText: 'Whi',
+    },
+}
 
+const PLAYER_SPRITES = {
+    // Barbarian
+    'Barbarian': {
+        src: 'https://i.imgur.com/Id39qQz.png',
+        width: 100,
+        height: 100,
+        fallbackText: 'BAR'
+    },
+    // Valkyrie
+    'Valkyrie': {
+        src: 'https://i.imgur.com/2ZpPiAx.png',
+        width: 80,
+        height: 80,
+        fallbackText: 'VAL'
+    },
+    // Ninja
+    'Ninja': {
+        src: 'https://i.imgur.com/MjTiI3c.png',
+        width: 80,
+        height: 80,
+        fallbackText: 'NIN'
+    },
+    // Shaman
+    'Shaman': {
+        src: 'https://i.imgur.com/O0e0QCB.png',
+        width: 90,
+        height: 90,
+        fallbackText: 'SHA'
+    },
+    // Sorceress
+    'Sorceress': {
+        src: 'https://i.imgur.com/sMfxdhj.png',
+        width: 80,
+        height: 80,
+        fallbackText: 'SOR'
+    },
+    // Bishop
+    'Bishop': {
+        src: 'https://i.imgur.com/tTO0Ell.png',
+        width: 80,
+        height: 80,
+        fallbackText: 'BIS'
+    }
+};
     // --- Game State Manager ---
     const gameState = {
         currentWave: 0, currentDungeon: 0, party: [], enemies: [], currentState: 'TITLE_SCREEN', partySelectionIndex: 0, selectedClasses: [null, null, null, null], tempSelectedClass: CLASS_LIST[0], activeCharacterIndex: 0, currentAction: null, messageLog: [], nextWaveEffect: null, activeMenu: 'main', focusedIndex: 0, actionQueue: [],
@@ -702,15 +775,73 @@ class Character {
             const sprite = document.createElement('div');
             sprite.className = 'sprite enemy';
             sprite.id = enemy.id;
-            sprite.style.left = `${20 + index * 20}%`;
+            
+            // Position based on index and total enemies for better spacing
+            const totalEnemies = gameState.enemies.length;
+            const spacing = totalEnemies <= 3 ? 25 : 18; // Adjust spacing based on enemy count
+            sprite.style.left = `${20 + index * spacing}%`;
             sprite.style.top = '50%';
             sprite.style.transform = 'translateY(-50%)';
             
-            sprite.textContent = enemy.name.substring(0, 3);
-            sprite.title = `${enemy.name}(HP:${enemy.currentHp}/${enemy.maxHp})`;
+            // Get the sprite data based on enemy type
+            const enemyType = enemy.type;
+            const spriteData = ENEMY_SPRITES[enemyType];
             
+            if (spriteData) {
+                // Apply custom dimensions from sprite config
+                if (spriteData.width && spriteData.height) {
+                    sprite.style.width = `${spriteData.width}px`;
+                    sprite.style.height = `${spriteData.height}px`;
+                }
+                
+                // Apply scaling for bosses if specified
+                if (spriteData.scale) {
+                    sprite.style.transform = `translateY(-50%) scale(${spriteData.scale})`;
+                }
+                
+                // Create image element for the sprite
+                const spriteImg = document.createElement('img');
+                spriteImg.src = spriteData.src;
+                spriteImg.alt = enemyType;
+                spriteImg.className = 'enemy-sprite-img';
+                
+                // Handle image loading error - use text fallback
+                spriteImg.onerror = () => {
+                    console.warn(`Failed to load sprite image for ${enemyType}: ${spriteData.src}`);
+                    spriteImg.style.display = 'none';
+                    sprite.textContent = spriteData.fallbackText || enemyType.substring(0, 3);
+                    sprite.style.backgroundColor = 'rgba(128, 128, 128, 0.7)';
+                };
+                
+                sprite.appendChild(spriteImg);
+                sprite.style.backgroundColor = 'transparent';
+            } else {
+                // Fallback to text if no sprite data is defined
+                sprite.textContent = enemy.name.substring(0, 3);
+            }
+            
+            // Add enemy status information to tooltip
+            let statusText = '';
+            if (enemy.statusEffects && enemy.statusEffects.length > 0) {
+                statusText = ' | Status: ' + enemy.statusEffects.map(s => s.type).join(', ');
+            }
+            
+            sprite.title = `${enemy.name} (HP: ${enemy.currentHp}/${enemy.maxHp}${statusText})`;
+            
+            // Add KO class if enemy is defeated
             if (!enemy.isAlive) {
                 sprite.classList.add('ko');
+            }
+            
+            // Apply status effect visual indicators
+            if (enemy.statusEffects) {
+                enemy.statusEffects.forEach(effect => {
+                    if (effect.type === 'Poison') {
+                        sprite.classList.add('poisoned');
+                    } else if (effect.type === 'Slow') {
+                        sprite.classList.add('slowed');
+                    }
+                });
             }
             
             enemyArea.appendChild(sprite);
@@ -733,8 +864,38 @@ class Character {
                 position: absolute !important;
             `;
             
-            sprite.textContent = character.name.substring(0, 3);
-            sprite.title = `${character.name}(HP:${character.currentHp}/${character.maxHp})`;
+            // Get sprite data for this character class
+            const spriteData = PLAYER_SPRITES[character.className];
+            
+            if (spriteData) {
+                // Apply custom dimensions from sprite config
+                if (spriteData.width && spriteData.height) {
+                    sprite.style.width = `${spriteData.width}px`;
+                    sprite.style.height = `${spriteData.height}px`;
+                }
+                
+                // Create image element for the sprite
+                const spriteImg = document.createElement('img');
+                spriteImg.src = spriteData.src;
+                spriteImg.alt = character.className;
+                spriteImg.className = 'player-sprite-img';
+                
+                // Handle image loading error - use text fallback
+                spriteImg.onerror = () => {
+                    console.warn(`Failed to load sprite image for ${character.className}: ${spriteData.src}`);
+                    spriteImg.style.display = 'none';
+                    sprite.textContent = spriteData.fallbackText || character.className.substring(0, 3);
+                    sprite.style.backgroundColor = 'rgba(128, 128, 128, 0.7)';
+                };
+                
+                sprite.appendChild(spriteImg);
+                sprite.style.backgroundColor = 'transparent';
+            } else {
+                // Fallback to text if no sprite data is defined
+                sprite.textContent = character.name.substring(0, 3);
+            }
+            
+            sprite.title = `${character.name} (HP: ${character.currentHp}/${character.maxHp})`;
             
             // Add KO class if needed
             if (!character.isAlive) {
@@ -746,18 +907,16 @@ class Character {
             const hasFuryBuff = character.statusEffects.some(e => e.type === 'Fury');
             const hasLifelinkBuff = character.statusEffects.some(e => e.type === 'Lifelink');
             
-            // Instead of classes, add inline styles for buff visuals
             if (hasEmpowerBuff) {
-                sprite.classList.add('buffed', 'empower-buffed', 'empower-pulse');
-                // Ensure z-index to appear above other elements
+                sprite.classList.add('buffed', 'empower-buffed');
                 sprite.style.zIndex = '4';
             }
             if (hasFuryBuff) {
-                sprite.classList.add('buffed', 'fury-buffed', 'fury-pulse');
+                sprite.classList.add('buffed', 'fury-buffed');
                 sprite.style.zIndex = '4';
             }
             if (hasLifelinkBuff) {
-                sprite.classList.add('buffed', 'lifelink-buffed', 'lifelink-pulse');
+                sprite.classList.add('buffed', 'lifelink-buffed');
                 sprite.style.zIndex = '4';
             }
             
@@ -779,7 +938,7 @@ class Character {
                 }
             }, 0);
         });
-    }    
+    }
     function updatePartySelectUI() { const cont = document.getElementById('party-select-slots'); cont.innerHTML = ''; for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'party-select-slot'; d.id = `select-slot-${i}`; let cN = '', conf = false, act = (i === gameState.partySelectionIndex); if (i < gameState.partySelectionIndex) { cN = gameState.selectedClasses[i]; conf = true; } else if (i === gameState.partySelectionIndex) { cN = gameState.tempSelectedClass; } else { cN = '---'; } d.innerHTML = `Character ${i + 1}: <span class="selected-class"></span>`; const s = d.querySelector('.selected-class'); s.textContent = cN; CLASS_LIST.forEach(c => s.classList.remove(c)); if (cN !== '---' && CLASS_DATA[cN]) s.classList.add(cN); if (act) d.classList.add('active'); if (conf) d.classList.add('confirmed'); cont.appendChild(d); } }
     function highlightActivePartyStatus(index) { document.querySelectorAll('#party-status-area > .character-status-box').forEach((b, i) => { if (i === index && gameState.party[index]?.isAlive) { b.classList.add('highlighted'); } else { b.classList.remove('highlighted'); } }); }
     // Dungeon Background function
@@ -826,18 +985,24 @@ function updateProgressDisplay() {
 }
     // --- Visual Effect Helpers ---
     function getCorrectElementId(actorOrTargetId) { 
-        return gameState.party.some(p => p.id === actorOrTargetId) ? actorOrTargetId + "-sprite" : actorOrTargetId; 
+        // For party members, append -sprite to the ID
+        if (gameState.party.some(p => p.id === actorOrTargetId)) {
+            return actorOrTargetId + "-sprite"; 
+        }
+        // For enemies, return the ID as-is
+        return actorOrTargetId; 
     }
     function flashSprite(id, color = 'white', dur = 150) { 
         const elementId = getCorrectElementId(id); 
         const element = document.getElementById(elementId); 
         
         if (element) {
-            // Create a flash effect overlay div that doesn't affect position
+            console.log("Flashing sprite:", elementId, color);
+            // Create a flash effect overlay div
             const flashEffect = document.createElement('div');
             flashEffect.className = 'flash-effect';
             flashEffect.style.backgroundColor = color;
-            flashEffect.style.opacity = '0.7'; // Start visible
+            flashEffect.style.opacity = '0.7'; 
             
             // Add the flash effect as a child of the sprite
             element.appendChild(flashEffect);
@@ -854,6 +1019,8 @@ function updateProgressDisplay() {
                     }
                 }, dur/2);
             }, dur/2);
+        } else {
+            console.warn("Flash target not found:", elementId);
         }
     }
     
@@ -862,8 +1029,8 @@ function updateProgressDisplay() {
         const element = document.getElementById(elementId); 
         
         if (element) {
+            console.log("Shimmering sprite:", elementId, color);
             // Create shimmer effect as an absolute positioned child element
-            // This won't affect the sprite's position
             const shimmerDiv = document.createElement('div');
             shimmerDiv.className = 'shimmer-effect';
             shimmerDiv.style.cssText = `
@@ -880,15 +1047,15 @@ function updateProgressDisplay() {
                 transition: opacity ${dur/1000}s ease-out;
             `;
             
-            // Ensure parent has relative positioning without changing its position
-            const originalPosition = window.getComputedStyle(element).position;
-            if (originalPosition === 'static') {
+            // Check if the element has relative positioning
+            const computedStyle = window.getComputedStyle(element);
+            if (computedStyle.position === 'static') {
                 element.style.position = 'relative';
             }
             
             element.appendChild(shimmerDiv);
             
-            // Fade out
+            // Animate out
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     shimmerDiv.style.opacity = '0';
@@ -899,18 +1066,59 @@ function updateProgressDisplay() {
             setTimeout(() => {
                 if (element.contains(shimmerDiv)) {
                     element.removeChild(shimmerDiv);
-                    
-                    // Restore original position if we changed it
-                    if (originalPosition === 'static') {
-                        element.style.position = originalPosition;
+                    // Only reset position if we changed it
+                    if (computedStyle.position === 'static') {
+                        element.style.position = 'static';
                     }
                 }
             }, dur);
+        } else {
+            console.warn("Shimmer target not found:", elementId);
         }
     }
-    function showFloatingNumber(targetId, amount, type = 'damage') { const elementId = getCorrectElementId(targetId); const tE = document.getElementById(elementId); if (!tE) { console.warn("FloatNum Target Sprite not found:", elementId); return; } const nE = document.createElement('span'); nE.textContent = Math.abs(amount); nE.className = `floating-number ${type}`; const cont = document.getElementById('game-container'); const targetRect = tE.getBoundingClientRect(); const contRect = cont.getBoundingClientRect(); let sX = targetRect.left - contRect.left + (targetRect.width / 2); let sY = targetRect.top - contRect.top; sX += Math.random() * 20 - 10; nE.style.left = `${sX - 15}px`; nE.style.top = `${sY}px`; cont.appendChild(nE); nE.addEventListener('animationend', () => { if (nE.parentNode === cont) cont.removeChild(nE); }, { once: true }); }
-    let announcementTimeout = null; function showActionAnnouncement(text, duration = 1500) { const bar = document.getElementById('action-announcement-bar'); const barText = document.getElementById('action-announcement-text'); if (!bar || !barText) return; if (announcementTimeout) clearTimeout(announcementTimeout); barText.textContent = text; bar.style.display = 'block'; announcementTimeout = setTimeout(() => { bar.style.display = 'none'; announcementTimeout = null; }, duration); }
-
+    
+    function showFloatingNumber(targetId, amount, type = 'damage') { 
+        const elementId = getCorrectElementId(targetId); 
+        const tE = document.getElementById(elementId); 
+        if (!tE) { 
+            console.warn("FloatNum Target Sprite not found:", elementId); 
+            return; 
+        } 
+        
+        const nE = document.createElement('span'); 
+        nE.textContent = Math.abs(amount); 
+        nE.className = `floating-number ${type}`; 
+        
+        const cont = document.getElementById('game-container'); 
+        const targetRect = tE.getBoundingClientRect(); 
+        const contRect = cont.getBoundingClientRect(); 
+        let sX = targetRect.left - contRect.left + (targetRect.width / 2); 
+        let sY = targetRect.top - contRect.top; 
+        sX += Math.random() * 20 - 10; 
+        nE.style.left = `${sX - 15}px`; 
+        nE.style.top = `${sY}px`; 
+        
+        cont.appendChild(nE); 
+        
+        nE.addEventListener('animationend', () => { 
+            if (nE.parentNode === cont) cont.removeChild(nE); 
+        }, { once: true }); 
+    }
+    let announcementTimeout = null; 
+function showActionAnnouncement(text, duration = 1500) { 
+    const bar = document.getElementById('action-announcement-bar'); 
+    const barText = document.getElementById('action-announcement-text'); 
+    if (!bar || !barText) return; 
+    
+    if (announcementTimeout) clearTimeout(announcementTimeout); 
+    barText.textContent = text; 
+    bar.style.display = 'block'; 
+    
+    announcementTimeout = setTimeout(() => { 
+        bar.style.display = 'none'; 
+        announcementTimeout = null; 
+    }, duration); 
+}
     // --- Initialization Function ---
    function initializeGame() { 
     console.log("Init Game..."); 
@@ -1019,7 +1227,7 @@ function updateProgressDisplay() {
         gameState.setState('PLAYER_COMMAND'); 
         prepareCommandPhase(); 
     }
-    function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'FinalDragon'; if (dungeonIndex === 0) bossName = 'WhiteDragon'; else if (dungeonIndex === 1) bossName = 'BlueDragon'; else if (dungeonIndex === 2) bossName = 'BlackDragon'; const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.50), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
+    function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'FinalDragon'; if (dungeonIndex === 0) bossName = 'White Dragon'; else if (dungeonIndex === 1) bossName = 'BlueDragon'; else if (dungeonIndex === 2) bossName = 'BlackDragon'; const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.50), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
     // Modified calculateEnemyStats function to limit HP growth to 8% per wave
 // and add +5 stat growth to Str, Def, Int, and Mnd every 15 rounds
 function calculateEnemyStats(wave) { 
@@ -1157,220 +1365,259 @@ function calculateEnemyStats(wave) {
         console.log("Sorted Queue:", gameState.actionQueue.map(i => `${i.actorId}(${i.speedRoll})`)); 
         executeNextQueuedAction(); 
     }
-    
+   
+    function applyCastingAnimation(actorId, castType, duration = 1000) {
+        const elementId = getCorrectElementId(actorId);
+        const element = document.getElementById(elementId);
+        
+        if (element) {
+            console.log(`Applying ${castType} animation to ${elementId}`);
+            
+            // Remove any existing casting animations
+            element.classList.remove(
+                'casting-spell', 'casting-prayer', 'casting-rage',
+                'casting-fire', 'casting-frost', 'casting-shock', 'casting-hydro',
+                'casting-dragon-breath'
+            );
+            
+            // Add the new casting animation class
+            element.classList.add(`casting-${castType}`);
+            
+            // Schedule the removal of the animation class
+            setTimeout(() => {
+                if (element) {
+                    element.classList.remove(`casting-${castType}`);
+                }
+            }, duration);
+        }
+    }
+
     // --- Updated executeNextQueuedAction function to handle new action types
-   function executeNextQueuedAction() {
-    if (gameState.currentState !== 'ACTION_RESOLUTION') {
-        console.warn("Wrong state for action exec.");
-        gameState.actionQueue = [];
-        return;
-    }
-    
-    if (gameState.actionQueue.length === 0) {
-        console.log("Queue empty.");
-        endRound();
-        return;
-    }
-    
-    const item = gameState.actionQueue.shift();
-    const actorId = item.actorId;
-    const action = item.action;
-    const actor = gameState.getCharacterById(actorId) || gameState.getEnemyById(actorId);
-    
-    if (!actor || !actor.isAlive) {
-        console.log(`${actorId} skipped (KO'd).`);
-        setTimeout(executeNextQueuedAction, 50);
-        return;
-    }
-    
-    let canAfford = true;
-    let cost = 0;
-    const isPlayerActor = !!gameState.getCharacterById(actorId);
-    
-    if (action.type === 'Spell' || action.type === 'Prayer') {
-        cost = action.powerCost || POWER_DATA[action.powerName]?.cost || 0;
-    }
-    else if (action.type === 'Orison') {
-        cost = ORISONS[action.orisonName]?.mpCost || 0;
-    }
-    
-    if (cost > 0) {
-        // CHANGED: Now deducting MP costs for both player and enemy actors here
-        if (actor.currentMp < cost) {
-            canAfford = false;
-        } else {
-            actor.currentMp -= cost;
-            if (isPlayerActor) {
-                // Update UI to reflect the MP change
-                updatePartyStatusUI();
-            }
+    function executeNextQueuedAction() {
+        if (gameState.currentState !== 'ACTION_RESOLUTION') {
+            console.warn("Wrong state for action exec.");
+            gameState.actionQueue = [];
+            return;
         }
         
-        if (!canAfford) {
-            gameState.addLogMessage(`${actor.name} doesn't have enough MP for ${action.powerName || action.orisonName || action.type}!`);
+        if (gameState.actionQueue.length === 0) {
+            console.log("Queue empty.");
+            endRound();
+            return;
+        }
+        
+        const item = gameState.actionQueue.shift();
+        const actorId = item.actorId;
+        const action = item.action;
+        const actor = gameState.getCharacterById(actorId) || gameState.getEnemyById(actorId);
+        
+        if (!actor || !actor.isAlive) {
+            console.log(`${actorId} skipped (KO'd).`);
             setTimeout(executeNextQueuedAction, 50);
             return;
         }
-    }
-    
-    console.log(`Executing for ${actorId}:`, action);
-    
-    let announceText = action.powerName || action.abilityName || action.orisonName || action.type;
-    let announceDur = 1500;
-    const actorSpriteId = getCorrectElementId(actorId);
-    
-    switch (action.type) {
-        case 'Attack':
-            announceText = 'Attack';
-            announceDur = 600;
-            flashSprite(actorSpriteId);
-            break;
-            
-        case 'Rage':
-            announceText = 'Rage';
-            announceDur = 600;
-            shimmerSprite(actorSpriteId, 'red', 600);
-            break;
-            
-        case 'Spell':
-            shimmerSprite(actorSpriteId, 'purple', 1400);
-            break;
-            
-        case 'Prayer':
-            shimmerSprite(actorSpriteId, 'gold', 1400);
-            break;
-            
-        case 'Orison':
-            announceText = action.orisonName || "Orison";
-            announceDur = 1000;
-            shimmerSprite(actorSpriteId, 'purple', 1400);
-            break;
-            
-        case 'BruiserAbility':
-            announceText = action.abilityName || "Special Attack";
-            announceDur = 800;
-            shimmerSprite(actorSpriteId, 'cyan', 600);
-            break;
-            
-        case 'DragonBreath':
-            announceText = "Dragon Breath";
-            announceDur = 1600;
-            shimmerSprite(actorSpriteId, 'cyan', 1400);
-            break;
-    }
-    
-    showActionAnnouncement(announceText, announceDur);
-    gameState.addLogMessage(`-- ${actor.name}'s action --`);
-    
-    let primaryTarget = null;
-    let finalTargets = [];
-    let redirectionNeeded = false;
-    
-    if (action.targets && action.targets.length > 0) {
-        let initialTargets = action.targets.map(id => gameState.getCharacterById(id) || gameState.getEnemyById(id)).filter(t => t);
         
-        if (action.targets.length === 1) {
-            primaryTarget = initialTargets[0];
-            const isRevive = (action.type === 'Prayer' && action.powerName === 'Revive');
-            
-            if (!primaryTarget || (isRevive && primaryTarget.isAlive) || (!isRevive && !primaryTarget.isAlive)) {
-                gameState.addLogMessage(`${actor.name}'s original target invalid!`);
-                redirectionNeeded = true;
-                primaryTarget = null;
+        let canAfford = true;
+        let cost = 0;
+        const isPlayerActor = !!gameState.getCharacterById(actorId);
+        
+        if (action.type === 'Spell' || action.type === 'Prayer') {
+            cost = action.powerCost || POWER_DATA[action.powerName]?.cost || 0;
+        }
+        else if (action.type === 'Orison') {
+            cost = ORISONS[action.orisonName]?.mpCost || 0;
+        }
+        
+        if (cost > 0) {
+            if (actor.currentMp < cost) {
+                canAfford = false;
             } else {
-                finalTargets = [primaryTarget];
-            }
-            
-            if (redirectionNeeded) {
-                if (action.type === 'Attack' || action.type === 'Rage' || 
-                    action.type === 'BruiserAbility' ||
-                    action.type === 'Orison' ||
-                    (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy')) {
-                    
-                    const livingEnemies = gameState.enemies.filter(e => e.isAlive);
-                    if (livingEnemies.length > 0) {
-                        primaryTarget = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
-                        finalTargets = [primaryTarget];
-                        gameState.addLogMessage(`Redirecting to ${primaryTarget.name}!`);
-                    } else {
-                        finalTargets = [];
-                    }
-                } else if (action.type === 'Prayer' && !isRevive) {
-                    const livingAllies = gameState.party.filter(p => p.isAlive && p.id !== actorId);
-                    if (livingAllies.length > 0) {
-                        primaryTarget = livingAllies[Math.floor(Math.random() * livingAllies.length)];
-                        finalTargets = [primaryTarget];
-                        gameState.addLogMessage(`Redirecting ${action.powerName} to ${primaryTarget.name}!`);
-                    } else if (actor.isAlive && isPlayerActor) {
-                        primaryTarget = actor;
-                        finalTargets = [primaryTarget];
-                        gameState.addLogMessage(`Redirecting ${action.powerName} to self!`);
-                    } else {
-                        finalTargets = [];
-                    }
+                actor.currentMp -= cost;
+                if (isPlayerActor) {
+                    updatePartyStatusUI();
                 }
             }
-        } else {
-            const pInfo = POWER_DATA[action.powerName];
-            if (pInfo?.target === 'enemies') {
-                finalTargets = gameState.enemies.filter(e => e.isAlive);
-            } else if (pInfo?.target === 'allies') {
-                finalTargets = gameState.party.filter(p => p.isAlive);
-            } else {
-                finalTargets = initialTargets.filter(t => t.isAlive);
-            }
             
-            if (finalTargets.length === 0)
-                gameState.addLogMessage(pInfo?.target === 'enemies' ? "No enemies remain!" : "No allies remain!");
+            if (!canAfford) {
+                gameState.addLogMessage(`${actor.name} doesn't have enough MP for ${action.powerName || action.orisonName || action.type}!`);
+                setTimeout(executeNextQueuedAction, 50);
+                return;
+            }
         }
-    }
-    
-    let skipAction = false;
-    if ((action.type === 'Attack' || action.type === 'Rage' || action.type === 'Prayer' || 
-         action.type === 'BruiserAbility' || action.type === 'Orison' ||
-        (action.type === 'Spell' && POWER_DATA[action.powerName]?.target !== 'enemies' && 
-         POWER_DATA[action.powerName]?.target !== 'allies')) && 
-        finalTargets.length === 0 && action.targets?.length > 0) {
         
-        gameState.addLogMessage(`Action fails - no valid targets found.`);
-        skipAction = true;
-    }
-    
-    if (skipAction) {
-        setTimeout(executeNextQueuedAction, 50);
-        return;
-    } else {
+        console.log(`Executing for ${actorId}:`, action);
+        
+        let announceText = action.powerName || action.abilityName || action.orisonName || action.type;
+        let announceDur = 1500;
+        
+        // Apply appropriate animation based on action type
         switch (action.type) {
             case 'Attack':
+                announceText = 'Attack';
+                announceDur = 600;
+                flashSprite(actorId, 'white', 200);
+                break;
+                
             case 'Rage':
-                performAttack(actor, primaryTarget);
+                announceText = 'Rage';
+                announceDur = 1200;
+                applyCastingAnimation(actorId, 'rage', 1000);
                 break;
                 
             case 'Spell':
+                if (action.powerName) {
+                    const spellData = POWER_DATA[action.powerName];
+                    if (spellData && spellData.element) {
+                        applyCastingAnimation(actorId, spellData.element.toLowerCase(), 1200);
+                    } else {
+                        applyCastingAnimation(actorId, 'spell', 1200);
+                    }
+                } else {
+                    applyCastingAnimation(actorId, 'spell', 1200);
+                }
+                break;
+                
             case 'Prayer':
-                performPower(actor, action.powerName, finalTargets);
+                announceText = action.powerName || "Prayer";
+                announceDur = 1500;
+                applyCastingAnimation(actorId, 'prayer', 1300);
                 break;
                 
             case 'Orison':
-                performOrison(actor, action.orisonName, finalTargets);
-                break;
-                
-            case 'BruiserAbility':
-                performBruiserAbility(actor, action.abilityName, primaryTarget);
+                announceText = action.orisonName || "Orison";
+                announceDur = 1000;
+                if (action.orisonName) {
+                    const orisonData = ORISONS[action.orisonName];
+                    if (orisonData && orisonData.element) {
+                        applyCastingAnimation(actorId, orisonData.element.toLowerCase(), 1200);
+                    } else {
+                        applyCastingAnimation(actorId, 'spell', 1200);
+                    }
+                } else {
+                    applyCastingAnimation(actorId, 'spell', 1200);
+                }
                 break;
                 
             case 'DragonBreath':
-                performDragonBreath(actor);
+                announceText = "Dragon Breath";
+                announceDur = 1600;
+                applyCastingAnimation(actorId, 'dragon-breath', 1500);
                 break;
-                
-            default:
-                console.error(`Unhandled type: ${action.type}`);
         }
+        
+        showActionAnnouncement(announceText, announceDur);
+        gameState.addLogMessage(`-- ${actor.name}'s action --`);
+        
+        // Continue with the original function logic
+        let primaryTarget = null;
+        let finalTargets = [];
+        let redirectionNeeded = false;
+        
+        if (action.targets && action.targets.length > 0) {
+            let initialTargets = action.targets.map(id => gameState.getCharacterById(id) || gameState.getEnemyById(id)).filter(t => t);
+            
+            if (action.targets.length === 1) {
+                primaryTarget = initialTargets[0];
+                const isRevive = (action.type === 'Prayer' && action.powerName === 'Revive');
+                
+                if (!primaryTarget || (isRevive && primaryTarget.isAlive) || (!isRevive && !primaryTarget.isAlive)) {
+                    gameState.addLogMessage(`${actor.name}'s original target invalid!`);
+                    redirectionNeeded = true;
+                    primaryTarget = null;
+                } else {
+                    finalTargets = [primaryTarget];
+                }
+                
+                if (redirectionNeeded) {
+                    if (action.type === 'Attack' || action.type === 'Rage' || 
+                        action.type === 'BruiserAbility' ||
+                        action.type === 'Orison' ||
+                        (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy')) {
+                        
+                        const livingEnemies = gameState.enemies.filter(e => e.isAlive);
+                        if (livingEnemies.length > 0) {
+                            primaryTarget = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+                            finalTargets = [primaryTarget];
+                            gameState.addLogMessage(`Redirecting to ${primaryTarget.name}!`);
+                        } else {
+                            finalTargets = [];
+                        }
+                    } else if (action.type === 'Prayer' && !isRevive) {
+                        const livingAllies = gameState.party.filter(p => p.isAlive && p.id !== actorId);
+                        if (livingAllies.length > 0) {
+                            primaryTarget = livingAllies[Math.floor(Math.random() * livingAllies.length)];
+                            finalTargets = [primaryTarget];
+                            gameState.addLogMessage(`Redirecting ${action.powerName} to ${primaryTarget.name}!`);
+                        } else if (actor.isAlive && isPlayerActor) {
+                            primaryTarget = actor;
+                            finalTargets = [primaryTarget];
+                            gameState.addLogMessage(`Redirecting ${action.powerName} to self!`);
+                        } else {
+                            finalTargets = [];
+                        }
+                    }
+                }
+            } else {
+                const pInfo = POWER_DATA[action.powerName];
+                if (pInfo?.target === 'enemies') {
+                    finalTargets = gameState.enemies.filter(e => e.isAlive);
+                } else if (pInfo?.target === 'allies') {
+                    finalTargets = gameState.party.filter(p => p.isAlive);
+                } else {
+                    finalTargets = initialTargets.filter(t => t.isAlive);
+                }
+                
+                if (finalTargets.length === 0)
+                    gameState.addLogMessage(pInfo?.target === 'enemies' ? "No enemies remain!" : "No allies remain!");
+            }
+        }
+        
+        let skipAction = false;
+        if ((action.type === 'Attack' || action.type === 'Rage' || action.type === 'Prayer' || 
+             action.type === 'BruiserAbility' || action.type === 'Orison' ||
+            (action.type === 'Spell' && POWER_DATA[action.powerName]?.target !== 'enemies' && 
+             POWER_DATA[action.powerName]?.target !== 'allies')) && 
+            finalTargets.length === 0 && action.targets?.length > 0) {
+            
+            gameState.addLogMessage(`Action fails - no valid targets found.`);
+            skipAction = true;
+        }
+        
+        if (skipAction) {
+            setTimeout(executeNextQueuedAction, 50);
+            return;
+        } else {
+            switch (action.type) {
+                case 'Attack':
+                case 'Rage':
+                    performAttack(actor, primaryTarget);
+                    break;
+                    
+                case 'Spell':
+                case 'Prayer':
+                    performPower(actor, action.powerName, finalTargets);
+                    break;
+                    
+                case 'Orison':
+                    performOrison(actor, action.orisonName, finalTargets);
+                    break;
+                    
+                case 'BruiserAbility':
+                    performBruiserAbility(actor, action.abilityName, primaryTarget);
+                    break;
+                    
+                case 'DragonBreath':
+                    performDragonBreath(actor);
+                    break;
+                    
+                default:
+                    console.error(`Unhandled type: ${action.type}`);
+            }
+        }
+        
+        const delay = Math.max(800, announceDur + 100);
+        setTimeout(executeNextQueuedAction, delay);
     }
-    
-    const delay = Math.max(800, announceDur + 100);
-    setTimeout(executeNextQueuedAction, delay);
-}
 
     // --- New function to handle Orison casting by enemy Casters
     function performOrison(caster, orisonName, targets) {
@@ -1626,210 +1873,244 @@ function calculateEnemyStats(wave) {
     }, 300);
 }
      function performRage(c) { /* Effect handled elsewhere */ console.log(`${c.name} executing Rage action.`); updatePartyStatusUI(); highlightActivePartyStatus(-1); }
-     function performPower(c, pN, resolvedTargets) { 
-        const p = POWER_DATA[pN]; 
-        if (!p) return; 
-        
-        gameState.addLogMessage(`${c.name} casts ${pN}!`); 
-        
-        if (resolvedTargets.length === 0 && (p.target === 'ally' || p.target === 'ally_ko' || p.target === 'enemy')) { 
-            gameState.addLogMessage(`No valid targets remain.`); 
-            highlightActivePartyStatus(-1); 
-            return; 
-        } 
-        
-        // Determine element color for spell animations
-        let elementColor = 'purple'; // Default color
-        if (p.element) {
-            // Set color based on elemental type
-            switch(p.element) {
-                case 'Fire': elementColor = 'orange'; break;
-                case 'Frost': elementColor = 'aqua'; break;
-                case 'Hydro': elementColor = 'blue'; break;
-                case 'Shock': elementColor = 'yellow'; break;
-            }
-            
-            // Apply shimmer effect on caster based on the spell's element
-            shimmerSprite(getCorrectElementId(c.id), elementColor, 800);
+     // Modified performPower function with fixed Empower functionality
+function performPower(c, pN, resolvedTargets) { 
+    const p = POWER_DATA[pN]; 
+    if (!p) return; 
+    
+    gameState.addLogMessage(`${c.name} casts ${pN}!`); 
+    
+    if (resolvedTargets.length === 0 && (p.target === 'ally' || p.target === 'ally_ko' || p.target === 'enemy')) { 
+        gameState.addLogMessage(`No valid targets remain.`); 
+        highlightActivePartyStatus(-1); 
+        return; 
+    } 
+    
+    // Determine element color for spell animations
+    let elementColor = 'purple'; // Default color
+    if (p.element) {
+        // Set color based on elemental type
+        switch(p.element) {
+            case 'Fire': 
+                elementColor = 'orange'; 
+                applyCastingAnimation(c.id, 'fire', 1200);
+                break;
+            case 'Frost': 
+                elementColor = 'aqua'; 
+                applyCastingAnimation(c.id, 'frost', 1200);
+                break;
+            case 'Hydro': 
+                elementColor = 'blue'; 
+                applyCastingAnimation(c.id, 'hydro', 1200);
+                break;
+            case 'Shock': 
+                elementColor = 'yellow'; 
+                applyCastingAnimation(c.id, 'shock', 1200);
+                break;
         }
+    }
+    else if (p.type === 'Prayer') {
+        applyCastingAnimation(c.id, 'prayer', 1200);
+    }
+    
+    resolvedTargets.forEach((t, index) => { 
+        if (!t) return; 
+        const targetElementId = getCorrectElementId(t.id); 
         
-        resolvedTargets.forEach((t, index) => { 
-            if (!t) return; 
-            const targetElementId = getCorrectElementId(t.id); 
+        if (p.element) { 
+            const dmg = calculateMagicDamage(c, t, p.level); 
             
-            if (p.element) { 
-                const dmg = calculateMagicDamage(c, t, p.level); 
+            // For elemental spells, apply flashSprite with a delay
+            setTimeout(() => {
+                // Flash the target with the elemental color
+                flashSprite(targetElementId, elementColor, 250);
                 
-                // For elemental spells, apply flashSprite with a delay
-                setTimeout(() => {
-                    // Flash the target with the elemental color
-                    flashSprite(targetElementId, elementColor, 250);
+                // Show floating damage with a slight delay
+                setTimeout(() => { 
+                    showFloatingNumber(targetElementId, dmg, 'damage'); 
+                    gameState.addLogMessage(`${t.name} takes ${dmg} ${p.element} dmg.`); 
                     
-                    // Show floating damage with a slight delay
-                    setTimeout(() => { 
-                        showFloatingNumber(targetElementId, dmg, 'damage'); 
-                        gameState.addLogMessage(`${t.name} takes ${dmg} ${p.element} dmg.`); 
-                        
-                        let damageApplied = false; 
-                        if ('takeDamage' in t) { 
-                            t.takeDamage(dmg); 
-                            damageApplied = true; 
-                            updatePartyStatusUI(); 
-                        } else { 
-                            t.currentHp -= dmg; 
-                            if (t.currentHp <= 0) { 
-                                t.currentHp = 0; 
-                                t.isAlive = false; 
-                                gameState.addLogMessage(`${t.name} defeated!`); 
-                            } 
-                            damageApplied = true; 
-                            updateEnemySpritesUI(); 
-                        } 
-                        
-                        if (damageApplied) { 
-                            highlightActivePartyStatus(-1); 
-                            if (checkWinCondition()) handleWinWave(); 
-                            if (checkLoseCondition()) handleGameOver(); 
-                        } 
-                    }, 150);
-                }, index * 200); // Stagger the effects if multiple targets
-            } 
-            else if (p.effect === 'Heal') { 
-                let healAmount; 
-                if (pN === 'Heal1') healAmount = calculateHeal1Amount(c); 
-                else healAmount = calculateHealing(c, p.level); 
-                
-                const hd = t.heal(healAmount); 
-                if (hd > 0) showFloatingNumber(targetElementId, hd, 'heal'); 
-                gameState.addLogMessage(`${t.name} +${hd} HP.`); 
-                updatePartyStatusUI(); 
-                highlightActivePartyStatus(-1); 
-            } 
-            else if (p.effect === 'Revive') { 
-                if (!t.isAlive) { 
-                    t.isAlive = true; 
-                    const hp = Math.round(t.maxHp * p.hpPercent); 
-                    t.heal(hp); 
-                    showFloatingNumber(targetElementId, hp, 'heal'); 
-                    gameState.addLogMessage(`${t.name} revived!`); 
-                    updatePartyStatusUI(); 
-                } else { 
-                    gameState.addLogMessage(`${t.name} alive.`); 
-                } 
-                highlightActivePartyStatus(-1); 
-            } 
-            else if (p.effect === 'Poison' || p.effect === 'Slow') { 
-                const ch = p.chance || 1.0; 
-                if (Math.random() < ch) { 
-                    const dur = p.duration || 5; 
-                    if ('addStatus' in t) { 
-                        const suc = t.addStatus({ type: p.effect, turns: dur }); 
-                        if (suc) gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
-                        else gameState.addLogMessage(`${t.name} resists.`); 
+                    let damageApplied = false; 
+                    if ('takeDamage' in t) { 
+                        t.takeDamage(dmg); 
+                        damageApplied = true; 
                         updatePartyStatusUI(); 
-                    } else if (t.statusEffects) { 
-                        if (!t.statusEffects.some(s => s.type === p.effect)) { 
-                            t.statusEffects.push({ type: p.effect, turns: dur }); 
-                            gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
-                        } else gameState.addLogMessage(`${t.name} resists.`); 
+                    } else { 
+                        t.currentHp -= dmg; 
+                        if (t.currentHp <= 0) { 
+                            t.currentHp = 0; 
+                            t.isAlive = false; 
+                            gameState.addLogMessage(`${t.name} defeated!`); 
+                        } 
+                        damageApplied = true; 
+                        updateEnemySpritesUI(); 
                     } 
-                } else { 
-                    gameState.addLogMessage(`${t.name} resists.`); 
-                } 
-                highlightActivePartyStatus(-1); 
+                    
+                    if (damageApplied) { 
+                        highlightActivePartyStatus(-1); 
+                        if (checkWinCondition()) handleWinWave(); 
+                        if (checkLoseCondition()) handleGameOver(); 
+                    } 
+                }, 150);
+            }, index * 200); // Stagger the effects if multiple targets
+        } 
+        else if (p.effect === 'Heal') { 
+            let healAmount; 
+            if (pN === 'Heal1') healAmount = calculateHeal1Amount(c); 
+            else healAmount = calculateHealing(c, p.level); 
+            
+            const hd = t.heal(healAmount); 
+            if (hd > 0) showFloatingNumber(targetElementId, hd, 'heal'); 
+            gameState.addLogMessage(`${t.name} +${hd} HP.`); 
+            updatePartyStatusUI(); 
+            highlightActivePartyStatus(-1); 
+        } 
+        else if (p.effect === 'Revive') { 
+            if (!t.isAlive) { 
+                t.isAlive = true; 
+                const hp = Math.round(t.maxHp * p.hpPercent); 
+                t.heal(hp); 
+                showFloatingNumber(targetElementId, hp, 'heal'); 
+                gameState.addLogMessage(`${t.name} revived!`); 
+                updatePartyStatusUI(); 
+            } else { 
+                gameState.addLogMessage(`${t.name} alive.`); 
             } 
-            else if (p.effect === 'Empower') { 
-                const statusName = p.statusName;
-                const damageMultiplier = p.damageMultiplier || 1.5;
-                
-                const hadBuff = t.statusEffects.some(s => s.type === statusName);
-                
-                const suc = t.addStatus({ 
-                    type: statusName, 
-                    turns: p.turns || 4, 
-                    isPhysicalBuff: true,
-                    damageMultiplier: damageMultiplier,
-                    visualEffect: 'active'
-                }); 
-                
-                if (suc) {
-                    if (hadBuff) {
-                        gameState.addLogMessage(`${t.name}'s ${statusName} refreshed! (Damage x${damageMultiplier})`);
-                    } else {
-                        gameState.addLogMessage(`${t.name} empowered! (Damage x${damageMultiplier})`);
-                    }
-                    shimmerSprite(getCorrectElementId(t.id), 'white', 1200);
-                }
-                updatePartyStatusUI(); 
-                highlightActivePartyStatus(-1); 
-            }
-            else if (p.effect === 'Fury') { 
-                const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
-                
-                const suc = t.addStatus({ 
-                    type: p.statusName, 
-                    turns: p.turns || 4, 
-                    isPhysicalBuff: true,
-                    doubleAttack: true,
-                    visualEffect: 'active'
-                }); 
-                
-                if (suc) {
-                    if (hadBuff) {
-                        gameState.addLogMessage(`${t.name}'s Fury refreshed! (Double attack)`);
-                    } else {
-                        gameState.addLogMessage(`${t.name} gains Fury! (Double attack)`);
-                    }
-                    shimmerSprite(getCorrectElementId(t.id), '#FF8080', 1200);
-                }
-                updatePartyStatusUI(); 
-                highlightActivePartyStatus(-1); 
-            }
-            else if (p.effect === 'Lifelink') { 
-                const healPercent = p.healPercent || 0.5;
-                
-                const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
-                
-                const suc = t.addStatus({ 
-                    type: p.statusName, 
-                    turns: p.turns || 4, 
-                    isPhysicalBuff: true,
-                    lifeStealPercent: healPercent,
-                    visualEffect: 'active'
-                }); 
-                
-                if (suc) {
-                    if (hadBuff) {
-                        gameState.addLogMessage(`${t.name}'s Lifelink refreshed! (${Math.round(healPercent * 100)}% life steal)`);
-                    } else {
-                        gameState.addLogMessage(`${t.name} gains Lifelink! (${Math.round(healPercent * 100)}% life steal)`);
-                    }
-                    shimmerSprite(getCorrectElementId(t.id), '#80FF80', 1200);
-                }
-                updatePartyStatusUI(); 
-                highlightActivePartyStatus(-1); 
-            }
-            else if (p.effect === 'Restore') { 
-                const ch = p.chance || 1.0; 
-                if (Math.random() < ch) { 
-                    let rem = false; 
-                    if ('clearNegativeStatuses' in t) { 
-                        rem = t.clearNegativeStatuses(); 
-                    } else if (t.statusEffects) { 
-                        const len = t.statusEffects.length; 
-                        t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); 
-                        rem = t.statusEffects.length < len; 
-                    } 
-                    if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); 
-                    else gameState.addLogMessage(`${pN} no effect.`); 
-                    if ('clearNegativeStatuses' in t) updatePartyStatusUI(); 
-                } else { 
-                    gameState.addLogMessage(`${pN} no effect.`); 
+            highlightActivePartyStatus(-1); 
+        } 
+        else if (p.effect === 'Poison' || p.effect === 'Slow') { 
+            const ch = p.chance || 1.0; 
+            if (Math.random() < ch) { 
+                const dur = p.duration || 5; 
+                if ('addStatus' in t) { 
+                    const suc = t.addStatus({ type: p.effect, turns: dur }); 
+                    if (suc) gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
+                    else gameState.addLogMessage(`${t.name} resists.`); 
+                    updatePartyStatusUI(); 
+                } else if (t.statusEffects) { 
+                    if (!t.statusEffects.some(s => s.type === p.effect)) { 
+                        t.statusEffects.push({ type: p.effect, turns: dur }); 
+                        gameState.addLogMessage(`${t.name} gets ${p.effect}!`); 
+                    } else gameState.addLogMessage(`${t.name} resists.`); 
                 } 
-                highlightActivePartyStatus(-1); 
+            } else { 
+                gameState.addLogMessage(`${t.name} resists.`); 
+            } 
+            highlightActivePartyStatus(-1); 
+        } 
+        else if (p.effect === 'Empower') { 
+            const statusName = p.statusName;
+            const damageMultiplier = p.damageMultiplier || 1.5;
+            
+            const hadBuff = t.statusEffects.some(s => s.type === statusName);
+            
+            const suc = t.addStatus({ 
+                type: statusName, 
+                turns: p.turns || 4, 
+                isPhysicalBuff: true,
+                damageMultiplier: damageMultiplier,
+                visualEffect: 'active'
+            }); 
+            
+            if (suc) {
+                if (hadBuff) {
+                    gameState.addLogMessage(`${t.name}'s ${statusName} refreshed! (Damage x${damageMultiplier})`);
+                } else {
+                    gameState.addLogMessage(`${t.name} empowered! (Damage x${damageMultiplier})`);
+                }
+                shimmerSprite(getCorrectElementId(t.id), 'white', 1200);
             }
-else if (p.effect === 'Restore') { const ch = p.chance || 1.0; if (Math.random() < ch) { let rem = false; if ('Statuses' in t) { rem = t.Statuses(); } else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('Statuses' in t) updatePartyStatusUI(); } else { gameState.addLogMessage(`${pN} no effect.`); } highlightActivePartyStatus(-1); } }); }
-    function performDragonBreath(c) { gameState.addLogMessage(`${c.name} uses Dragon Breath!`); const targets = gameState.party.filter(p => p.isAlive); targets.forEach(t => { const dmg = Math.round(t.maxHp * 0.25); const targetElementId = getCorrectElementId(t.id); setTimeout(() => { showFloatingNumber(targetElementId, dmg, 'damage'); gameState.addLogMessage(`${t.name} takes ${dmg} breath dmg!`); t.takeDamage(dmg); updatePartyStatusUI(); highlightActivePartyStatus(-1); if (checkLoseCondition()) handleGameOver(); }, 100); }); }
+            updatePartyStatusUI(); 
+            highlightActivePartyStatus(-1); 
+        }
+        else if (p.effect === 'Fury') { 
+            const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
+            
+            const suc = t.addStatus({ 
+                type: p.statusName, 
+                turns: p.turns || 4, 
+                isPhysicalBuff: true,
+                doubleAttack: true,
+                visualEffect: 'active'
+            }); 
+            
+            if (suc) {
+                if (hadBuff) {
+                    gameState.addLogMessage(`${t.name}'s Fury refreshed! (Double attack)`);
+                } else {
+                    gameState.addLogMessage(`${t.name} gains Fury! (Double attack)`);
+                }
+                shimmerSprite(getCorrectElementId(t.id), '#FF8080', 1200);
+            }
+            updatePartyStatusUI(); 
+            highlightActivePartyStatus(-1); 
+        }
+        else if (p.effect === 'Lifelink') { 
+            const healPercent = p.healPercent || 0.5;
+            
+            const hadBuff = t.statusEffects.some(s => s.type === p.statusName);
+            
+            const suc = t.addStatus({ 
+                type: p.statusName, 
+                turns: p.turns || 4, 
+                isPhysicalBuff: true,
+                healPercent: healPercent,
+                visualEffect: 'active'
+            }); 
+            
+            if (suc) {
+                if (hadBuff) {
+                    gameState.addLogMessage(`${t.name}'s Lifelink refreshed! (${Math.round(healPercent * 100)}% life steal)`);
+                } else {
+                    gameState.addLogMessage(`${t.name} gains Lifelink! (${Math.round(healPercent * 100)}% life steal)`);
+                }
+                shimmerSprite(getCorrectElementId(t.id), '#80FF80', 1200);
+            }
+            updatePartyStatusUI(); 
+            highlightActivePartyStatus(-1); 
+        }
+        else if (p.effect === 'Restore') { 
+            const ch = p.chance || 1.0; 
+            if (Math.random() < ch) { 
+                let rem = false; 
+                if ('clearNegativeStatuses' in t) { 
+                    rem = t.clearNegativeStatuses(); 
+                } else if (t.statusEffects) { 
+                    const len = t.statusEffects.length; 
+                    t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); 
+                    rem = t.statusEffects.length < len; 
+                } 
+                if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); 
+                else gameState.addLogMessage(`${pN} no effect.`); 
+                if ('clearNegativeStatuses' in t) updatePartyStatusUI(); 
+            } else { 
+                gameState.addLogMessage(`${pN} no effect.`); 
+            } 
+            highlightActivePartyStatus(-1); 
+        }
+    }); 
+}
+    function performDragonBreath(c) {
+        gameState.addLogMessage(`${c.name} uses Dragon Breath!`);
+        
+        // Apply dragon breath animation
+        applyCastingAnimation(c.id, 'dragon-breath', 1500);
+        
+        const targets = gameState.party.filter(p => p.isAlive);
+        targets.forEach(t => {
+            const dmg = Math.round(t.maxHp * 0.25);
+            const targetElementId = getCorrectElementId(t.id);
+            setTimeout(() => {
+                showFloatingNumber(targetElementId, dmg, 'damage');
+                gameState.addLogMessage(`${t.name} takes ${dmg} breath dmg!`);
+                t.takeDamage(dmg);
+                updatePartyStatusUI();
+                highlightActivePartyStatus(-1);
+                if (checkLoseCondition()) handleGameOver();
+            }, 100);
+        });
+    }
+
     function endRound() { console.log("Round End."); gameState.actionQueue = []; if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } processEndOfRound(); if (checkWinCondition()) { handleWinWave(); return; } if (checkLoseCondition()) { handleGameOver(); return; } gameState.activeCharacterIndex = 0; gameState.setState('PLAYER_COMMAND'); prepareCommandPhase(); }
     function processEndOfRound() { 
         console.log("EOR Effects..."); 
