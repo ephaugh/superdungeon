@@ -1,4 +1,4 @@
-/* style.css - Completely Overhauled Version with Animation Fixes */
+/* style.css - Complete Version with Enemy Sprite System */
 
 /* --- Base Styles --- */
 body {
@@ -24,6 +24,20 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+/* --- Game Background --- */
+#game-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.9;
+    transition: opacity 0.5s ease;
+    z-index: 1;
 }
 
 /* --- Action Announcement Bar --- */
@@ -235,11 +249,13 @@ body {
 #battlefield-enemy-area { 
     height: 45%; 
     position: relative; 
+    z-index: 2;
 }
 
 #battlefield-party-area { 
     height: 15%; 
     position: relative; 
+    z-index: 2;
 }
 
 /* --- Sprite Base Styling --- */
@@ -254,9 +270,8 @@ body {
     font-size: 10px;
     text-shadow: 1px 1px 1px #000;
     z-index: 2;
-    background-color: rgba(128, 128, 128, 0.7);
-    border-radius: 5px;
-    border: 1px solid #fff;
+    background-color: transparent;
+    border: none;
 }
 
 .sprite.ko {
@@ -266,9 +281,117 @@ body {
 }
 
 /* --- Enemy Sprites --- */
-#battlefield-enemy-area .sprite {
-    top: 50%;
-    transform: translateY(-50%);
+.sprite.enemy {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-shadow: 1px 1px 1px #000;
+    z-index: 2;
+    text-align: center;
+    font-size: 10px;
+    overflow: hidden; /* Keep images inside the sprite div */
+}
+
+/* --- Style for image-based enemy sprites --- */
+.enemy-sprite-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensure the image fits within the container */
+    transition: transform 0.2s ease;
+    image-rendering: pixelated; /* Makes pixel art look better */
+}
+
+/* KO state for enemies with images */
+.sprite.enemy.ko .enemy-sprite-img {
+    filter: grayscale(100%) brightness(50%);
+    transform: rotate(90deg);
+}
+
+/* Enemy being targeted (for when player selects enemy to attack) */
+.sprite.enemy.targeted {
+    box-shadow: 0 0 12px rgba(255, 255, 0, 0.9);
+}
+
+/* --- Enemy Animations --- */
+/* Enemy attack animation */
+@keyframes enemy-attack {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(-5px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
+}
+
+/* Enemy damage animation */
+@keyframes enemy-damage {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+}
+
+/* Idle animation for enemies */
+@keyframes enemy-idle {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+}
+
+/* Apply animations */
+.enemy-attacking {
+    animation: enemy-attack 0.5s ease-in-out;
+}
+
+.enemy-damaged {
+    animation: enemy-damage 0.5s ease-in-out;
+}
+
+/* Apply subtle idle animation to all enemies */
+.sprite.enemy:not(.ko) .enemy-sprite-img {
+    animation: enemy-idle 3s infinite ease-in-out;
+}
+
+/* Different enemy types can have custom idle animations */
+.sprite.enemy[id*="Rat"] .enemy-sprite-img {
+    animation: rat-idle 2s infinite ease-in-out;
+}
+
+@keyframes rat-idle {
+    0% { transform: translateX(0) translateY(0); }
+    25% { transform: translateX(-1px) translateY(-1px); }
+    50% { transform: translateX(1px) translateY(0); }
+    75% { transform: translateX(-1px) translateY(-1px); }
+    100% { transform: translateX(0) translateY(0); }
+}
+
+/* Dragon idle animation */
+.sprite.enemy[id*="Dragon"] .enemy-sprite-img {
+    animation: dragon-idle 4s infinite ease-in-out;
+}
+
+@keyframes dragon-idle {
+    0% { transform: translateY(0) scale(1); }
+    25% { transform: translateY(-3px) scale(1.03); }
+    50% { transform: translateY(0) scale(1); }
+    75% { transform: translateY(-2px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+/* KO state for enemies with images */
+.sprite.enemy.ko .enemy-sprite-img {
+    filter: grayscale(100%) brightness(50%);
+    transform: rotate(90deg);
+}
+
+/* Status effect visuals for enemies */
+.sprite.enemy.poisoned {
+    box-shadow: 0 0 10px rgba(0, 200, 0, 0.6);
+}
+
+.sprite.enemy.slowed {
+    box-shadow: 0 0 10px rgba(100, 100, 255, 0.6);
 }
 
 /* --- Party Member Sprites (FIXED) --- */
@@ -292,6 +415,7 @@ body {
     grid-template-areas: "actions status"; 
     gap: 20px; 
     overflow: hidden;
+    z-index: 3;
 }
 
 /* --- Action Menu Area (Left) --- */
@@ -484,11 +608,6 @@ body {
     font-weight: bold; 
 }
 
-/* --- Combat Log (REMOVED from main layout) --- */
-#combat-log-area { 
-    display: none; 
-}
-
 /* --- Floating Combat Numbers --- */
 .floating-number { 
     position: absolute; 
@@ -552,7 +671,6 @@ body {
 }
 
 /* --- Visual Effects (FIXED) --- */
-/* This is the key change: Visual effects don't affect positioning */
 
 /* Flash effect for showing damage/hits */
 .flash-effect {
@@ -624,25 +742,138 @@ body {
 
 @keyframes safe-fury-pulse {
     0% { box-shadow: 0 0 8px 3px rgba(255, 100, 100, 0.7); }
-    50% { box-shadow: 0 0 12px 5px rgba(255, 100, 100, 0.9); }
-    100% { box-shadow: 0 0 8px 3px rgba(255, 100, 100, 0.7); }
+    50% { box-shadow: 0 0 12px 5px rgba(255, 100, 100, 0.)}}
+    /* Basic Player Sprite Styles - Without Animations */
+
+/* Player Sprites Base Styles */
+.sprite.party-member {
+    position: absolute !important;
+    bottom: 5px !important;
+    transform: none !important;
+    text-align: center;
+    font-size: 10px;
+    overflow: hidden;
+    z-index: 3;
 }
 
-@keyframes safe-lifelink-pulse {
-    0% { box-shadow: 0 0 8px 3px rgba(100, 255, 100, 0.7); }
-    50% { box-shadow: 0 0 12px 5px rgba(100, 255, 100, 0.9); }
-    100% { box-shadow: 0 0 8px 3px rgba(100, 255, 100, 0.7); }
+/* Style for player sprite images */
+.player-sprite-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated; /* Makes pixel art look better */
 }
 
-/* Apply safe animations */
-#battlefield-party-area .sprite.empower-pulse {
-    animation: safe-empower-pulse 2s infinite ease-in-out !important;
+/* KO state for player sprites */
+.sprite.party-member.ko .player-sprite-img {
+    filter: grayscale(100%) brightness(40%);
+    transform: rotate(90deg);
 }
 
-#battlefield-party-area .sprite.fury-pulse {
-    animation: safe-fury-pulse 1.5s infinite ease-in-out !important;
+/* Buff visual indicators for player sprites */
+.sprite.empower-buffed {
+    box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.7);
 }
 
-#battlefield-party-area .sprite.lifelink-pulse {
-    animation: safe-lifelink-pulse 2s infinite ease-in-out !important;
+.sprite.fury-buffed {
+    box-shadow: 0 0 10px 4px rgba(255, 100, 100, 0.7);
+}
+
+.sprite.lifelink-buffed {
+    box-shadow: 0 0 10px 4px rgba(100, 255, 100, 0.7);
+}
+/* Spell Casting Pulse Animation */
+@keyframes spell-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(128, 0, 255, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(128, 0, 255, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(128, 0, 255, 0.7); }
+}
+
+/* Prayer Casting Pulse Animation */
+@keyframes prayer-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(255, 215, 0, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.7); }
+}
+
+/* Rage Ability Pulse Animation */
+@keyframes rage-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(255, 0, 0, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(255, 0, 0, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(255, 0, 0, 0.7); }
+}
+
+/* Element-specific Spell Pulse Animations */
+@keyframes fire-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(255, 100, 0, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(255, 100, 0, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(255, 100, 0, 0.7); }
+}
+
+@keyframes frost-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(0, 200, 255, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(0, 200, 255, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(0, 200, 255, 0.7); }
+}
+
+@keyframes shock-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(255, 255, 0, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(255, 255, 0, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(255, 255, 0, 0.7); }
+}
+
+@keyframes hydro-cast-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(0, 100, 255, 0.7); }
+    50% { box-shadow: 0 0 18px 8px rgba(0, 100, 255, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(0, 100, 255, 0.7); }
+}
+
+/* Dragon Breath Animation */
+@keyframes dragon-breath-pulse {
+    0% { box-shadow: 0 0 8px 2px rgba(255, 100, 0, 0.7); }
+    25% { box-shadow: 0 0 12px 5px rgba(255, 100, 0, 0.9); }
+    50% { box-shadow: 0 0 18px 8px rgba(255, 200, 0, 0.9); }
+    75% { box-shadow: 0 0 12px 5px rgba(255, 100, 0, 0.9); }
+    100% { box-shadow: 0 0 8px 2px rgba(255, 100, 0, 0.7); }
+}
+
+/* Apply animations to sprites */
+.sprite.casting-spell {
+    animation: spell-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-fire {
+    animation: fire-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-frost {
+    animation: frost-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-shock {
+    animation: shock-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-hydro {
+    animation: hydro-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-prayer {
+    animation: prayer-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-rage {
+    animation: rage-cast-pulse 0.8s ease-in-out infinite;
+    z-index: 5;
+}
+
+.sprite.casting-dragon-breath {
+    animation: dragon-breath-pulse 1.2s ease-in-out infinite;
+    z-index: 5;
 }
