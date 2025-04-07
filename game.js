@@ -475,71 +475,95 @@ const ENEMY_SPRITES = {
     // Dungeon 1 - Overworld
     'Rat': {
         src: 'https://i.imgur.com/e4JnC9d.png',
-        width: 64,
-        height: 64,
+        width: 70,
+        height: 70,
         fallbackText: 'Rat',
     },
     'Goblin': {
         src: 'https://i.imgur.com/Xcu9zE2.png',
-        width: 64,
-        height: 64,
+        width: 80,
+        height: 80,
         fallbackText: 'Gob',
     },
     'Kobold': {
         src: 'https://i.imgur.com/6pzi1E0.png',
-        width: 64,
-        height: 64,
+        width: 80,
+        height: 80,
         fallbackText: 'Kob',
     },
     'White Dragon': {
-        src: 'https://i.imgur.com/nE029Hy.png',
-        width: 128,
-        height: 128,
+        src: 'https://i.imgur.com/CKrfmRI.png',
+        width: 154,
+        height: 154,
         fallbackText: 'Whi',
     },
+    'Sand Worm': {
+        src: 'https://i.imgur.com/xBJ4Zjs.png',
+        width: 110,
+        height: 110,
+        fallbackText: 'San',
+},
+    'Mummy': {
+        src: 'https://i.imgur.com/wYb4a7D.png',
+        width: 90,
+        height: 90,
+        fallbackText: 'Mum',
+},
+'Thief': {
+    src: 'https://i.imgur.com/QdoIs9v.png',
+    width: 90,
+    height: 90,
+    fallbackText: 'Thi',
+},
+    'Blue Dragon': {
+        src: 'https://i.imgur.com/K8Nf61W.png',
+        width: 150,
+        height: 150,
+        fallbackText: 'Blu',
+},
 }
 
 const PLAYER_SPRITES = {
     // Barbarian
     'Barbarian': {
         src: 'https://i.imgur.com/Id39qQz.png',
-        width: 100,
-        height: 100,
+        width: 120,
+        height: 120,
         fallbackText: 'BAR'
     },
     // Valkyrie
     'Valkyrie': {
         src: 'https://i.imgur.com/2ZpPiAx.png',
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         fallbackText: 'VAL'
     },
     // Ninja
     'Ninja': {
         src: 'https://i.imgur.com/MjTiI3c.png',
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         fallbackText: 'NIN'
     },
     // Shaman
     'Shaman': {
         src: 'https://i.imgur.com/O0e0QCB.png',
-        width: 90,
-        height: 90,
+        width: 110,
+        height: 110,
         fallbackText: 'SHA'
     },
     // Sorceress
     'Sorceress': {
         src: 'https://i.imgur.com/sMfxdhj.png',
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         fallbackText: 'SOR'
     },
     // Bishop
     'Bishop': {
         src: 'https://i.imgur.com/tTO0Ell.png',
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         fallbackText: 'BIS'
     }
 };
@@ -1227,7 +1251,7 @@ function showActionAnnouncement(text, duration = 1500) {
         gameState.setState('PLAYER_COMMAND'); 
         prepareCommandPhase(); 
     }
-    function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'FinalDragon'; if (dungeonIndex === 0) bossName = 'White Dragon'; else if (dungeonIndex === 1) bossName = 'BlueDragon'; else if (dungeonIndex === 2) bossName = 'BlackDragon'; const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.50), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
+    function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'FinalDragon'; if (dungeonIndex === 0) bossName = 'White Dragon'; else if (dungeonIndex === 1) bossName = 'Blue Dragon'; else if (dungeonIndex === 2) bossName = 'BlackDragon'; const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.50), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
     // Modified calculateEnemyStats function to limit HP growth to 8% per wave
 // and add +5 stat growth to Str, Def, Int, and Mnd every 15 rounds
 function calculateEnemyStats(wave) { 
