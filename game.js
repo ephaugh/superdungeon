@@ -1636,7 +1636,7 @@ function calculateEnemyStats(wave) {
                 
             case 'Rage':
                 announceText = 'Rage';
-                announceDur = 1200;
+                announceDur = 650;
                 applyCastingAnimation(actorId, 'rage', 1000);
                 break;
                 
