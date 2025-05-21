@@ -1495,7 +1495,41 @@ function calculateEnemyStats(wave) {
     
     return { hp, mp, str: s, def: d, int: i, mnd: m }; 
 }
-    function prepareCommandPhase() { if (gameState.currentState !== 'PLAYER_COMMAND') return; let found = false; let startIdx = gameState.activeCharacterIndex; for (let i = 0; i < gameState.party.length; i++) { let checkIdx = (startIdx + i) % gameState.party.length; const char = gameState.party[checkIdx]; if (char.isAlive && !gameState.actionQueue.some(item => item.actorId === char.id)) { gameState.activeCharacterIndex = checkIdx; found = true; break; } } if (found) { const char = gameState.party[gameState.activeCharacterIndex]; gameState.addLogMessage(`--- ${char.name}, command? ---`); populateMenu('main'); highlightActivePartyStatus(gameState.activeCharacterIndex); document.getElementById('action-menu-area').style.display = 'flex'; } else { console.log("Player commands done."); queueEnemyActions(); } }
+function prepareCommandPhase() {
+    // Add our new debug logs here
+    console.log("=== COMMAND PHASE STATUS CHECK ===");
+    gameState.party.forEach(char => {
+        if (char.className === 'Barbarian') {
+            console.log(`Barbarian ${char.name} rage status: ${char.isRaging ? 'ACTIVE' : 'INACTIVE'}`);
+        } else {
+            console.log(`${char.className} ${char.name} rage status: ${char.isRaging ? 'ACTIVE' : 'INACTIVE'}`);
+        }
+    });
+    console.log("=================================");
+    
+    if (gameState.currentState !== 'PLAYER_COMMAND') return;
+    let found = false;
+    let startIdx = gameState.activeCharacterIndex;
+    for (let i = 0; i < gameState.party.length; i++) {
+        let checkIdx = (startIdx + i) % gameState.party.length;
+        const char = gameState.party[checkIdx];
+        if (char.isAlive && !gameState.actionQueue.some(item => item.actorId === char.id)) {
+            gameState.activeCharacterIndex = checkIdx;
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        const char = gameState.party[gameState.activeCharacterIndex];
+        gameState.addLogMessage(`--- ${char.name}, command? ---`);
+        populateMenu('main');
+        highlightActivePartyStatus(gameState.activeCharacterIndex);
+        document.getElementById('action-menu-area').style.display = 'flex';
+    } else {
+        console.log("Player commands done.");
+        queueEnemyActions();
+    }
+}
     function queueAction(actorId, actionDetails) { 
         const actor = gameState.getCharacterById(actorId) || gameState.getEnemyById(actorId); 
         if (!actor) return; 
