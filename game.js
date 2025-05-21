@@ -791,7 +791,32 @@ function applyStatDebuff(target, statType, magnitude) {
 }
     
     // --- Calculation Helper Functions ---
-    function calculatePhysicalDamage(attacker, defender) { const attackerStr = attacker.getCurrentStat ? attacker.getCurrentStat('str') : attacker.str; const defenderDef = defender.getCurrentStat ? defender.getCurrentStat('def') : defender.def; const attackerLevel = attacker.level; const defenderLevel = defender.level; let baseMultiplier = attacker.isRaging ? 2.2 : (1.5 + Math.random() * 0.45); let offenseValue = (attackerLevel + attackerStr) * baseMultiplier; let defenseValue = (defenderLevel + defenderDef); const damage = Math.round(offenseValue - defenseValue); return Math.max(1, damage); }
+function calculatePhysicalDamage(attacker, defender) { 
+    // Get base stats, using getCurrentStat if available (for status effects)
+    const attackerStr = attacker.getCurrentStat ? attacker.getCurrentStat('str') : attacker.str; 
+    const defenderDef = defender.getCurrentStat ? defender.getCurrentStat('def') : defender.def; 
+    const attackerLevel = attacker.level; 
+    const defenderLevel = defender.level; 
+    
+    // Determine base multiplier (higher for Rage)
+    let baseMultiplier = attacker.isRaging ? 2.2 : (1.5 + Math.random() * 0.45); 
+    
+    // Calculate offense value using strength and level
+    let offenseValue = (attackerLevel + attackerStr) * baseMultiplier; 
+    
+    // Calculate defense value using defense and level
+    let defenseValue = (defenderLevel + defenderDef); 
+    
+    // Calculate raw damage by subtracting defense from offense
+    const rawDamage = offenseValue - defenseValue;
+    
+    // Print debug info about the calculation
+    console.log(`Attack: ${attacker.name} (STR:${attackerStr}, LVL:${attackerLevel}) -> ${defender.name} (DEF:${defenderDef}, LVL:${defenderLevel})`);
+    console.log(`Formula: (${attackerLevel} + ${attackerStr}) * ${baseMultiplier.toFixed(2)} - (${defenderLevel} + ${defenderDef}) = ${rawDamage.toFixed(2)}`);
+    
+    // Ensure damage is at least 1 (minimum damage)
+    return Math.max(1, Math.round(rawDamage)); 
+}
     function calculateMagicDamage(caster, target, spellLvl) { const cI = caster.getCurrentStat ? caster.getCurrentStat('int') : caster.int; const tM = target.getCurrentStat ? target.getCurrentStat('mnd') : target.mnd; const cL = caster.level, tL = target.level; const rM = 1.5 + Math.random() * 0.45; const sM = spellLvl; const oV = ((cL + cI) * sM) * rM; const dV = (tL + tM); const dmg = Math.round(oV - dV); return Math.max(1, dmg); }
     function calculateHealing(caster, prayerLvl) { 
     const cI = caster.getCurrentStat ? caster.getCurrentStat('int') : caster.int; 
