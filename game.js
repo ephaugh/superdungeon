@@ -409,22 +409,38 @@ class Character {
         return Math.max(0, val); 
     }
     
-    takeDamage(amt) { 
-        if (!this.isAlive) return 0; 
-        const damageMultiplier = this.isRaging ? 2 : 1; 
-        const finalAmount = Math.max(0, amt) * damageMultiplier; 
-        this.currentHp -= Math.round(finalAmount); 
-        
-        if (this.currentHp <= 0) { 
-            this.currentHp = 0; 
-            this.isAlive = false; 
-            this.isRaging = false; 
-            this.statusEffects = this.statusEffects.filter(s => s.isPermanent); 
-            gameState.addLogMessage(`${this.name} KO!`); 
-        } 
-        
-        return Math.round(finalAmount); 
-    }
+   takeDamage(amt) { 
+    if (!this.isAlive) return 0; 
+    
+    // Debug the incoming damage amount
+    console.log(`${this.name} taking damage: ${amt} (original)`);
+    
+    // CRITICAL FIX: Don't apply ANY transformations to the damage amount
+    // except for the intentional rage multiplier
+    // The Math.max(0, amt) was likely causing the issue by forcing small values to 0
+    // which then became 1 after the final Math.max(1, damage) at the end
+    const damageMultiplier = this.isRaging ? 2 : 1; 
+    
+    // Apply the multiplier directly to the incoming amount WITHOUT any other modifications
+    const finalAmount = amt * damageMultiplier; 
+    
+    console.log(`${this.name} final damage: ${finalAmount} (after rage multiplier)`);
+    
+    // Apply the damage
+    this.currentHp -= Math.round(finalAmount); 
+    
+    // Handle KO state
+    if (this.currentHp <= 0) { 
+        this.currentHp = 0; 
+        this.isAlive = false; 
+        this.isRaging = false; 
+        this.statusEffects = this.statusEffects.filter(s => s.isPermanent); 
+        gameState.addLogMessage(`${this.name} KO!`); 
+    } 
+    
+    // Return the actual damage taken
+    return Math.round(finalAmount); 
+}
     
     heal(amt) { 
         if (!this.isAlive) return 0; 
@@ -2547,6 +2563,8 @@ function calculateEnemyStats(wave) {
     gameState.addLogMessage(`Wave ${gameState.currentWave} Cleared!`); 
     console.log(`Wave ${gameState.currentWave} Cleared!`); 
     
+       processEndOfRound();
+       
     // Process buffs before leveling up characters
     decrementAllBuffDurations();
     
