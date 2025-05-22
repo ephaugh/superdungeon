@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Freeze', 
         element: 'Frost',
         description: 'A blast of magical ice that hits all party members',
-        levelMultiplier: 1.25, // Reduced from 1.75
+        levelMultiplier: 1.5, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Wave', 
         element: 'Hydro',
         description: 'A surge of magical water that hits all party members',
-        levelMultiplier: 1.25, // Reduced from 1.75
+        levelMultiplier: 1.6, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Pyro+', 
         element: 'Fire',
         description: 'An enhanced burst of magical flames that hits all party members',
-        levelMultiplier: 1.4, // Higher than regular Pyro (1.10)
+        levelMultiplier: 1.8, // Higher than regular Pyro (1.10)
         mpCost: 5,
         aoe: true  // Targets all party members
 },
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Corruption', 
         element: 'Darkness',
         description: 'A wave of corruption that debuffs all stats of all party members',
-        levelMultiplier: 1.5, 
+        levelMultiplier: 2.15, 
         mpCost: 5,
         aoe: true  // Targets all party members
 }    
