@@ -423,8 +423,8 @@ class Character {
         } 
     
         if (lvl > 1) { 
-            // Reduced HP growth from 6% to 5% per level
-            this.maxHp = Math.round(this.maxHp * 1.05); 
+            // Reduced HP growth from 5% to 1% per level
+            this.maxHp = Math.round(this.maxHp * 1.01); 
             if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
         } 
     
@@ -952,6 +952,20 @@ function calculatePhysicalDamage(attacker, defender) {
     
     // Calculate raw damage by subtracting defense from offense
     const rawDamage = offenseValue - defenseValue;
+
+    // Add damage from enemy attack based on current wave 
+    const isEnemyAttacker = gameState.enemies.some(e => e.id === attacker.id);
+    if (isEnemyAttacker) {
+        // Calculate dungeon index (0-based) and current wave number
+        const dungeonIndex = Math.floor((gameState.currentWave - 1) / 15); // 0, 1, 2, 3, etc.
+        const currentWave = gameState.currentWave;
+        
+        // Add flat damage bonus: dungeon × wave number
+        const flatDamageBonus = dungeonIndex * currentWave;
+        rawDamage += flatDamageBonus;
+        
+        console.log(`Enemy damage bonus: Dungeon ${dungeonIndex} × Wave ${currentWave} = +${flatDamageBonus} flat damage`);
+    }
     
     // Print debug info about the calculation
     console.log(`Attack: ${attacker.name} (STR:${attackerStr}, LVL:${attackerLevel}) -> ${defender.name} (DEF:${defenderDef}, LVL:${defenderLevel})`);
