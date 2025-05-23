@@ -76,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
 };
     const CLASS_LIST = Object.keys(CLASS_DATA);
     const ENEMY_ARCHETYPES = {
-        Weakling: { statMultipliers: { hp: 1.1, mp: 1.0, str: 1.3, def: 1.3, int: 1.1, mnd: 1.1 }, abilities: [] },
-        Bruiser: { statMultipliers: { hp: 1.50, mp: 1.0, str: 1.75, def: 1.50, int: 1.0, mnd: 0.7 }, abilities: [] },
+        Weakling: { statMultipliers: { hp: 1.1, mp: 1.0, str: 1.1, def: 1.3, int: 1.1, mnd: 1.1 }, abilities: [] },
+        Bruiser: { statMultipliers: { hp: 1.50, mp: 1.0, str: 1.5, def: 1.50, int: 1.0, mnd: 0.7 }, abilities: [] },
         Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.3, def: 0.8, int: 1.40, mnd: 1.30 }, abilities: [] },
         Boss: { statMultipliers: { hp: 1.0, mp: 1.5, str: 2.5, def: 1.8, int: 1.3, mnd: 1.3 }, abilities: [] } // Boss HP Multiplier applied separately
     };
