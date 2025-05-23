@@ -951,9 +951,9 @@ function calculatePhysicalDamage(attacker, defender) {
     let defenseValue = (defenderLevel + defenderDef); 
     
     // Calculate raw damage by subtracting defense from offense
-    const rawDamage = offenseValue - defenseValue;
-
-    // Add damage from enemy attack based on current wave 
+    let rawDamage = offenseValue - defenseValue;
+    
+    // Check if the attacker is an enemy and add scaling damage bonus
     const isEnemyAttacker = gameState.enemies.some(e => e.id === attacker.id);
     if (isEnemyAttacker) {
         // Calculate dungeon index (0-based) and current wave number
@@ -2316,47 +2316,48 @@ function prepareCommandPhase() {
     }
 
     // --- Function for Bruiser abilities with HP-based damage bonus
-    function performBruiserAbility(caster, abilityName, target) {
-        if (!target || !target.isAlive) {
-            gameState.addLogMessage(`${caster.name}'s ${abilityName} has no valid target!`);
-            return;
+   // --- Function for Bruiser abilities with HP-based damage bonus
+function performBruiserAbility(caster, abilityName, target) {
+    if (!target || !target.isAlive) {
+        gameState.addLogMessage(`${caster.name}'s ${abilityName} has no valid target!`);
+        return;
+    }
+    
+    const targetElementId = getCorrectElementId(target.id);
+    
+    // Calculate base physical damage (includes enemy scaling bonus)
+    const baseDamage = calculatePhysicalDamage(caster, target);
+    
+    // Add 20% of bruiser's max HP as additional damage
+    const hpBonus = Math.round(caster.maxHp * 0.2);
+    const totalDamage = baseDamage + hpBonus;
+    
+    gameState.addLogMessage(`${caster.name} uses ${abilityName}!`);
+    flashSprite(targetElementId, 'crimson', 200);
+    
+    setTimeout(() => {
+        showFloatingNumber(targetElementId, totalDamage, 'damage');
+        gameState.addLogMessage(`${target.name} takes ${totalDamage} damage (${baseDamage} + ${hpBonus})!`);
+        
+        let wasKO = !target.isAlive;
+        if ('takeDamage' in target) {
+            target.takeDamage(totalDamage);
+            updatePartyStatusUI();
+        } else {
+            target.currentHp -= totalDamage;
+            if (target.currentHp <= 0) {
+                target.currentHp = 0;
+                target.isAlive = false;
+                if (!wasKO) gameState.addLogMessage(`${target.name} defeated!`);
+            }
+            updateEnemySpritesUI();
         }
         
-        const targetElementId = getCorrectElementId(target.id);
-        
-        // Calculate base physical damage
-        const baseDamage = calculatePhysicalDamage(caster, target);
-        
-        // Add 10% of bruiser's max HP as additional damage
-        const hpBonus = Math.round(caster.maxHp * 0.2);
-        const totalDamage = baseDamage + hpBonus;
-        
-        gameState.addLogMessage(`${caster.name} uses ${abilityName}!`);
-        flashSprite(targetElementId, 'crimson', 200);
-        
-        setTimeout(() => {
-            showFloatingNumber(targetElementId, totalDamage, 'damage');
-            gameState.addLogMessage(`${target.name} takes ${totalDamage} damage (${baseDamage} + ${hpBonus})!`);
-            
-            let wasKO = !target.isAlive;
-            if ('takeDamage' in target) {
-                target.takeDamage(totalDamage);
-                updatePartyStatusUI();
-            } else {
-                target.currentHp -= totalDamage;
-                if (target.currentHp <= 0) {
-                    target.currentHp = 0;
-                    target.isAlive = false;
-                    if (!wasKO) gameState.addLogMessage(`${target.name} defeated!`);
-                }
-                updateEnemySpritesUI();
-            }
-            
-            // Check win/lose conditions
-            if (checkWinCondition()) handleWinWave();
-            if (checkLoseCondition()) handleGameOver();
-        }, 200);
-    }
+        // Check win/lose conditions
+        if (checkWinCondition()) handleWinWave();
+        if (checkLoseCondition()) handleGameOver();
+    }, 200);
+}
 
    function performAttack(c, t) { 
     if (!c || !t || !t.isAlive) return; 
