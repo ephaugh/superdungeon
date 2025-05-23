@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     "https://i.imgur.com/oXJ9kJp.png", // Dungeon 6 (???) 
 ];
     const CLASS_DATA = {
-        Barbarian: { baseHp: 20, baseMp: 0, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
+        Barbarian: { baseHp: 20, baseMp: 0, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 4, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
         Valkyrie: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 3, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Ninja: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 3, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 12, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 2, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
@@ -76,9 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
 };
     const CLASS_LIST = Object.keys(CLASS_DATA);
     const ENEMY_ARCHETYPES = {
-        Weakling: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.0, def: 1.0, int: 1.0, mnd: 1.0 }, abilities: [] },
-        Bruiser: { statMultipliers: { hp: 1.20, mp: 1.0, str: 1.30, def: 1.30, int: 1.0, mnd: 0.8 }, abilities: [] },
-        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.0, def: 0.8, int: 1.20, mnd: 1.30 }, abilities: [] },
+        Weakling: { statMultipliers: { hp: 1.1, mp: 1.1, str: 1.1, def: 1.1, int: 1.1, mnd: 1.1 }, abilities: [] },
+        Bruiser: { statMultipliers: { hp: 1.50, mp: 1.0, str: 1.50, def: 1.50, int: 1.0, mnd: 0.7 }, abilities: [] },
+        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.0, def: 0.8, int: 1.40, mnd: 1.30 }, abilities: [] },
         Boss: { statMultipliers: { hp: 1.0, mp: 1.5, str: 1.8, def: 1.8, int: 1.3, mnd: 1.3 }, abilities: [] } // Boss HP Multiplier applied separately
     };
     
