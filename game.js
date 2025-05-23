@@ -423,8 +423,8 @@ class Character {
         } 
     
         if (lvl > 1) { 
-            // Reduced HP growth from 5% to 1% per level
-            this.maxHp = Math.round(this.maxHp * 1.01); 
+            // Buffed HP growth from 1% to 3% per level
+            this.maxHp = Math.round(this.maxHp * 1.03); 
             if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
         } 
     
