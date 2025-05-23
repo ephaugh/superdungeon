@@ -1760,16 +1760,6 @@ function finalizePartySelection() {
         // Apply level-ups from 1 to the testing level
         for (let level = 1; level <= TESTING_START_LEVEL; level++) {
             c.applyLevelUpGrowth(level);
-        if (UNLOCK_SCHEDULE[level] && UNLOCK_SCHEDULE[level][c.className]) {
-                UNLOCK_SCHEDULE[level][c.className].forEach(powerName => {
-                    if (!c.powers.includes(powerName)) {
-                        c.powers.push(powerName);
-                        console.log(`${c.name} learned ${powerName} at level ${level}!`);
-                    }
-                });
-            }
-        
-        
         }
         
         c.fullRestore(); 
@@ -1780,7 +1770,7 @@ function finalizePartySelection() {
     gameState.setState('COMBAT_LOADING'); 
     setupCombatButtonListeners(); 
     startNextWave(); 
-}    
+}
     function startNextWave() { 
         if (gameState.currentWave === 0) gameState.currentWave = 0; // Start at wave 61
         gameState.currentWave++; 
