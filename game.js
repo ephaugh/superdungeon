@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             archetype: 'Caster', 
             abilities: [{ 
                 name: "Pyro", 
-                chance: 0.35, 
+                chance: 0.41, 
                 type: 'Orison'
             }] 
         } 
@@ -423,8 +423,8 @@ class Character {
         } 
     
         if (lvl > 1) { 
-            // Reduced HP growth from 10% to 6% per level
-            this.maxHp = Math.round(this.maxHp * 1.06); 
+            // Reduced HP growth from 6% to 5% per level
+            this.maxHp = Math.round(this.maxHp * 1.05); 
             if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
         } 
     
