@@ -11,12 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     "https://i.imgur.com/oXJ9kJp.png", // Dungeon 6 (???) 
 ];
     const CLASS_DATA = {
-        Barbarian: { baseHp: 20, baseMp: 0, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 4, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
-        Valkyrie: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 3, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
-        Ninja: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 3, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
-        Shaman: { baseHp: 12, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 2, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
-        Sorceress: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 1, mp: 3, str: 0, def: 0, int: 2, mnd: 2 } },
-        Bishop: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 1, mp: 5, str: 0, def: 0, int: 2, mnd: 2 } }
+        Barbarian: { baseHp: 20, baseMp: 0, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 6, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
+        Valkyrie: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
+        Ninja: { baseHp: 15, baseMp: 10, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
+        Shaman: { baseHp: 12, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
+        Sorceress: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 3 } },
+        Bishop: { baseHp: 10, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 2 } }
     };
     const POWER_DATA = {
     // Existing spell entries remain unchanged
