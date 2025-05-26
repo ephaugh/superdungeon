@@ -1791,8 +1791,127 @@ function finalizePartySelection() {
         gameState.setState('PLAYER_COMMAND'); 
         prepareCommandPhase(); 
     }
-    function generateEnemiesForWave(wave) { const enemies = []; const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); const waveIndexInDungeon = (wave - 1) % 15; const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; const baseStats = calculateEnemyStats(wave); let isBossWave = (waveIndexInDungeon === 14); let compositionString = ""; if (isBossWave) { compositionString = "BOSS"; } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; } else { compositionString = "W"; console.error("Wave comp OOB!"); } let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; if (isBossWave) { let bossName = 'Red Dragon'; if (dungeonIndex === 0) bossName = 'White Dragon'; else if (dungeonIndex === 1) bossName = 'Blue Dragon'; else if (dungeonIndex === 2) bossName = 'Black Dragon'; else if (dungeonIndex === 3) bossName = 'Green Dragon';const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * 2.85), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; enemies.push({ id: `enemy-1`, name: bossName, type: bossName, archetype: 'Boss', level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: [{ name: 'DragonBreath', type: 'Ability', chance: 1.0 }], getCurrentStat(sN) { return this[sN]; }, actsTwice: true }); } else { for (let i = 0; i < compositionString.length; i++) { let enemyDef, archetypeKey, typeChar = compositionString[i]; if (typeChar === 'W') { archetypeKey = 'weakling'; enemyDef = dungeonData.weakling; } else if (typeChar === 'B') { archetypeKey = 'bruiser'; enemyDef = dungeonData.bruiser; } else if (typeChar === 'C') { archetypeKey = 'caster'; enemyDef = dungeonData.caster; } else continue; if (!enemyDef) { console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); continue; } const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; const multipliers = archetypeData.statMultipliers; let finalStats = { hp: Math.round(baseStats.hp * multipliers.hp), mp: Math.round(baseStats.mp * multipliers.mp), str: Math.round(baseStats.str * multipliers.str), def: Math.round(baseStats.def * multipliers.def), int: Math.round(baseStats.int * multipliers.int), mnd: Math.round(baseStats.mnd * multipliers.mnd), }; letterCounts[typeChar]++; const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; enemies.push({ id: `enemy-${enemies.length + 1}`, name: enemyName, type: enemyDef.name, archetype: enemyDef.archetype, level: wave, maxHp: finalStats.hp, currentHp: finalStats.hp, maxMp: finalStats.mp, currentMp: finalStats.mp, str: finalStats.str, def: finalStats.def, int: finalStats.int, mnd: finalStats.mnd, isAlive: true, statusEffects: [], abilities: enemyDef.abilities || [], getCurrentStat(sN) { return this[sN]; }, actsTwice: false }); } } return enemies; }
-    // Modified calculateEnemyStats function to limit HP growth to 8% per wave
+function generateEnemiesForWave(wave) { 
+    const enemies = []; 
+    const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); 
+    const waveIndexInDungeon = (wave - 1) % 15; 
+    const dungeonData = DUNGEON_ENEMIES[dungeonIndex]; 
+    const baseStats = calculateEnemyStats(wave); 
+    let isBossWave = (waveIndexInDungeon === 14); 
+    let compositionString = ""; 
+    
+    if (isBossWave) { 
+        compositionString = "BOSS"; 
+    } else if (waveIndexInDungeon < WAVE_COMPOSITIONS.length) { 
+        compositionString = WAVE_COMPOSITIONS[waveIndexInDungeon]; 
+    } else { 
+        compositionString = "W"; 
+        console.error("Wave comp OOB!"); 
+    } 
+    
+    let letterCounts = { 'W': 0, 'B': 0, 'C': 0 }; 
+    
+    if (isBossWave) { 
+        let bossName = 'Red Dragon'; 
+        if (dungeonIndex === 0) bossName = 'White Dragon'; 
+        else if (dungeonIndex === 1) bossName = 'Blue Dragon'; 
+        else if (dungeonIndex === 2) bossName = 'Black Dragon'; 
+        else if (dungeonIndex === 3) bossName = 'Green Dragon';
+        else if (dungeonIndex === 4) bossName = 'Red Dragon';
+        else if (dungeonIndex === 5) bossName = 'King in Yellow';
+        
+        const archetypeData = ENEMY_ARCHETYPES['Boss'] || ENEMY_ARCHETYPES['Weakling']; 
+        const multipliers = archetypeData.statMultipliers; 
+        
+        let finalStats = { 
+            hp: Math.round(baseStats.hp * 2.85), 
+            mp: Math.round(baseStats.mp * multipliers.mp), 
+            str: Math.round(baseStats.str * multipliers.str), 
+            def: Math.round(baseStats.def * multipliers.def), 
+            int: Math.round(baseStats.int * multipliers.int), 
+            mnd: Math.round(baseStats.mnd * multipliers.mnd), 
+        }; 
+        
+        enemies.push({ 
+            id: `enemy-1`, 
+            name: bossName, 
+            type: bossName, 
+            archetype: 'Boss', 
+            level: wave, 
+            maxHp: finalStats.hp, 
+            currentHp: finalStats.hp, 
+            maxMp: finalStats.mp, 
+            currentMp: finalStats.mp, 
+            str: finalStats.str, 
+            def: finalStats.def, 
+            int: finalStats.int, 
+            mnd: finalStats.mnd, 
+            isAlive: true, 
+            statusEffects: [], 
+            abilities: [{ name: bossName === 'King in Yellow' ? 'Annihilate' : 'DragonBreath', type: 'Ability', chance: 1.0 }], 
+            getCurrentStat(sN) { return this[sN]; }, 
+            actsTwice: true 
+        }); 
+    } else { 
+        for (let i = 0; i < compositionString.length; i++) { 
+            let enemyDef, archetypeKey, typeChar = compositionString[i]; 
+            
+            if (typeChar === 'W') { 
+                archetypeKey = 'weakling'; 
+                enemyDef = dungeonData.weakling; 
+            } else if (typeChar === 'B') { 
+                archetypeKey = 'bruiser'; 
+                enemyDef = dungeonData.bruiser; 
+            } else if (typeChar === 'C') { 
+                archetypeKey = 'caster'; 
+                enemyDef = dungeonData.caster; 
+            } else continue; 
+            
+            if (!enemyDef) { 
+                console.error(`Def missing ${typeChar} in dungeon ${dungeonIndex}`); 
+                continue; 
+            } 
+            
+            const archetypeData = ENEMY_ARCHETYPES[enemyDef.archetype] || ENEMY_ARCHETYPES['Weakling']; 
+            const multipliers = archetypeData.statMultipliers; 
+            
+            let finalStats = { 
+                hp: Math.round(baseStats.hp * multipliers.hp), 
+                mp: Math.round(baseStats.mp * multipliers.mp), 
+                str: Math.round(baseStats.str * multipliers.str), 
+                def: Math.round(baseStats.def * multipliers.def), 
+                int: Math.round(baseStats.int * multipliers.int), 
+                mnd: Math.round(baseStats.mnd * multipliers.mnd), 
+            }; 
+            
+            letterCounts[typeChar]++; 
+            const enemyName = `${enemyDef.name} ${String.fromCharCode(64 + letterCounts[typeChar])}`; 
+            
+            enemies.push({ 
+                id: `enemy-${enemies.length + 1}`, 
+                name: enemyName, 
+                type: enemyDef.name, 
+                archetype: enemyDef.archetype, 
+                level: wave, 
+                maxHp: finalStats.hp, 
+                currentHp: finalStats.hp, 
+                maxMp: finalStats.mp, 
+                currentMp: finalStats.mp, 
+                str: finalStats.str, 
+                def: finalStats.def, 
+                int: finalStats.int, 
+                mnd: finalStats.mnd, 
+                isAlive: true, 
+                statusEffects: [], 
+                abilities: enemyDef.abilities || [], 
+                getCurrentStat(sN) { return this[sN]; }, 
+                actsTwice: false 
+            }); 
+        } 
+    } 
+    
+    return enemies; 
+}    // Modified calculateEnemyStats function to limit HP growth to 8% per wave
 // and add +5 stat growth to Str, Def, Int, and Mnd every 15 rounds
 function calculateEnemyStats(wave) { 
     let hp = 15, mp = 10, s = 4, d = 4, i = 4, m = 4; 
@@ -1866,70 +1985,76 @@ function prepareCommandPhase() {
     
     // --- Updated queueEnemyActions function to handle the new enemy abilities
     function queueEnemyActions() { 
-        console.log("Queueing Enemy Actions"); 
-        gameState.enemies.forEach(enemy => { 
-            if (enemy.isAlive) { 
-                const alivePlayers = gameState.party.filter(p => p.isAlive); 
-                if (alivePlayers.length > 0) { 
-                    let actionsToQueue = []; 
-                    const targetPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)]; 
-                    
-                    if (enemy.type.includes('Dragon')) { 
-                        actionsToQueue.push({ type: 'DragonBreath', casterId: enemy.id, targets: [] }); 
+    console.log("Queueing Enemy Actions"); 
+    gameState.enemies.forEach(enemy => { 
+        if (enemy.isAlive) { 
+            const alivePlayers = gameState.party.filter(p => p.isAlive); 
+            if (alivePlayers.length > 0) { 
+                let actionsToQueue = []; 
+                const targetPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)]; 
+                
+                if (enemy.type.includes('Dragon')) { 
+                    actionsToQueue.push({ type: 'DragonBreath', casterId: enemy.id, targets: [] }); 
+                    actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
+                } 
+                else if (enemy.type === 'King in Yellow') {
+                    // King in Yellow uses Annihilate + Attack + Attack
+                    actionsToQueue.push({ type: 'Annihilate', casterId: enemy.id, targets: [] }); 
+                    actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
+                    actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
+                }
+                else if (enemy.archetype === 'Bruiser') { 
+                    let usedAbility = false; 
+                    if (enemy.abilities?.length > 0) { 
+                        const ability = enemy.abilities[0]; 
+                        if (Math.random() < (ability.chance || 0)) { 
+                            actionsToQueue.push({ 
+                                type: 'BruiserAbility', 
+                                abilityName: ability.name, 
+                                casterId: enemy.id, 
+                                targets: [targetPlayer.id] 
+                            }); 
+                            usedAbility = true; 
+                            console.log(`${enemy.name} prepares ${ability.name}`); 
+                        } 
+                    } 
+                    if (!usedAbility) { 
                         actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
                     } 
-                    else if (enemy.archetype === 'Bruiser') { 
-                        let usedAbility = false; 
-                        if (enemy.abilities?.length > 0) { 
-                            const ability = enemy.abilities[0]; 
-                            if (Math.random() < (ability.chance || 0)) { 
+                } 
+                else if (enemy.archetype === 'Caster') { 
+                    let usedAbility = false; 
+                    if (enemy.abilities?.length > 0) { 
+                        const casterAbility = enemy.abilities[0]; 
+                        
+                        if (casterAbility.type === 'Orison') {
+                            const orisonData = ORISONS[casterAbility.name];
+                            if (orisonData && enemy.currentMp >= orisonData.mpCost && Math.random() < (casterAbility.chance || 0)) { 
                                 actionsToQueue.push({ 
-                                    type: 'BruiserAbility', 
-                                    abilityName: ability.name, 
+                                    type: 'Orison', 
+                                    orisonName: casterAbility.name, 
                                     casterId: enemy.id, 
                                     targets: [targetPlayer.id] 
                                 }); 
                                 usedAbility = true; 
-                                console.log(`${enemy.name} prepares ${ability.name}`); 
-                            } 
-                        } 
-                        if (!usedAbility) { 
-                            actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
-                        } 
-                    } 
-                    else if (enemy.archetype === 'Caster') { 
-                        let usedAbility = false; 
-                        if (enemy.abilities?.length > 0) { 
-                            const casterAbility = enemy.abilities[0]; 
-                            
-                            if (casterAbility.type === 'Orison') {
-                                const orisonData = ORISONS[casterAbility.name];
-                                if (orisonData && enemy.currentMp >= orisonData.mpCost && Math.random() < (casterAbility.chance || 0)) { 
-                                    actionsToQueue.push({ 
-                                        type: 'Orison', 
-                                        orisonName: casterAbility.name, 
-                                        casterId: enemy.id, 
-                                        targets: [targetPlayer.id] 
-                                    }); 
-                                    usedAbility = true; 
-                                    console.log(`${enemy.name} prepares ${casterAbility.name} orison`); 
-                                }
+                                console.log(`${enemy.name} prepares ${casterAbility.name} orison`); 
                             }
-                        } 
-                        if (!usedAbility) { 
-                            actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
-                        } 
+                        }
                     } 
-                    else { // Weaklings or any other type
+                    if (!usedAbility) { 
                         actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
                     } 
-                    
-                    actionsToQueue.forEach(action => queueAction(enemy.id, action)); 
                 } 
+                else { // Weaklings or any other type
+                    actionsToQueue.push({ type: 'Attack', casterId: enemy.id, targets: [targetPlayer.id] }); 
+                } 
+                
+                actionsToQueue.forEach(action => queueAction(enemy.id, action)); 
             } 
-        }); 
-        startActionResolution(); 
-    }
+        } 
+    }); 
+    startActionResolution(); 
+}
 
     function startActionResolution() { 
         console.log("Start Action Resolution"); 
@@ -1992,233 +2117,243 @@ function prepareCommandPhase() {
 
     // --- Updated executeNextQueuedAction function to handle new action types
     function executeNextQueuedAction() {
-        if (gameState.currentState !== 'ACTION_RESOLUTION') {
-            console.warn("Wrong state for action exec.");
-            gameState.actionQueue = [];
-            return;
+    if (gameState.currentState !== 'ACTION_RESOLUTION') {
+        console.warn("Wrong state for action exec.");
+        gameState.actionQueue = [];
+        return;
+    }
+    
+    if (gameState.actionQueue.length === 0) {
+        console.log("Queue empty.");
+        endRound();
+        return;
+    }
+    
+    const item = gameState.actionQueue.shift();
+    const actorId = item.actorId;
+    const action = item.action;
+    const actor = gameState.getCharacterById(actorId) || gameState.getEnemyById(actorId);
+    
+    if (!actor || !actor.isAlive) {
+        console.log(`${actorId} skipped (KO'd).`);
+        setTimeout(executeNextQueuedAction, 50);
+        return;
+    }
+    
+    let canAfford = true;
+    let cost = 0;
+    const isPlayerActor = !!gameState.getCharacterById(actorId);
+    
+    if (action.type === 'Spell' || action.type === 'Prayer') {
+        cost = action.powerCost || POWER_DATA[action.powerName]?.cost || 0;
+    }
+    else if (action.type === 'Orison') {
+        cost = ORISONS[action.orisonName]?.mpCost || 0;
+    }
+    
+    if (cost > 0) {
+        if (actor.currentMp < cost) {
+            canAfford = false;
+        } else {
+            actor.currentMp -= cost;
+            if (isPlayerActor) {
+                updatePartyStatusUI();
+            }
         }
         
-        if (gameState.actionQueue.length === 0) {
-            console.log("Queue empty.");
-            endRound();
-            return;
-        }
-        
-        const item = gameState.actionQueue.shift();
-        const actorId = item.actorId;
-        const action = item.action;
-        const actor = gameState.getCharacterById(actorId) || gameState.getEnemyById(actorId);
-        
-        if (!actor || !actor.isAlive) {
-            console.log(`${actorId} skipped (KO'd).`);
+        if (!canAfford) {
+            gameState.addLogMessage(`${actor.name} doesn't have enough MP for ${action.powerName || action.orisonName || action.type}!`);
             setTimeout(executeNextQueuedAction, 50);
             return;
         }
-        
-        let canAfford = true;
-        let cost = 0;
-        const isPlayerActor = !!gameState.getCharacterById(actorId);
-        
-        if (action.type === 'Spell' || action.type === 'Prayer') {
-            cost = action.powerCost || POWER_DATA[action.powerName]?.cost || 0;
-        }
-        else if (action.type === 'Orison') {
-            cost = ORISONS[action.orisonName]?.mpCost || 0;
-        }
-        
-        if (cost > 0) {
-            if (actor.currentMp < cost) {
-                canAfford = false;
-            } else {
-                actor.currentMp -= cost;
-                if (isPlayerActor) {
-                    updatePartyStatusUI();
+    }
+    
+    console.log(`Executing for ${actorId}:`, action);
+    
+    let announceText = action.powerName || action.abilityName || action.orisonName || action.type;
+    let announceDur = 1500;
+    
+    // Apply appropriate animation based on action type
+    switch (action.type) {
+        case 'Attack':
+            announceText = 'Attack';
+            announceDur = 600;
+            flashSprite(actorId, 'white', 200);
+            break;
+            
+        case 'Rage':
+            announceText = 'Rage';
+            announceDur = 650;
+            applyCastingAnimation(actorId, 'rage', 1000);
+            break;
+            
+        case 'Spell':
+            if (action.powerName) {
+                const spellData = POWER_DATA[action.powerName];
+                if (spellData && spellData.element) {
+                    applyCastingAnimation(actorId, spellData.element.toLowerCase(), 1200);
+                } else {
+                    applyCastingAnimation(actorId, 'spell', 1200);
                 }
+            } else {
+                applyCastingAnimation(actorId, 'spell', 1200);
+            }
+            break;
+            
+        case 'Prayer':
+            announceText = action.powerName || "Prayer";
+            announceDur = 1500;
+            applyCastingAnimation(actorId, 'prayer', 1300);
+            break;
+            
+        case 'Orison':
+            announceText = action.orisonName || "Orison";
+            announceDur = 1000;
+            if (action.orisonName) {
+                const orisonData = ORISONS[action.orisonName];
+                if (orisonData && orisonData.element) {
+                    applyCastingAnimation(actorId, orisonData.element.toLowerCase(), 1200);
+                } else {
+                    applyCastingAnimation(actorId, 'spell', 1200);
+                }
+            } else {
+                applyCastingAnimation(actorId, 'spell', 1200);
+            }
+            break;
+            
+        case 'DragonBreath':
+            announceText = "Dragon Breath";
+            announceDur = 1600;
+            applyCastingAnimation(actorId, 'dragon-breath', 1500);
+            break;
+            
+        case 'Annihilate':
+            announceText = "Annihilate";
+            announceDur = 1600;
+            applyCastingAnimation(actorId, 'dragon-breath', 1500);
+            break;
+    }
+    
+    showActionAnnouncement(announceText, announceDur);
+    gameState.addLogMessage(`-- ${actor.name}'s action --`);
+    
+    // Continue with the original function logic
+    let primaryTarget = null;
+    let finalTargets = [];
+    let redirectionNeeded = false;
+    
+    if (action.targets && action.targets.length > 0) {
+        let initialTargets = action.targets.map(id => gameState.getCharacterById(id) || gameState.getEnemyById(id)).filter(t => t);
+        
+        if (action.targets.length === 1) {
+            primaryTarget = initialTargets[0];
+            const isRevive = (action.type === 'Prayer' && action.powerName === 'Revive');
+            const isMiracle = (action.type === 'Prayer' && action.powerName === 'Miracle');
+            
+            if (!primaryTarget || 
+                (isRevive && primaryTarget.isAlive) || 
+                (!isRevive && !isMiracle && !primaryTarget.isAlive)) {
+                gameState.addLogMessage(`${actor.name}'s original target invalid!`);
+                redirectionNeeded = true;
+                primaryTarget = null;
+            } else {
+                finalTargets = [primaryTarget];
             }
             
-            if (!canAfford) {
-                gameState.addLogMessage(`${actor.name} doesn't have enough MP for ${action.powerName || action.orisonName || action.type}!`);
-                setTimeout(executeNextQueuedAction, 50);
-                return;
+            if (redirectionNeeded) {
+                if (action.type === 'Attack' || action.type === 'Rage' || 
+                    action.type === 'BruiserAbility' ||
+                    action.type === 'Orison' ||
+                    (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy')) {
+                    
+                    const livingEnemies = gameState.enemies.filter(e => e.isAlive);
+                    if (livingEnemies.length > 0) {
+                        primaryTarget = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+                        finalTargets = [primaryTarget];
+                        gameState.addLogMessage(`Redirecting to ${primaryTarget.name}!`);
+                    } else {
+                        finalTargets = [];
+                    }
+                } else if (action.type === 'Prayer' && !isRevive) {
+                    const livingAllies = gameState.party.filter(p => p.isAlive && p.id !== actorId);
+                    if (livingAllies.length > 0) {
+                        primaryTarget = livingAllies[Math.floor(Math.random() * livingAllies.length)];
+                        finalTargets = [primaryTarget];
+                        gameState.addLogMessage(`Redirecting ${action.powerName} to ${primaryTarget.name}!`);
+                    } else if (actor.isAlive && isPlayerActor) {
+                        primaryTarget = actor;
+                        finalTargets = [primaryTarget];
+                        gameState.addLogMessage(`Redirecting ${action.powerName} to self!`);
+                    } else {
+                        finalTargets = [];
+                    }
+                }
             }
+        } else {
+            const pInfo = POWER_DATA[action.powerName];
+            if (pInfo?.target === 'enemies') {
+                finalTargets = gameState.enemies.filter(e => e.isAlive);
+            } else if (pInfo?.target === 'allies') {
+                finalTargets = gameState.party.filter(p => p.isAlive);
+            } else {
+                finalTargets = initialTargets.filter(t => t.isAlive);
+            }
+            
+            if (finalTargets.length === 0)
+                gameState.addLogMessage(pInfo?.target === 'enemies' ? "No enemies remain!" : "No allies remain!");
         }
+    }
+    
+    let skipAction = false;
+    if ((action.type === 'Attack' || action.type === 'Rage' || action.type === 'Prayer' || 
+         action.type === 'BruiserAbility' || action.type === 'Orison' ||
+        (action.type === 'Spell' && POWER_DATA[action.powerName]?.target !== 'enemies' && 
+         POWER_DATA[action.powerName]?.target !== 'allies')) && 
+        finalTargets.length === 0 && action.targets?.length > 0) {
         
-        console.log(`Executing for ${actorId}:`, action);
-        
-        let announceText = action.powerName || action.abilityName || action.orisonName || action.type;
-        let announceDur = 1500;
-        
-        // Apply appropriate animation based on action type
+        gameState.addLogMessage(`Action fails - no valid targets found.`);
+        skipAction = true;
+    }
+    
+    if (skipAction) {
+        setTimeout(executeNextQueuedAction, 50);
+        return;
+    } else {
         switch (action.type) {
             case 'Attack':
-                announceText = 'Attack';
-                announceDur = 600;
-                flashSprite(actorId, 'white', 200);
-                break;
-                
             case 'Rage':
-                announceText = 'Rage';
-                announceDur = 650;
-                applyCastingAnimation(actorId, 'rage', 1000);
+                performAttack(actor, primaryTarget);
                 break;
                 
             case 'Spell':
-                if (action.powerName) {
-                    const spellData = POWER_DATA[action.powerName];
-                    if (spellData && spellData.element) {
-                        applyCastingAnimation(actorId, spellData.element.toLowerCase(), 1200);
-                    } else {
-                        applyCastingAnimation(actorId, 'spell', 1200);
-                    }
-                } else {
-                    applyCastingAnimation(actorId, 'spell', 1200);
-                }
-                break;
-                
             case 'Prayer':
-                announceText = action.powerName || "Prayer";
-                announceDur = 1500;
-                applyCastingAnimation(actorId, 'prayer', 1300);
+                performPower(actor, action.powerName, finalTargets);
                 break;
                 
             case 'Orison':
-                announceText = action.orisonName || "Orison";
-                announceDur = 1000;
-                if (action.orisonName) {
-                    const orisonData = ORISONS[action.orisonName];
-                    if (orisonData && orisonData.element) {
-                        applyCastingAnimation(actorId, orisonData.element.toLowerCase(), 1200);
-                    } else {
-                        applyCastingAnimation(actorId, 'spell', 1200);
-                    }
-                } else {
-                    applyCastingAnimation(actorId, 'spell', 1200);
-                }
+                performOrison(actor, action.orisonName, finalTargets);
+                break;
+                
+            case 'BruiserAbility':
+                performBruiserAbility(actor, action.abilityName, primaryTarget);
                 break;
                 
             case 'DragonBreath':
-                announceText = "Dragon Breath";
-                announceDur = 1600;
-                applyCastingAnimation(actorId, 'dragon-breath', 1500);
+                performDragonBreath(actor);
                 break;
-        }
-        
-        showActionAnnouncement(announceText, announceDur);
-        gameState.addLogMessage(`-- ${actor.name}'s action --`);
-        
-        // Continue with the original function logic
-        let primaryTarget = null;
-        let finalTargets = [];
-        let redirectionNeeded = false;
-        
-        if (action.targets && action.targets.length > 0) {
-            let initialTargets = action.targets.map(id => gameState.getCharacterById(id) || gameState.getEnemyById(id)).filter(t => t);
-            
-            if (action.targets.length === 1) {
-                primaryTarget = initialTargets[0];
-                const isRevive = (action.type === 'Prayer' && action.powerName === 'Revive');
-                const isMiracle = (action.type === 'Prayer' && action.powerName === 'Miracle');
                 
-                if (!primaryTarget || 
-                    (isRevive && primaryTarget.isAlive) || 
-                    (!isRevive && !isMiracle && !primaryTarget.isAlive)) {
-                    gameState.addLogMessage(`${actor.name}'s original target invalid!`);
-                    redirectionNeeded = true;
-                    primaryTarget = null;
-                } else {
-                    finalTargets = [primaryTarget];
-                }
+            case 'Annihilate':
+                performDragonBreath(actor); // Uses same logic as Dragon Breath
+                break;
                 
-                if (redirectionNeeded) {
-                    if (action.type === 'Attack' || action.type === 'Rage' || 
-                        action.type === 'BruiserAbility' ||
-                        action.type === 'Orison' ||
-                        (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy')) {
-                        
-                        const livingEnemies = gameState.enemies.filter(e => e.isAlive);
-                        if (livingEnemies.length > 0) {
-                            primaryTarget = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
-                            finalTargets = [primaryTarget];
-                            gameState.addLogMessage(`Redirecting to ${primaryTarget.name}!`);
-                        } else {
-                            finalTargets = [];
-                        }
-                    } else if (action.type === 'Prayer' && !isRevive) {
-                        const livingAllies = gameState.party.filter(p => p.isAlive && p.id !== actorId);
-                        if (livingAllies.length > 0) {
-                            primaryTarget = livingAllies[Math.floor(Math.random() * livingAllies.length)];
-                            finalTargets = [primaryTarget];
-                            gameState.addLogMessage(`Redirecting ${action.powerName} to ${primaryTarget.name}!`);
-                        } else if (actor.isAlive && isPlayerActor) {
-                            primaryTarget = actor;
-                            finalTargets = [primaryTarget];
-                            gameState.addLogMessage(`Redirecting ${action.powerName} to self!`);
-                        } else {
-                            finalTargets = [];
-                        }
-                    }
-                }
-            } else {
-                const pInfo = POWER_DATA[action.powerName];
-                if (pInfo?.target === 'enemies') {
-                    finalTargets = gameState.enemies.filter(e => e.isAlive);
-                } else if (pInfo?.target === 'allies') {
-                    finalTargets = gameState.party.filter(p => p.isAlive);
-                } else {
-                    finalTargets = initialTargets.filter(t => t.isAlive);
-                }
-                
-                if (finalTargets.length === 0)
-                    gameState.addLogMessage(pInfo?.target === 'enemies' ? "No enemies remain!" : "No allies remain!");
-            }
+            default:
+                console.error(`Unhandled type: ${action.type}`);
         }
-        
-        let skipAction = false;
-        if ((action.type === 'Attack' || action.type === 'Rage' || action.type === 'Prayer' || 
-             action.type === 'BruiserAbility' || action.type === 'Orison' ||
-            (action.type === 'Spell' && POWER_DATA[action.powerName]?.target !== 'enemies' && 
-             POWER_DATA[action.powerName]?.target !== 'allies')) && 
-            finalTargets.length === 0 && action.targets?.length > 0) {
-            
-            gameState.addLogMessage(`Action fails - no valid targets found.`);
-            skipAction = true;
-        }
-        
-        if (skipAction) {
-            setTimeout(executeNextQueuedAction, 50);
-            return;
-        } else {
-            switch (action.type) {
-                case 'Attack':
-                case 'Rage':
-                    performAttack(actor, primaryTarget);
-                    break;
-                    
-                case 'Spell':
-                case 'Prayer':
-                    performPower(actor, action.powerName, finalTargets);
-                    break;
-                    
-                case 'Orison':
-                    performOrison(actor, action.orisonName, finalTargets);
-                    break;
-                    
-                case 'BruiserAbility':
-                    performBruiserAbility(actor, action.abilityName, primaryTarget);
-                    break;
-                    
-                case 'DragonBreath':
-                    performDragonBreath(actor);
-                    break;
-                    
-                default:
-                    console.error(`Unhandled type: ${action.type}`);
-            }
-        }
-        
-        const delay = Math.max(800, announceDur + 100);
-        setTimeout(executeNextQueuedAction, delay);
     }
+    
+    const delay = Math.max(800, announceDur + 100);
+    setTimeout(executeNextQueuedAction, delay);
+}
 
     // --- New function to handle Orison casting by enemy Casters
     function performOrison(caster, orisonName, targets) {
