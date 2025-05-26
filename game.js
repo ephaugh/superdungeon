@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Pyro', 
         element: 'Fire',
         description: 'A burst of magical flames that hits all party members',
-        levelMultiplier: 1.10, // Reduced from 1.75
+        levelMultiplier: 1.00, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Freeze', 
         element: 'Frost',
         description: 'A blast of magical ice that hits all party members',
-        levelMultiplier: 1.5, // Reduced from 1.75
+        levelMultiplier: 1.3, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Wave', 
         element: 'Hydro',
         description: 'A surge of magical water that hits all party members',
-        levelMultiplier: 1.6, // Reduced from 1.75
+        levelMultiplier: 1.5, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Lightning', 
         element: 'Shock',
         description: 'A strike of magical lightning that hits all party members',
-        levelMultiplier: 1.25, // Reduced from 1.75
+        levelMultiplier: 1.20, // Reduced from 1.75
         mpCost: 5,
         aoe: true  // Now targets all party members
     },
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         name: 'Corruption', 
         element: 'Darkness',
         description: 'A wave of corruption that debuffs all stats of all party members',
-        levelMultiplier: 2.15, 
+        levelMultiplier: 2.00, 
         mpCost: 5,
         aoe: true  // Targets all party members
 }    
@@ -954,18 +954,18 @@ function calculatePhysicalDamage(attacker, defender) {
     let rawDamage = offenseValue - defenseValue;
     
     // Check if the attacker is an enemy and add scaling damage bonus
-    const isEnemyAttacker = gameState.enemies.some(e => e.id === attacker.id);
-    if (isEnemyAttacker) {
-        // Calculate dungeon index (0-based) and current wave number
-        const dungeonIndex = Math.floor((gameState.currentWave - 1) / 15); // 0, 1, 2, 3, etc.
-        const currentWave = gameState.currentWave;
+ //   const isEnemyAttacker = gameState.enemies.some(e => e.id === attacker.id);
+  //  if (isEnemyAttacker) {
+   //     // Calculate dungeon index (0-based) and current wave number
+    //    const dungeonIndex = Math.floor((gameState.currentWave - 1) / 15); // 0, 1, 2, 3, etc.
+      //  const currentWave = gameState.currentWave;
         
         // Add flat damage bonus: dungeon × wave number
-        const flatDamageBonus = dungeonIndex * currentWave;
-        rawDamage += flatDamageBonus;
+    //    const flatDamageBonus = dungeonIndex * currentWave;
+  //      rawDamage += flatDamageBonus;
         
-        console.log(`Enemy damage bonus: Dungeon ${dungeonIndex} × Wave ${currentWave} = +${flatDamageBonus} flat damage`);
-    }
+     //   console.log(`Enemy damage bonus: Dungeon ${dungeonIndex} × Wave ${currentWave} = +${flatDamageBonus} flat damage`);
+ //   }
     
     // Print debug info about the calculation
     console.log(`Attack: ${attacker.name} (STR:${attackerStr}, LVL:${attackerLevel}) -> ${defender.name} (DEF:${defenderDef}, LVL:${defenderLevel})`);
