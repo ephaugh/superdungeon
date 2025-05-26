@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
 };
 
     const UNLOCK_SCHEDULE = {
-        20: { Sorceress: ['Fire2'], Bishop: ['Heal2'] }, 
-        32: { Valkyrie: ['Empower1', 'Restore1'], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1', 'Restore1'] }, 
+        10: { Sorceress: ['Fire2'], Bishop: ['Heal2'] }, 
+        16: { Valkyrie: ['Empower1', 'Restore1'], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1', 'Restore1'] }, 
         18: { Sorceress: ['Frost2','Hydro2'], Bishop: ['Empower2'] }, 
         24: { Sorceress: ['Shock2'], Bishop: ['Restore2'] }, 
         25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'] }, 
@@ -3162,9 +3162,6 @@ if (needsUpdate) {
     gameState.addLogMessage(`Wave ${gameState.currentWave} Cleared!`); 
     console.log(`Wave ${gameState.currentWave} Cleared!`); 
     
-    // Process end of round effects (including buff decrements) only once
-    processEndOfRound();
-    
     // Level up surviving characters
     gameState.party.forEach(c => { 
         if (c.isAlive) c.levelUp(); 
@@ -3178,7 +3175,6 @@ if (needsUpdate) {
     else 
         gameState.setState('BETWEEN_WAVES'); 
 }
-
     
     function handleItemChoice(e) { 
         const iN = e.currentTarget.dataset.item; 
