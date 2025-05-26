@@ -77,9 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const CLASS_LIST = Object.keys(CLASS_DATA);
     const ENEMY_ARCHETYPES = {
         Weakling: { statMultipliers: { hp: 1.1, mp: 1.0, str: 1.0, def: 1.0, int: 1.0, mnd: 1.0 }, abilities: [] },
-        Bruiser: { statMultipliers: { hp: 1.40, mp: 1.0, str: 1.2, def: 1.20, int: 1.0, mnd: 0.7 }, abilities: [] },
-        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.1, def: 0.8, int: 1.40, mnd: 1.30 }, abilities: [] },
-        Boss: { statMultipliers: { hp: 1.0, mp: 1.5, str: 2.0, def: 1.8, int: 1.3, mnd: 1.3 }, abilities: [] } // Boss HP Multiplier applied separately
+        Bruiser: { statMultipliers: { hp: 1.20, mp: 1.0, str: 1.2, def: 1.20, int: 1.0, mnd: 0.7 }, abilities: [] },
+        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.1, def: 0.8, int: 1.30, mnd: 1.15 }, abilities: [] },
+        Boss: { statMultipliers: { hp: 1.0, mp: 1.5, str: 1.75, def: 1.5, int: 1.3, mnd: 1.3 }, abilities: [] } // Boss HP Multiplier applied separately
     };
     
     // Define the Orisons for Casters
@@ -424,7 +424,7 @@ class Character {
     
         if (lvl > 1) { 
             // Buffed HP growth from 1% to 3% per level
-            this.maxHp = Math.round(this.maxHp * 1.03); 
+            this.maxHp = Math.round(this.maxHp * 1.05); 
             if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); 
         } 
     
