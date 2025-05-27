@@ -1771,26 +1771,34 @@ function finalizePartySelection() {
     setupCombatButtonListeners(); 
     startNextWave(); 
 }
-    function startNextWave() { 
-        if (gameState.currentWave === 0) gameState.currentWave = 0; // Start at wave 1
-        gameState.currentWave++; 
-        console.log(`Start Wave ${gameState.currentWave}`); 
-        gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
-        
-        // Added dungeon background functionality
-        updateDungeonBackground();
-        
-        // Add this line to update the progress display
-        updateProgressDisplay();
-        
-        gameState.enemies = generateEnemiesForWave(gameState.currentWave); 
-        console.log("Enemies:", gameState.enemies); 
-        gameState.actionQueue = []; 
-        gameState.nextWaveEffect = null; 
-        gameState.activeCharacterIndex = 0; 
-        gameState.setState('PLAYER_COMMAND'); 
-        prepareCommandPhase(); 
-    }
+   function startNextWave() { 
+    if (gameState.currentWave === 0) gameState.currentWave = 0; // Start at wave 1
+    gameState.currentWave++; 
+    console.log(`Start Wave ${gameState.currentWave}`); 
+    gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
+    
+    // Clear any lingering rage flags at wave start
+    gameState.party.forEach(c => {
+        if (c.isRaging) {
+            c.isRaging = false;
+            console.log(`${c.name}'s rage cleared at wave start`);
+        }
+    });
+    
+    // Added dungeon background functionality
+    updateDungeonBackground();
+    
+    // Add this line to update the progress display
+    updateProgressDisplay();
+    
+    gameState.enemies = generateEnemiesForWave(gameState.currentWave); 
+    console.log("Enemies:", gameState.enemies); 
+    gameState.actionQueue = []; 
+    gameState.nextWaveEffect = null; 
+    gameState.activeCharacterIndex = 0; 
+    gameState.setState('PLAYER_COMMAND'); 
+    prepareCommandPhase(); 
+}
 function generateEnemiesForWave(wave) { 
     const enemies = []; 
     const dungeonIndex = Math.min(DUNGEON_ENEMIES.length - 1, Math.floor((wave - 1) / 15)); 
@@ -3162,6 +3170,15 @@ if (needsUpdate) {
     gameState.addLogMessage(`Wave ${gameState.currentWave} Cleared!`); 
     console.log(`Wave ${gameState.currentWave} Cleared!`); 
     
+    // Clear rage flags for all party members when wave ends
+    gameState.party.forEach(c => {
+        if (c.isRaging) {
+            c.isRaging = false;
+            console.log(`${c.name}'s rage cleared at wave end`);
+            gameState.addLogMessage(`${c.name}'s rage ends.`);
+        }
+    });
+    
     // Level up surviving characters
     gameState.party.forEach(c => { 
         if (c.isAlive) c.levelUp(); 
@@ -3193,7 +3210,7 @@ if (needsUpdate) {
     let i2 = ''; 
     const r = Math.random(); 
     
-    if (r < 0.40) i2 = 'Serum'; 
+    if (r < 0.49) i2 = 'Serum'; 
     else if (r < 0.80) { 
         i2 = 'Scroll'; 
     } /*Flasks disabled*/ 
