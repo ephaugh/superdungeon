@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Frost3: { level: 3, cost: 30, type: 'Spell', element: 'Frost', target: 'enemies' },
         Hydro3: { level: 3, cost: 30, type: 'Spell', element: 'Hydro', target: 'enemies' },
         Shock3: { level: 3, cost: 30, type: 'Spell', element: 'Shock', target: 'enemies' },
-        Omni: { level: 4, cost: 100, type: 'Spell', element: 'Darkness', target: 'enemies' },
+        Omni: { level: 5, cost: 100, type: 'Spell', element: 'Darkness', target: 'enemies' },
         
     // Updated and new prayer entries
         Heal1: { level: 1, cost: 5, type: 'Prayer', effect: 'Heal', target: 'ally' },
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Lifelink: { level: 2, cost: 20, type: 'Prayer', effect: 'Lifelink', statusName: 'Lifelink', turns: 4, target: 'ally', healPercent: 0.5 },
         Heal3: { level: 3, cost: 30, type: 'Prayer', effect: 'Heal', target: 'ally' },
         Empower3: { level: 3, cost: 30, type: 'Prayer', effect: 'Empower', statusName: 'Empower3', turns: 4, target: 'ally', damageMultiplier: 5.0 },
-        Miracle: { level: 4, cost: 200, type: 'Prayer', effect: 'Miracle', target: 'ally_or_ko' },
+        Miracle: { level: 4, cost: 150, type: 'Prayer', effect: 'Miracle', target: 'ally_or_ko' },
 };
 
     const UNLOCK_SCHEDULE = {
@@ -1755,10 +1755,10 @@ function finalizePartySelection() {
         const c = new Character(`party-${i + 1}`, cN); 
         
         // FOR TESTING: Set starting level here
-        const TESTING_START_LEVEL = 1; // Change this number to test different levels
+        const TESTING_START_LEVEL = 86; // Change this number to test different levels
         
         // Apply level-ups from 1 to the testing level
-        for (let level = 1; level <= TESTING_START_LEVEL; level++) {
+        for (let level = 86; level <= TESTING_START_LEVEL; level++) {
             c.applyLevelUpGrowth(level);
         }
         
