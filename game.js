@@ -942,7 +942,7 @@ function calculatePhysicalDamage(attacker, defender) {
     const defenderLevel = defender.level; 
     
     // Determine base multiplier (higher for Rage)
-    let baseMultiplier = attacker.isRaging ? 2.2 : (1.5 + Math.random() * 0.45); 
+    let baseMultiplier = attacker.isRaging ? 2.75 : (1.5 + Math.random() * 0.45); 
     
     // Calculate offense value using strength and level
     let offenseValue = (attackerLevel + attackerStr) * baseMultiplier; 
