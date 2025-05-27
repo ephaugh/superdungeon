@@ -1772,7 +1772,7 @@ function finalizePartySelection() {
     startNextWave(); 
 }
     function startNextWave() { 
-        if (gameState.currentWave === 0) gameState.currentWave = 0; // Start at wave 61
+        if (gameState.currentWave === 0) gameState.currentWave = 86; // Start at wave 61
         gameState.currentWave++; 
         console.log(`Start Wave ${gameState.currentWave}`); 
         gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
