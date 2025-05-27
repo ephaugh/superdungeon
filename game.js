@@ -1928,7 +1928,7 @@ function calculateEnemyStats(wave) {
     const bonusIncrements = Math.floor((wave - 1) / 15);
     
     for (let n = 1; n < wave; n++) { 
-        hp = Math.round(hp * 1.08); 
+        hp = Math.round(hp * 1.07); 
         mp = Math.round(mp * 1.12); 
         s++; 
         d++; 
