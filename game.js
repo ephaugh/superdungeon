@@ -1755,10 +1755,10 @@ function finalizePartySelection() {
         const c = new Character(`party-${i + 1}`, cN); 
         
         // FOR TESTING: Set starting level here
-        const TESTING_START_LEVEL = 86; // Change this number to test different levels
+        const TESTING_START_LEVEL = 1; // Change this number to test different levels
         
         // Apply level-ups from 1 to the testing level
-        for (let level = 86; level <= TESTING_START_LEVEL; level++) {
+        for (let level = 1; level <= TESTING_START_LEVEL; level++) {
             c.applyLevelUpGrowth(level);
         }
         
@@ -1772,7 +1772,7 @@ function finalizePartySelection() {
     startNextWave(); 
 }
     function startNextWave() { 
-        if (gameState.currentWave === 0) gameState.currentWave = 86; // Start at wave 61
+        if (gameState.currentWave === 0) gameState.currentWave = 0; // Start at wave 1
         gameState.currentWave++; 
         console.log(`Start Wave ${gameState.currentWave}`); 
         gameState.addLogMessage(`Wave ${gameState.currentWave}`); 
