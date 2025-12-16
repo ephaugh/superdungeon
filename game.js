@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
     // NEW: Monk Arts (0 MP cost abilities)
         Rapid: { level: 1, cost: 0, type: 'Art', effect: 'DoubleAttack', target: 'random_enemies', damageMultiplier: 0.45, alwaysFirst: true },
-        Focus: { level: 1, cost: 0, type: 'Art', effect: 'EnhancedStrike', target: 'enemy', damageMultiplier: 1.6, alwaysLast: true },
+        Focus: { level: 1, cost: 0, type: 'Art', effect: 'EnhancedStrike', target: 'enemy', damageMultiplier: 1.8, alwaysLast: true },
         Zen: { level: 1, cost: 0, type: 'Art', effect: 'SelfHeal', target: 'self', healPercent: 0.27 },
         // Dodge: { level: 1, cost: 0, type: 'Art', effect: 'Evasion', target: 'self', turns: 1, alwaysFirst: true },
         Kick: { level: 1, cost: 0, type: 'Art', effect: 'AOE_Attack', target: 'all_enemies', damageMultiplier: 1.0 },
@@ -346,7 +346,7 @@ const PLAYER_SPRITES = {
     function calculatePhysicalDamage(attacker, defender) { 
         const attackerStr = attacker.getCurrentStat ? attacker.getCurrentStat('str') : attacker.str; 
         const defenderDef = defender.getCurrentStat ? defender.getCurrentStat('def') : defender.def; 
-        let baseMultiplier = attacker.isRaging ? 2.75 : (1.5 + Math.random() * 0.45); 
+        let baseMultiplier = attacker.isRaging ? 3.00 : (1.5 + Math.random() * 0.45); 
         let offenseValue = (attacker.level + attackerStr) * baseMultiplier; 
         let defenseValue = (defender.level + defenderDef); 
         let rawDamage = offenseValue - defenseValue;
@@ -867,7 +867,7 @@ function prepareCommandPhase() {
             else { gameState.addLogMessage(`${actor.name}'s Focus finds no target!`); return; }
         }
         
-        const focusMultiplier = POWER_DATA['Focus'].damageMultiplier; // 1.6
+        const focusMultiplier = POWER_DATA['Focus'].damageMultiplier; // 1.8
         const targetElementId = getCorrectElementId(target.id);
         const actorElementId = getCorrectElementId(actor.id);
         
