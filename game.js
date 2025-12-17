@@ -1448,14 +1448,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const empowerBuff = actor.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2' || e.type === 'Empower3');
         const lifelinkBuff = actor.statusEffects.find(e => e.type === 'Lifelink');
         const actorElementId = getCorrectElementId(actor.id);
-        const totalHits = 7;
+        const totalHits = 11;
         for (let i = 0; i < totalHits; i++) {
             setTimeout(() => {
                 const livingEnemies = gameState.enemies.filter(e => e.isAlive);
                 if (livingEnemies.length === 0) return;
                 const target = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
                 const targetElementId = getCorrectElementId(target.id);
-                let damage = Math.round(calculatePhysicalDamage(actor, target) * 0.75);
+                let damage = Math.round(calculatePhysicalDamage(actor, target) * 0.8);
                 if (empowerBuff?.damageMultiplier) damage = Math.round(damage * empowerBuff.damageMultiplier);
                 flashSprite(targetElementId, 'crimson', 200);
                 setTimeout(() => {
@@ -1510,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         targets.forEach((target, index) => {
             setTimeout(() => {
                 const targetElementId = getCorrectElementId(target.id);
-                let damage = Math.round(calculatePhysicalDamage(actor, target) * 6.0);
+                let damage = Math.round(calculatePhysicalDamage(actor, target) * 7.0);
                 if (empowerBuff?.damageMultiplier) damage = Math.round(damage * empowerBuff.damageMultiplier);
                 flashSprite(targetElementId, 'purple', 300);
                 setTimeout(() => {
