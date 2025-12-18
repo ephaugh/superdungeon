@@ -12,13 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const CLASS_DATA = {
-        Barbarian: { baseHp: 30, baseMp: 0, baseStr: 7, baseDef: 7, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 6, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
+        Barbarian: { baseHp: 30, baseMp: 0, baseStr: 7, baseDef: 7, baseInt: 5, baseMnd: 4, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 6, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
         Valkyrie: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Ninja: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 17, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
         Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
         Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
-        Monk: { baseHp: 27, baseMp: 0, baseStr: 7, baseDef: 8, baseInt: 5, baseMnd: 5, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1.2, def: 1, int: 0, mnd: 0 } }
+        Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } }
     };
 
     const SPECIAL_NAMES = {
@@ -94,8 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ENEMY_ARCHETYPES = {
         Weakling: { statMultipliers: { hp: 1.05, mp: 1.0, str: 1.1, def: 0.9, int: 1.0, mnd: 1.0 } },
         Bruiser: { statMultipliers: { hp: 1.20, mp: 1.0, str: 1.2, def: 1.10, int: 1.0, mnd: 0.6 } },
-        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.1, def: 0.8, int: 1.30, mnd: 1.2 } },
-        Boss: { statMultipliers: { hp: 1.0, mp: 1.5, str: 2.0, def: 1.5, int: 1.3, mnd: 1.3 } }
+        Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.0, def: 0.8, int: 1.30, mnd: 1.3 } },
+        Boss: { statMultipliers: { hp: 1.05, mp: 1.5, str: 2.0, def: 1.5, int: 1.3, mnd: 1.3 } }
     };
 
     const ORISONS = {
