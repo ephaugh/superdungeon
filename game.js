@@ -100,11 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ORISONS = {
         Pyro: { name: 'Pyro', element: 'Fire', levelMultiplier: 1.00, mpCost: 5, aoe: true },
-        Freeze: { name: 'Freeze', element: 'Frost', levelMultiplier: 1.3, mpCost: 5, aoe: true },
-        Wave: { name: 'Wave', element: 'Hydro', levelMultiplier: 1.5, mpCost: 5, aoe: true },
+        Freeze: { name: 'Freeze', element: 'Frost', levelMultiplier: 1.4, mpCost: 5, aoe: true },
+        Wave: { name: 'Wave', element: 'Hydro', levelMultiplier: 1.75, mpCost: 5, aoe: true },
         Lightning: { name: 'Lightning', element: 'Shock', levelMultiplier: 1.20, mpCost: 5, aoe: true },
-        Pyro2: { name: 'Pyro+', element: 'Fire', levelMultiplier: 1.8, mpCost: 5, aoe: true },
-        Corruption: { name: 'Corruption', element: 'Darkness', levelMultiplier: 2.00, mpCost: 5, aoe: true }
+        Pyro2: { name: 'Pyro+', element: 'Fire', levelMultiplier: 2.25, mpCost: 5, aoe: true },
+        Corruption: { name: 'Corruption', element: 'Darkness', levelMultiplier: 2.75, mpCost: 5, aoe: true }
     };
 
     const DUNGEON_ENEMIES = [
