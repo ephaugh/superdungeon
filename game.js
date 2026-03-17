@@ -721,7 +721,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sprite.style.cssText = `left: ${20 + index * 20}% !important; bottom: 25px !important; position: absolute !important;`;
             let spriteData;
             if (character.isTransformed && character.currentForm && FORM_DATA[character.currentForm]) {
-                spriteData = { src: FORM_DATA[character.currentForm].sprite, width: 100, height: 100 };
+                const isPhoenix = character.currentForm === 'Phoenix';
+                spriteData = { src: FORM_DATA[character.currentForm].sprite, width: isPhoenix ? 130 : 100, height: isPhoenix ? 130 : 100 };
             } else {
                 spriteData = PLAYER_SPRITES[character.className];
             }
@@ -844,17 +845,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (char.className === 'Sylvan' && char.isTransformed) {
                         const feralBtn = document.createElement('button');
                         feralBtn.dataset.action = 'Feral';
-                        const form = FORM_DATA[char.currentForm];
-                        feralBtn.innerHTML = '<span style="font-size:1.2em">🐾</span> Feral<br><span style="font-size:0.8em;color:#afa">(' + form.name + ' - ' + char.formTurnsRemaining + ' left)</span>';
-                        feralBtn.classList.add('feral-btn');
+                        feralBtn.textContent = 'Feral';
                         menuContainer.appendChild(feralBtn);
                     } else {
                         const hasSpecial = char.limitGauge >= 100;
                         if (hasSpecial) {
                             const specialBtn = document.createElement('button');
                             specialBtn.dataset.action = 'Special';
-                            specialBtn.textContent = '✨ Special ✨';
-                            specialBtn.classList.add('special-ready');
+                            specialBtn.textContent = 'Special';
+                            specialBtn.classList.add('rainbow-text');
                             menuContainer.appendChild(specialBtn);
                         }
                         ['Attack', 'Spell', 'Prayer', 'Rage', 'Arts', 'Shift'].forEach(cmd => {
@@ -921,21 +920,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuContainer.className = 'sub-menu-box';
                 const sylvanChar = gameState.party[gameState.activeCharacterIndex];
                 const availableForms = sylvanChar.powers.filter(p => FORM_DATA[p] && !FORM_DATA[p].isSpecial);
-                const shiftTitle = document.createElement('span');
-                shiftTitle.style.cssText = 'font-weight:bold;color:#8f8;margin-bottom:5px;text-align:center;display:block';
-                shiftTitle.textContent = 'Choose Form:';
-                menuContainer.appendChild(shiftTitle);
-                availableForms.forEach(formName => {
-                    const form = FORM_DATA[formName];
-                    const btn = document.createElement('button');
-                    btn.dataset.form = formName;
-                    const descMap = { Bear: '-25% dmg taken, +25% dmg dealt', Unicorn: 'Party healing + revival', Cobra: 'Fast strikes + poison' };
-                    btn.innerHTML = '<strong style="color:#8f8">' + form.name + '</strong><br><span style="font-size:0.85em;color:#afa">' + (descMap[formName] || '') + '</span>';
-                    menuContainer.appendChild(btn);
-                });
-                const shiftCancelBtn = document.createElement('button');
-                shiftCancelBtn.textContent = 'Back';
-                menuContainer.appendChild(shiftCancelBtn);
+                if (availableForms.length > 0) {
+                    availableForms.forEach(formName => {
+                        const btn = document.createElement('button');
+                        btn.dataset.form = formName;
+                        btn.textContent = formName;
+                        menuContainer.appendChild(btn);
+                    });
+                } else {
+                    menuContainer.innerHTML = '<p style="color: #aaa;">No forms known.</p>';
+                }
+                const backBtn = document.createElement('button');
+                backBtn.textContent = 'Back';
+                backBtn.onclick = () => { populateMenu('main'); gameState.currentAction = null; };
+                menuContainer.appendChild(backBtn);
                 break;
             case 'targets':
                 menuContainer.className = 'sub-menu-box target-menu';
@@ -1460,6 +1458,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (orisonData?.element) applyCastingAnimation(actorId, orisonData.element.toLowerCase(), 1200);
                 break;
             case 'DragonBreath': case 'Annihilate': announceText = action.type === 'Annihilate' ? 'Annihilate' : 'Dragon Breath'; announceDur = 1600; applyCastingAnimation(actorId, 'dragon-breath', 1500); break;
+            case 'Feral':
+                if (actor.isTransformed && actor.currentForm && FORM_DATA[actor.currentForm]) {
+                    const preSelectedAbility = selectFormAbility(FORM_DATA[actor.currentForm]);
+                    action.preSelectedAbility = preSelectedAbility;
+                    announceText = preSelectedAbility.name;
+                }
+                announceDur = 800;
+                break;
+            case 'Shift':
+                announceText = action.formName ? FORM_DATA[action.formName]?.name || 'Shift' : 'Shift';
+                announceDur = 800;
+                break;
             case 'Special':
                 announceText = action.specialName || actor.specialName;
                 announceDur = getSpecialAnnouncementDuration(announceText);
@@ -1502,7 +1512,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'DragonBreath': case 'Annihilate': performDragonBreath(actor); break;
             case 'Special': executeSpecial(actor); break;
             case 'Shift': executeShift(actor, action.formName); break;
-            case 'Feral': executeFeral(actor); break;
+            case 'Feral': executeFeral(actor, action.preSelectedAbility); break;
             default: console.error(`Unhandled type: ${action.type}`);
         }
         const delay = Math.max(800, announceDur + 100);
@@ -1886,10 +1896,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePartyStatusUI();
     }
 
-    function executeFeral(sylvan) {
+    function executeFeral(sylvan, preSelectedAbility) {
         if (!sylvan.isTransformed || !sylvan.currentForm) return;
         const form = FORM_DATA[sylvan.currentForm];
-        const ability = selectFormAbility(form);
+        const ability = preSelectedAbility || selectFormAbility(form);
         executeFeralAbility(sylvan, ability);
     }
 
