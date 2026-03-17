@@ -709,6 +709,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (effect.type === 'Poison') sprite.classList.add('poisoned');
                     else if (effect.type === 'Slow') sprite.classList.add('slowed');
                 });
+                ['str', 'def', 'int', 'mnd'].forEach(stat => {
+                    const debuff = enemy.statusEffects.find(e => e.type === `${stat}Debuff`);
+                    if (debuff) addStatDebuffIndicator(enemy.id, stat, debuff.turns);
+                });
             }
             enemyArea.appendChild(sprite);
         });
@@ -930,10 +934,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     menuContainer.innerHTML = '<p style="color: #aaa;">No forms known.</p>';
                 }
-                const backBtn = document.createElement('button');
-                backBtn.textContent = 'Back';
-                backBtn.onclick = () => { populateMenu('main'); gameState.currentAction = null; };
-                menuContainer.appendChild(backBtn);
                 break;
             case 'targets':
                 menuContainer.className = 'sub-menu-box target-menu';
@@ -1061,7 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleMenuCancel() {
         switch (gameState.activeMenu) {
-            case 'Spell': case 'Prayer': case 'Arts': case 'Shift': populateMenu('main'); gameState.currentAction = null; break;
+            case 'Spell': case 'Prayer': case 'Arts': populateMenu('main'); gameState.currentAction = null; break;
             case 'targets':
                 const aT = gameState.currentAction?.type;
                 if (aT === 'Spell') populateMenu('Spell');
@@ -1464,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     action.preSelectedAbility = preSelectedAbility;
                     announceText = preSelectedAbility.name;
                 }
-                announceDur = 800;
+                announceDur = 1200;
                 break;
             case 'Shift':
                 announceText = action.formName ? FORM_DATA[action.formName]?.name || 'Shift' : 'Shift';
@@ -1586,8 +1586,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalHits = 11;
         for (let i = 0; i < totalHits; i++) {
             setTimeout(() => {
+                if (gameState.currentState !== 'ACTION_RESOLUTION') { removeSpecialVisuals(); return; }
                 const livingEnemies = gameState.enemies.filter(e => e.isAlive);
-                if (livingEnemies.length === 0) return;
+                if (livingEnemies.length === 0) { removeSpecialVisuals(); return; }
                 const target = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
                 const targetElementId = getCorrectElementId(target.id);
                 let damage = Math.round(calculatePhysicalDamage(actor, target) * 0.8);
@@ -1644,6 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targets = gameState.enemies.filter(e => e.isAlive);
         targets.forEach((target, index) => {
             setTimeout(() => {
+                if (gameState.currentState !== 'ACTION_RESOLUTION') { removeSpecialVisuals(); return; }
                 const targetElementId = getCorrectElementId(target.id);
                 let damage = Math.round(calculatePhysicalDamage(actor, target) * 7.0);
                 if (empowerBuff?.damageMultiplier) damage = Math.round(damage * empowerBuff.damageMultiplier);
@@ -1678,8 +1680,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalHits = 7;
         for (let i = 0; i < totalHits; i++) {
             setTimeout(() => {
+                if (gameState.currentState !== 'ACTION_RESOLUTION') { removeSpecialVisuals(); return; }
                 const livingEnemies = gameState.enemies.filter(e => e.isAlive);
-                if (livingEnemies.length === 0) return;
+                if (livingEnemies.length === 0) { removeSpecialVisuals(); return; }
                 const target = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
                 const targetElementId = getCorrectElementId(target.id);
                 let damage = Math.round(calculateMagicDamage(actor, target, 3) * 2.5);
@@ -1712,9 +1715,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         spells.forEach(spell => {
             setTimeout(() => {
+                if (gameState.currentState !== 'ACTION_RESOLUTION') { removeSpecialVisuals(); return; }
                 const targets = gameState.enemies.filter(e => e.isAlive);
                 targets.forEach((target, idx) => {
                     setTimeout(() => {
+                        if (gameState.currentState !== 'ACTION_RESOLUTION') { removeSpecialVisuals(); return; }
                         const targetElementId = getCorrectElementId(target.id);
                         let damage = Math.round(calculateMagicDamage(actor, target, 3) * spell.mult);
                         if (empowerBuff?.damageMultiplier) damage = Math.round(damage * empowerBuff.damageMultiplier);
@@ -1903,6 +1908,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function executeFeralAbility(sylvan, ability) {
         const form = FORM_DATA[sylvan.currentForm];
         gameState.addLogMessage(`${sylvan.name} uses ${ability.name}!`);
+        showActionAnnouncement(ability.name, 1200);
         const empowerBuff = sylvan.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2' || e.type === 'Empower3');
         const lifelinkBuff = sylvan.statusEffects.find(e => e.type === 'Lifelink');
         switch (ability.name) {
@@ -2686,7 +2692,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyItemEffect(iN) {
         switch (iN) {
-            case 'Potion': gameState.party.forEach(c => { if (c.isAlive) c.heal(Math.round(c.maxHp * 0.20)); }); gameState.addLogMessage("Party +20% HP!"); break;
+            case 'Potion': gameState.party.forEach(c => { if (c.isAlive) c.heal(Math.round(c.maxHp * 0.05)); }); gameState.addLogMessage("Party +5% HP!"); break;
             case 'Serum': gameState.party.forEach(c => { if (c.isAlive) c.restoreMp(Math.round(c.maxMp * 0.50)); }); gameState.addLogMessage("Party +50% MP!"); break;
             case 'Scroll': gameState.party.forEach(c => { if (!c.isAlive) { c.isAlive = true; const healAmount = Math.round(c.maxHp * 0.33); c.heal(healAmount); } }); gameState.addLogMessage("Scroll revives fallen!"); break;
         }
