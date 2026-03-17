@@ -133,6 +133,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const CLASS_LIST = Object.keys(CLASS_DATA);
 
+    const CLASS_DESCRIPTIONS = {
+        Barbarian: {
+            title: "Barbarian", subtitle: "The Berserker",
+            description: "A pure physical powerhouse who trades defense for offense. Rage doubles damage output but also doubles damage taken. Charges Limit Break fastest due to high damage intake. Best paired with a dedicated healer.",
+            role: "Damage Dealer", difficulty: "\u2605\u2605\u2606\u2606\u2606",
+            strengths: ["Highest damage output", "Fast Limit charging", "Simple to play"],
+            weaknesses: ["Takes 2x damage during Rage", "No magic", "No self-sustain"]
+        },
+        Valkyrie: {
+            title: "Valkyrie", subtitle: "The Commander",
+            description: "A balanced warrior who excels at supporting the team while dealing solid damage. Her Battle Cry Special grants the entire party Empower3 and Fury, turning any fight into a decisive victory.",
+            role: "Support / Damage", difficulty: "\u2605\u2605\u2606\u2606\u2606",
+            strengths: ["Party-wide buffs", "Good survivability", "Versatile"],
+            weaknesses: ["Lower single-target damage", "No healing", "Jack of all trades"]
+        },
+        Ninja: {
+            title: "Ninja", subtitle: "The Assassin",
+            description: "A swift hybrid fighter combining physical attacks with offensive magic. Access to Fire spells and Poison makes the Ninja deadly against all enemy types. Night Slash poisons the entire battlefield.",
+            role: "Hybrid Damage", difficulty: "\u2605\u2605\u2605\u2606\u2606",
+            strengths: ["Magic + Physical", "AOE poison", "High speed"],
+            weaknesses: ["Low HP", "MP dependent", "Fragile"]
+        },
+        Sorceress: {
+            title: "Sorceress", subtitle: "The Destroyer",
+            description: "The ultimate offensive spellcaster. Wields devastating Fire magic and can Slow enemies to control the battlefield. Meteor Storm Special rains destruction on all foes while debuffing their stats.",
+            role: "Magic Damage", difficulty: "\u2605\u2605\u2605\u2606\u2606",
+            strengths: ["Highest magic damage", "AOE destruction", "Enemy debuffs"],
+            weaknesses: ["Very low HP", "MP hungry", "Needs protection"]
+        },
+        Shaman: {
+            title: "Shaman", subtitle: "The Elementalist",
+            description: "Master of the four elements. Each spell debuffs a different stat: Hydro (MND), Fire (STR), Frost (DEF), Shock (INT). Elemental Fury Special casts all four in sequence for total battlefield control.",
+            role: "Debuffer / Magic", difficulty: "\u2605\u2605\u2605\u2605\u2606",
+            strengths: ["All-stat debuffs", "Element coverage", "Tactical depth"],
+            weaknesses: ["Lower burst damage", "Complex rotation", "MP management"]
+        },
+        Bishop: {
+            title: "Bishop", subtitle: "The Divine",
+            description: "The ultimate healer with access to the most powerful prayers. Heal, Revive, and buff allies to keep the party fighting. Angelic Chorus Special fully heals and revives the entire party instantly.",
+            role: "Healer / Support", difficulty: "\u2605\u2605\u2606\u2606\u2606",
+            strengths: ["Best healing", "Party revive", "Essential for hard content"],
+            weaknesses: ["Low damage", "Target priority", "Slower Limit charging"]
+        },
+        Monk: {
+            title: "Monk", subtitle: "The Martial Artist",
+            description: "A tactical physical fighter using Arts that cost 0 MP. Highest DEF makes Monk incredibly durable. Focus hits hard but acts last. Dodge ignores all damage. Taunt protects allies. Nirvana Fist grants self-Miracle then devastates.",
+            role: "Tank / Tactical", difficulty: "\u2605\u2605\u2605\u2605\u2605",
+            strengths: ["Highest defense", "0 MP abilities", "Tactical flexibility"],
+            weaknesses: ["Complex decision-making", "Lower raw damage", "Slower Limit charging"]
+        },
+        Sylvan: {
+            title: "Sylvan", subtitle: "The Shapeshifter",
+            description: "A nature warrior who transforms into powerful animal forms. Each form lasts 3 turns with unique abilities and passives. Bear tanks and mauls. Unicorn heals and revives. Cobra poisons with speed priority. Phoenix Form Special grants immortality and devastation.",
+            role: "Hybrid / Versatile", difficulty: "\u2605\u2605\u2605\u2605\u2605",
+            strengths: ["Extreme versatility", "Form-specific passives", "Cleanses debuffs on shift"],
+            weaknesses: ["RNG ability selection", "Form commitment (3 turns)", "Complex management"]
+        }
+    };
+
     const ENEMY_ARCHETYPES = {
         Weakling: { statMultipliers: { hp: 1.05, mp: 1.0, str: 1.1, def: 0.9, int: 1.0, mnd: 1.0 } },
         Bruiser: { statMultipliers: { hp: 1.80, mp: 1.0, str: 1.2, def: 1.10, int: 1.0, mnd: 0.6 } },
@@ -380,6 +439,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'VICTORY_SCREEN': document.getElementById('victory-screen').style.display = 'flex'; setupVictoryScreen(); break;
             }
             updateProgressDisplay();
+            // Show/hide help button during combat
+            const helpBtn = document.getElementById('help-button');
+            if (helpBtn) {
+                const combatStates = ['PLAYER_COMMAND', 'ACTION_RESOLUTION', 'BETWEEN_WAVES'];
+                helpBtn.style.display = combatStates.includes(this.currentState) ? 'flex' : 'none';
+            }
+            // Hide help modal on state change
+            const helpModal = document.getElementById('help-modal');
+            if (helpModal) helpModal.classList.add('hidden');
         }
     };
 
@@ -776,6 +844,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (conf) d.classList.add('confirmed');
             cont.appendChild(d);
         }
+        updateClassInfoPanel(gameState.tempSelectedClass);
+    }
+
+    function updateClassInfoPanel(className) {
+        const info = CLASS_DESCRIPTIONS[className];
+        if (!info) return;
+        const panel = document.getElementById('class-info-panel');
+        if (!panel) return;
+        document.getElementById('class-title').textContent = info.title;
+        document.getElementById('class-subtitle').textContent = info.subtitle;
+        document.getElementById('class-description').textContent = info.description;
+        document.getElementById('class-role').textContent = info.role;
+        document.getElementById('class-difficulty').textContent = info.difficulty;
+        const strengthsList = document.getElementById('class-strengths');
+        strengthsList.innerHTML = info.strengths.map(s => `<li>\u2022 ${s}</li>`).join('');
+        const weaknessesList = document.getElementById('class-weaknesses');
+        weaknessesList.innerHTML = info.weaknesses.map(w => `<li>\u2022 ${w}</li>`).join('');
+        panel.style.animation = 'none';
+        panel.offsetHeight; // force reflow
+        panel.style.animation = 'fadeIn 0.3s ease';
     }
 
     function highlightActivePartyStatus(index) {
@@ -834,6 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bgElement) bgElement.style.backgroundImage = 'none';
         gameState.setState('TITLE_SCREEN');
         setupGlobalKeyListener();
+        setupTouchControls();
     }
 
     // --- Menu Population Function ---
@@ -974,6 +1063,135 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupGlobalKeyListener() {
         document.removeEventListener('keydown', handleGlobalKeyPress);
         document.addEventListener('keydown', handleGlobalKeyPress);
+    }
+
+    // --- Touch Controls Setup ---
+    let _touchControlsInitialized = false;
+    function setupTouchControls() {
+        // Viewport scaling for mobile
+        resizeGameContainer();
+        window.addEventListener('resize', resizeGameContainer, { passive: true });
+
+        // Only set up DOM-based listeners once
+        if (_touchControlsInitialized) return;
+        _touchControlsInitialized = true;
+
+        // Title screen tap to begin
+        const titleScreen = document.getElementById('title-screen');
+        if (titleScreen) {
+            titleScreen.addEventListener('click', () => {
+                if (gameState.currentState === 'TITLE_SCREEN') gameState.setState('PARTY_SELECTION');
+            });
+        }
+
+        // Party select: swipe left/right to cycle class
+        const partyScreen = document.getElementById('party-select-screen');
+        if (partyScreen) {
+            let swipeTouchStartX = 0;
+            let swipeTouchStartY = 0;
+            partyScreen.addEventListener('touchstart', (e) => {
+                swipeTouchStartX = e.changedTouches[0].screenX;
+                swipeTouchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+            partyScreen.addEventListener('touchend', (e) => {
+                if (gameState.currentState !== 'PARTY_SELECTION') return;
+                const dx = swipeTouchStartX - e.changedTouches[0].screenX;
+                const dy = swipeTouchStartY - e.changedTouches[0].screenY;
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+                    const curI = CLASS_LIST.indexOf(gameState.tempSelectedClass);
+                    const newI = dx > 0
+                        ? (curI + 1) % CLASS_LIST.length
+                        : (curI - 1 + CLASS_LIST.length) % CLASS_LIST.length;
+                    if (newI !== curI) { gameState.tempSelectedClass = CLASS_LIST[newI]; updatePartySelectUI(); }
+                }
+            }, { passive: true });
+        }
+
+        // Mobile class nav buttons
+        const prevBtn = document.getElementById('class-prev-btn');
+        const nextBtn = document.getElementById('class-next-btn');
+        const confirmBtn = document.getElementById('class-confirm-btn');
+        const backBtn = document.getElementById('class-back-btn');
+        if (prevBtn) prevBtn.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'ArrowLeft' });
+        });
+        if (nextBtn) nextBtn.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'ArrowRight' });
+        });
+        if (confirmBtn) confirmBtn.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'Enter' });
+        });
+        if (backBtn) backBtn.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'Escape' });
+        });
+
+        // Enemy sprite tap for targeting
+        const enemyArea = document.getElementById('battlefield-enemy-area');
+        if (enemyArea) {
+            enemyArea.addEventListener('click', (e) => {
+                if (gameState.currentState !== 'PLAYER_COMMAND' || gameState.activeMenu !== 'targets') return;
+                const sprite = e.target.closest('.sprite.enemy');
+                if (!sprite) return;
+                const btn = document.querySelector(`#dynamic-menu-content button[data-target-id="${sprite.id}"]`);
+                if (btn) btn.click();
+            });
+        }
+
+        // Ally sprite tap for ally targeting
+        const partyArea = document.getElementById('battlefield-party-area');
+        if (partyArea) {
+            partyArea.addEventListener('click', (e) => {
+                if (gameState.currentState !== 'PLAYER_COMMAND' || gameState.activeMenu !== 'targets') return;
+                const sprite = e.target.closest('.sprite.party-member');
+                if (!sprite) return;
+                const targetId = sprite.id.replace('-sprite', '');
+                const btn = document.querySelector(`#dynamic-menu-content button[data-target-id="${targetId}"]`);
+                if (btn) btn.click();
+            });
+        }
+
+        // Help modal
+        setupHelpModal();
+    }
+
+    function resizeGameContainer() {
+        const container = document.getElementById('game-container');
+        if (!container) return;
+        const scale = Math.min(window.innerWidth / 800, window.innerHeight / 600, 1);
+        document.documentElement.style.setProperty('--game-scale', scale);
+    }
+
+    function setupHelpModal() {
+        const helpBtn = document.getElementById('help-button');
+        const helpModal = document.getElementById('help-modal');
+        const helpClose = document.querySelector('.help-close');
+        if (!helpBtn || !helpModal) return;
+
+        helpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            helpModal.classList.remove('hidden');
+        });
+        if (helpClose) {
+            helpClose.addEventListener('click', () => helpModal.classList.add('hidden'));
+        }
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) helpModal.classList.add('hidden');
+        });
+        document.querySelectorAll('.help-section-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('active');
+            });
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.parentElement.classList.toggle('active');
+                }
+            });
+        });
     }
 
     function handleGlobalKeyPress(event) {
