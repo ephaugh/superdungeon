@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sorceress': { src: 'https://i.imgur.com/sMfxdhj.png', width: 100, height: 100 },
         'Bishop': { src: 'https://i.imgur.com/tTO0Ell.png', width: 100, height: 100 },
         'Monk': { src: 'https://i.imgur.com/QG9vhk2.png', width: 100, height: 100 },
-        'Sylvan': { src: 'https://i.imgur.com/4TzOd6U.png', width: 100, height: 100 }
+        'Sylvan': { src: 'https://i.imgur.com/4TzOd6U.png', width: 110, height: 110 }
     };
 
     const ELEMENT_DEBUFF_MAP = { 'Fire': 'str', 'Frost': 'def', 'Shock': 'int', 'Hydro': 'mnd', 'Darkness': ['str', 'def', 'int', 'mnd'] };
@@ -726,7 +726,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let spriteData;
             if (character.isTransformed && character.currentForm && FORM_DATA[character.currentForm]) {
                 const isPhoenix = character.currentForm === 'Phoenix';
-                spriteData = { src: FORM_DATA[character.currentForm].sprite, width: isPhoenix ? 130 : 100, height: isPhoenix ? 130 : 100 };
+                const isBear = character.currentForm === 'Bear';
+                spriteData = { src: FORM_DATA[character.currentForm].sprite, width: isPhoenix ? 130 : isBear ? 110 : 100, height: isPhoenix ? 130 : isBear ? 110 : 100 };
             } else {
                 spriteData = PLAYER_SPRITES[character.className];
             }
