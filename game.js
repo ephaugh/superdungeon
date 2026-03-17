@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Shaman: { baseHp: 17, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
         Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
         Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
-        Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } }
+        Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } },
+        Sylvan: { baseHp: 23, baseMp: 0, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 5, commands: ['Attack', 'Shift'], initialPowers: ['Bear'], growth: { hp: 4.5, mp: 0, str: 0.5, def: 0.5, int: 0.5, mnd: 0.3 } }
     };
 
     const SPECIAL_NAMES = {
@@ -28,7 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'Sorceress': 'Meteor Storm',
         'Shaman': 'Elemental Fury',
         'Bishop': 'Angelic Chorus',
-        'Monk': 'Nirvana Fist'
+        'Monk': 'Nirvana Fist',
+        'Sylvan': 'Phoenix Form'
     };
 
     const POWER_DATA = {
@@ -65,13 +67,53 @@ document.addEventListener('DOMContentLoaded', () => {
         Kick: { level: 1, cost: 0, type: 'Art', effect: 'AOE_Attack', target: 'all_enemies', damageMultiplier: 1.0 },
     };
 
+    const FORM_DATA = {
+        Bear: {
+            name: 'Bear Form', duration: 3,
+            sprite: 'https://i.imgur.com/wvajQg2.png',
+            passives: { incomingDamageMultiplier: 0.75, outgoingDamageMultiplier: 1.25 },
+            abilities: [
+                { name: 'Bite', chance: 0.60, type: 'Attack', multiplier: 1.3, target: 'single_enemy' },
+                { name: 'Maul', chance: 0.40, type: 'Attack', damageEqualsCurrentHp: true, target: 'single_enemy' }
+            ]
+        },
+        Unicorn: {
+            name: 'Unicorn Form', duration: 3,
+            sprite: 'https://i.imgur.com/C2X7F3t.png',
+            passives: { incomingDamageMultiplier: 1.15, allyHealingBoost: 1.25 },
+            abilities: [
+                { name: 'Revivify', chance: 0.50, type: 'Heal', target: 'all_allies', healPercent: 0.10, canRevive: true },
+                { name: 'MagicHorn', chance: 0.50, type: 'Attack', multiplier: 1.3, lifesteal: 1.5, target: 'single_enemy' }
+            ]
+        },
+        Cobra: {
+            name: 'Cobra Form', duration: 3,
+            sprite: 'https://i.imgur.com/4LvnYdD.png',
+            passives: { outgoingDamageMultiplier: 1.15, priority: 'alwaysFirst' },
+            abilities: [
+                { name: 'Fang', chance: 0.55, type: 'Attack', multiplier: 1.4, poisonChance: 0.50, target: 'single_enemy' },
+                { name: 'AcidSpray', chance: 0.45, type: 'Spell', multiplier: 0.75, poisonChance: 0.50, useInt: true, target: 'all_enemies' }
+            ]
+        },
+        Phoenix: {
+            name: 'Phoenix Form', duration: 3,
+            sprite: 'https://i.imgur.com/yVmfCdM.png',
+            isSpecial: true,
+            passives: { endOfRoundRevive: true },
+            abilities: [
+                { name: 'WingAttack', chance: 0.60, type: 'Attack', multiplier: 4.0, target: 'single_enemy' },
+                { name: 'PhoenixFire', chance: 0.40, type: 'Spell', element: 'Fire', multiplier: 2.0, target: 'all_enemies' }
+            ]
+        }
+    };
+
     const UNLOCK_SCHEDULE = {
-        10: { Sorceress: ['Fire2'], Bishop: ['Heal2'], Monk: ['Zen'] },
+        10: { Sorceress: ['Fire2'], Bishop: ['Heal2'], Monk: ['Zen'], Sylvan: ['Unicorn'] },
         16: { Valkyrie: ['Empower1', 'Restore1'], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1', 'Restore1'] },
         18: { Sorceress: ['Frost2', 'Hydro2'], Bishop: ['Empower2'] },
         20: { Monk: ['Focus'] },
         24: { Sorceress: ['Shock2'], Bishop: ['Restore2'] },
-        25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'] },
+        25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'], Sylvan: ['Cobra'] },
         28: { Bishop: ['Fury'] },
         30: { Sorceress: ['Slow'], Bishop: ['Revive'], Monk: ['Kick'] },
         32: { Valkyrie: ['Empower2'], Ninja: ['Frost2'] },
@@ -152,7 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'Shaman': { src: 'https://i.imgur.com/O0e0QCB.png', width: 110, height: 110 },
         'Sorceress': { src: 'https://i.imgur.com/sMfxdhj.png', width: 100, height: 100 },
         'Bishop': { src: 'https://i.imgur.com/tTO0Ell.png', width: 100, height: 100 },
-        'Monk': { src: 'https://i.imgur.com/QG9vhk2.png', width: 100, height: 100 }
+        'Monk': { src: 'https://i.imgur.com/QG9vhk2.png', width: 100, height: 100 },
+        'Sylvan': { src: 'https://i.imgur.com/4TzOd6U.png', width: 100, height: 100 }
     };
 
     const ELEMENT_DEBUFF_MAP = { 'Fire': 'str', 'Frost': 'def', 'Shock': 'int', 'Hydro': 'mnd', 'Darkness': ['str', 'def', 'int', 'mnd'] };
@@ -176,6 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
             this.powers = [...d.initialPowers]; this.commands = [...d.commands];
             this.limitGauge = 0;
             this.specialName = SPECIAL_NAMES[className] || 'Special';
+            this.isTransformed = false;
+            this.currentForm = null;
+            this.formTurnsRemaining = 0;
+            this.originalSprite = null;
         }
 
         recalculateStats() {
@@ -189,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const storedLevel = this.level; this.level = 0;
             for (let i = 1; i <= storedLevel; i++) { this.applyLevelUpGrowth(i); }
             this.level = storedLevel;
-            if (this.className === 'Barbarian' || this.className === 'Monk') { this.maxMp = 0; this.baseMp = 0; }
+            if (this.className === 'Barbarian' || this.className === 'Monk' || this.className === 'Sylvan') { this.maxMp = 0; this.baseMp = 0; }
             const d = CLASS_DATA[this.className];
             this.powers = [...d.initialPowers]; this.commands = [...d.commands];
             for (let i = 1; i <= this.level; i++) {
@@ -210,6 +257,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (this.className === 'Valkyrie' || this.className === 'Ninja') {
                 if (lvl % 2 === 0) { str += 1; int += 1; } else { def += 1; mnd += 1; }
             } else if (this.className === 'Shaman') { int += g.int; if (lvl % 2 === 0) mnd += 1; else def += 1; }
+            else if (this.className === 'Sylvan') {
+                if (lvl % 2 === 0) { str += 1; int += 1; } else { def += 1; mnd += 1; }
+            }
             if (lvl > 1) { this.maxHp = Math.round(this.maxHp * 1.05); if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); }
             this.maxHp += hp; this.maxMp += mp; this.str += str; this.def += def; this.int += int; this.mnd += mnd;
             this.maxHp = Math.min(this.maxHp, 9999); this.maxMp = Math.min(this.maxMp, 999);
@@ -228,7 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.currentHp = this.maxHp; this.currentMp = this.maxMp;
             this.statusEffects = this.statusEffects.filter(s => s.isPermanent);
             this.isAlive = this.currentHp > 0; this.isRaging = false;
-            ['Empower1', 'Empower2', 'Empower3', 'Fury', 'Lifelink', 'Slow', 'Poison', 'Dodge', 'Taunt'].forEach(s => this.removeStatus(s));
+            ['Empower1', 'Empower2', 'Empower3', 'Fury', 'Lifelink', 'Slow', 'Poison', 'Dodge', 'Taunt', 'Transformed'].forEach(s => this.removeStatus(s));
+            this.isTransformed = false;
+            this.currentForm = null;
+            this.formTurnsRemaining = 0;
+            this.originalSprite = null;
         }
 
         getCurrentStat(sName) {
@@ -248,7 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 flashSprite(this.id, 'cyan', 150);
                 return 0;
             }
-            const damageMultiplier = this.isRaging ? 2 : 1;
+            let damageMultiplier = this.isRaging ? 2 : 1;
+            const transformStatus = this.statusEffects.find(e => e.type === 'Transformed');
+            if (transformStatus?.incomingDamageMultiplier) {
+                damageMultiplier *= transformStatus.incomingDamageMultiplier;
+            }
             const finalAmount = amt * damageMultiplier;
             this.currentHp -= Math.round(finalAmount);
             if (this.maxHp > 0) {
@@ -257,7 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateLimitGauge(this, gaugeIncrease);
             }
             if (this.currentHp <= 0) {
-                this.currentHp = 0; this.isAlive = false; this.isRaging = false;
+                this.currentHp = 0;
+                if (this.isTransformed) {
+                    endTransformation(this, true);
+                    gameState.addLogMessage(`${this.name} reverts to base form!`);
+                }
+                this.isAlive = false; this.isRaging = false;
                 this.statusEffects = this.statusEffects.filter(s => s.isPermanent);
                 resetLimitGauge(this);
                 gameState.addLogMessage(`${this.name} KO!`);
@@ -584,6 +647,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (hasLifelinkBuff) buffs.push('LIFE');
                     if (hasDodgeBuff) buffs.push('DODGE');
                     if (hasTauntBuff) buffs.push('TAUNT');
+                    const hasTransformed = character.statusEffects.some(e => e.type === 'Transformed');
+                    if (hasTransformed) buffs.push(character.currentForm?.toUpperCase() || 'SHIFT');
                     const negatives = character.statusEffects.filter(e => e.type === 'Poison' || e.type === 'Slow').map(e => e.type);
                     statusSpan.textContent = buffs.length > 0 ? buffs.join('+') + (negatives.length > 0 ? ' ' + negatives.join(' ') : '') : (negatives.length > 0 ? negatives.join(' ') : 'OK');
                     statusSpan.style.color = buffs.length > 0 ? '#ffffff' : '#ffee88';
@@ -654,7 +719,12 @@ document.addEventListener('DOMContentLoaded', () => {
             sprite.className = 'sprite party-member';
             sprite.id = character.id + "-sprite";
             sprite.style.cssText = `left: ${20 + index * 20}% !important; bottom: 25px !important; position: absolute !important;`;
-            const spriteData = PLAYER_SPRITES[character.className];
+            let spriteData;
+            if (character.isTransformed && character.currentForm && FORM_DATA[character.currentForm]) {
+                spriteData = { src: FORM_DATA[character.currentForm].sprite, width: 100, height: 100 };
+            } else {
+                spriteData = PLAYER_SPRITES[character.className];
+            }
             if (spriteData) {
                 if (spriteData.width && spriteData.height) { sprite.style.width = `${spriteData.width}px`; sprite.style.height = `${spriteData.height}px`; }
                 const spriteImg = document.createElement('img');
@@ -671,6 +741,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasTauntBuff = character.statusEffects.some(e => e.type === 'Taunt');
             if (hasDodgeBuff) sprite.classList.add('dodging');
             if (hasTauntBuff) sprite.classList.add('taunting');
+            if (character.isTransformed) {
+                sprite.classList.add('transformed');
+                if (character.currentForm) sprite.classList.add('form-' + character.currentForm.toLowerCase());
+            }
             partyArea.appendChild(sprite);
         });
         initializeLimitGauges();
@@ -767,27 +841,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuContainer.className = 'action-menu-box';
                 const char = gameState.party[gameState.activeCharacterIndex];
                 if (char) {
-                    const hasSpecial = char.limitGauge >= 100;
-                    if (hasSpecial) {
-                        const specialBtn = document.createElement('button');
-                        specialBtn.dataset.action = 'Special';
-                        specialBtn.textContent = '✨ Special ✨';
-                        specialBtn.classList.add('special-ready');
-                        menuContainer.appendChild(specialBtn);
-                    }
-                    ['Attack', 'Spell', 'Prayer', 'Rage', 'Arts'].forEach(cmd => {
-                        let available = char.commands.includes(cmd);
-                        if (cmd === 'Attack' && hasSpecial) available = false;
-                        if (cmd === 'Spell' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spell')) available = false;
-                        if (cmd === 'Prayer' && !char.powers.some(p => POWER_DATA[p]?.type === 'Prayer')) available = false;
-                        if (cmd === 'Arts' && !char.powers.some(p => POWER_DATA[p]?.type === 'Art')) available = false;
-                        if (available) {
-                            const btn = document.createElement('button');
-                            btn.dataset.action = cmd;
-                            btn.textContent = cmd;
-                            menuContainer.appendChild(btn);
+                    if (char.className === 'Sylvan' && char.isTransformed) {
+                        const feralBtn = document.createElement('button');
+                        feralBtn.dataset.action = 'Feral';
+                        const form = FORM_DATA[char.currentForm];
+                        feralBtn.innerHTML = '<span style="font-size:1.2em">🐾</span> Feral<br><span style="font-size:0.8em;color:#afa">(' + form.name + ' - ' + char.formTurnsRemaining + ' left)</span>';
+                        feralBtn.classList.add('feral-btn');
+                        menuContainer.appendChild(feralBtn);
+                    } else {
+                        const hasSpecial = char.limitGauge >= 100;
+                        if (hasSpecial) {
+                            const specialBtn = document.createElement('button');
+                            specialBtn.dataset.action = 'Special';
+                            specialBtn.textContent = '✨ Special ✨';
+                            specialBtn.classList.add('special-ready');
+                            menuContainer.appendChild(specialBtn);
                         }
-                    });
+                        ['Attack', 'Spell', 'Prayer', 'Rage', 'Arts', 'Shift'].forEach(cmd => {
+                            let available = char.commands.includes(cmd);
+                            if (cmd === 'Attack' && hasSpecial) available = false;
+                            if (cmd === 'Spell' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spell')) available = false;
+                            if (cmd === 'Prayer' && !char.powers.some(p => POWER_DATA[p]?.type === 'Prayer')) available = false;
+                            if (cmd === 'Arts' && !char.powers.some(p => POWER_DATA[p]?.type === 'Art')) available = false;
+                            if (cmd === 'Shift' && char.className !== 'Sylvan') available = false;
+                            if (cmd === 'Shift' && char.isTransformed) available = false;
+                            if (available) {
+                                const btn = document.createElement('button');
+                                btn.dataset.action = cmd;
+                                btn.textContent = cmd;
+                                menuContainer.appendChild(btn);
+                            }
+                        });
+                    }
                     updateActionMenuUI(char);
                 }
                 break;
@@ -831,6 +916,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     backBtn.onclick = handleMenuCancel;
                     menuContainer.appendChild(backBtn);
                 }
+                break;
+            case 'Shift':
+                menuContainer.className = 'sub-menu-box';
+                const sylvanChar = gameState.party[gameState.activeCharacterIndex];
+                const availableForms = sylvanChar.powers.filter(p => FORM_DATA[p] && !FORM_DATA[p].isSpecial);
+                const shiftTitle = document.createElement('span');
+                shiftTitle.style.cssText = 'font-weight:bold;color:#8f8;margin-bottom:5px;text-align:center;display:block';
+                shiftTitle.textContent = 'Choose Form:';
+                menuContainer.appendChild(shiftTitle);
+                availableForms.forEach(formName => {
+                    const form = FORM_DATA[formName];
+                    const btn = document.createElement('button');
+                    btn.dataset.form = formName;
+                    const descMap = { Bear: '-25% dmg taken, +25% dmg dealt', Unicorn: 'Party healing + revival', Cobra: 'Fast strikes + poison' };
+                    btn.innerHTML = '<strong style="color:#8f8">' + form.name + '</strong><br><span style="font-size:0.85em;color:#afa">' + (descMap[formName] || '') + '</span>';
+                    menuContainer.appendChild(btn);
+                });
+                const shiftCancelBtn = document.createElement('button');
+                shiftCancelBtn.textContent = 'Back';
+                menuContainer.appendChild(shiftCancelBtn);
                 break;
             case 'targets':
                 menuContainer.className = 'sub-menu-box target-menu';
@@ -920,7 +1025,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCombatButtonClick(e) {
         if (e.target.tagName === 'BUTTON' && gameState.currentState === 'PLAYER_COMMAND') {
             const button = e.target;
-            if (button.dataset.action) handleActionClick(button);
+            if (button.dataset.form) handleShiftFormSelection(button);
+            else if (button.dataset.action) handleActionClick(button);
             else if (button.dataset.power) handlePowerSelection(button);
             else if (button.dataset.targetId) handleTargetSelection(button);
             else if (button.textContent === "Back") handleMenuCancel();
@@ -957,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleMenuCancel() {
         switch (gameState.activeMenu) {
-            case 'Spell': case 'Prayer': case 'Arts': populateMenu('main'); gameState.currentAction = null; break;
+            case 'Spell': case 'Prayer': case 'Arts': case 'Shift': populateMenu('main'); gameState.currentAction = null; break;
             case 'targets':
                 const aT = gameState.currentAction?.type;
                 if (aT === 'Spell') populateMenu('Spell');
@@ -992,6 +1098,16 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'Arts': populateMenu('Arts'); break;
             case 'Special':
                 gameState.currentAction = { type: 'Special', casterId: char.id, specialName: char.specialName, targets: [] };
+                queueAction(char.id, gameState.currentAction);
+                gameState.currentAction = null;
+                highlightActivePartyStatus(-1);
+                prepareCommandPhase();
+                break;
+            case 'Shift':
+                populateMenu('Shift');
+                break;
+            case 'Feral':
+                gameState.currentAction = { type: 'Feral', casterId: char.id, targets: [] };
                 queueAction(char.id, gameState.currentAction);
                 gameState.currentAction = null;
                 highlightActivePartyStatus(-1);
@@ -1274,6 +1390,11 @@ document.addEventListener('DOMContentLoaded', () => {
             i.speedRoll = Math.floor(Math.random() * 100);
             const power = i.action.powerName ? POWER_DATA[i.action.powerName] : null;
             if (i.action.type === 'Special') { i.priorityTier = 0; }
+            else if (i.action.type === 'Feral') {
+                const fActor = gameState.getCharacterById(i.actorId);
+                if (fActor?.currentForm === 'Cobra') { i.priorityTier = 1; }
+                else { i.priorityTier = 3; }
+            } else if (i.action.type === 'Shift') { i.priorityTier = 3; }
             else if (power?.alwaysFirst) { i.priorityTier = 1; }
             else if (i.action.type === 'DragonBreath' || i.action.type === 'Annihilate') { i.priorityTier = 2; }
             else if (power?.alwaysLast) { i.priorityTier = 4; }
@@ -1380,6 +1501,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'BruiserAbility': performBruiserAbility(actor, action.abilityName, primaryTarget); break;
             case 'DragonBreath': case 'Annihilate': performDragonBreath(actor); break;
             case 'Special': executeSpecial(actor); break;
+            case 'Shift': executeShift(actor, action.formName); break;
+            case 'Feral': executeFeral(actor); break;
             default: console.error(`Unhandled type: ${action.type}`);
         }
         const delay = Math.max(800, announceDur + 100);
@@ -1394,7 +1517,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'Meteor Storm': 4500,
             'Elemental Fury': 6000,
             'Angelic Chorus': 2500,
-            'Nirvana Fist': 3000
+            'Nirvana Fist': 3000,
+            'Phoenix Form': 2000
         };
         return DURATIONS[specialName] || 3000;
     }
@@ -1439,6 +1563,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'Elemental Fury': performElementalFury(actor); break;
             case 'Angelic Chorus': performAngelicChorus(actor); break;
             case 'Nirvana Fist': performNirvanaFist(actor); break;
+            case 'Phoenix Form': executePhoenixSpecial(actor); break;
             default: console.error(`Unknown Special: ${specialName}`);
         }
         resetLimitGauge(actor);
@@ -1670,6 +1795,424 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 300);
         }, 1500);
         setTimeout(() => { removeSpecialVisuals(); }, 2700);
+    }
+
+    // === SYLVAN CLASS FUNCTIONS ===
+
+    function handleShiftFormSelection(button) {
+        const formName = button.dataset.form;
+        const char = gameState.party[gameState.activeCharacterIndex];
+        if (!char || char.className !== 'Sylvan' || !formName) return;
+        gameState.currentAction = { type: 'Shift', casterId: char.id, formName: formName, targets: [] };
+        queueAction(char.id, gameState.currentAction);
+        gameState.currentAction = null;
+        highlightActivePartyStatus(-1);
+        prepareCommandPhase();
+    }
+
+    function selectFormAbility(form) {
+        const roll = Math.random();
+        let cumulative = 0;
+        for (const ability of form.abilities) {
+            cumulative += ability.chance;
+            if (roll < cumulative) return ability;
+        }
+        return form.abilities[0];
+    }
+
+    function cleanseSylvanDebuffs(sylvan) {
+        const debuffTypes = ['Poison', 'Slow', 'strDebuff', 'defDebuff', 'intDebuff', 'mndDebuff'];
+        const before = sylvan.statusEffects.length;
+        sylvan.statusEffects = sylvan.statusEffects.filter(e => !debuffTypes.includes(e.type));
+        if (sylvan.statusEffects.length < before) {
+            gameState.addLogMessage(`${sylvan.name}'s ailments are cleansed!`);
+        }
+    }
+
+    function playTransformAnimation(sylvan, newSpriteSrc, callback) {
+        const spriteElement = document.getElementById(sylvan.id + '-sprite');
+        if (!spriteElement) { if (callback) callback(); return; }
+        const img = spriteElement.querySelector('.player-sprite-img');
+        if (!img) { if (callback) callback(); return; }
+        // Phase 1: Shrink + fade out
+        img.style.transition = 'transform 0.3s ease-in, opacity 0.3s ease-in';
+        img.style.transform = 'scale(0.3)';
+        img.style.opacity = '0';
+        setTimeout(() => {
+            // Swap source
+            img.src = newSpriteSrc;
+            // Phase 2: Grow + fade in
+            img.style.transform = 'scale(1.15)';
+            img.style.opacity = '1';
+            setTimeout(() => {
+                // Settle
+                img.style.transition = 'transform 0.15s ease-out';
+                img.style.transform = 'scale(1)';
+                setTimeout(() => {
+                    img.style.transition = '';
+                    img.style.transform = '';
+                    if (callback) callback();
+                }, 150);
+            }, 300);
+        }, 300);
+    }
+
+    function executeShift(sylvan, formName) {
+        const form = FORM_DATA[formName];
+        if (!form) return;
+        cleanseSylvanDebuffs(sylvan);
+        const shiftHeal = Math.round(sylvan.maxHp * 0.10);
+        const healed = sylvan.heal(shiftHeal);
+        if (healed > 0) showFloatingNumber(getCorrectElementId(sylvan.id), healed, 'heal');
+        sylvan.originalSprite = PLAYER_SPRITES['Sylvan'];
+        sylvan.isTransformed = true;
+        sylvan.currentForm = formName;
+        sylvan.formTurnsRemaining = 3;
+        sylvan.statusEffects.push({
+            type: 'Transformed', form: formName, turnsRemaining: 3,
+            incomingDamageMultiplier: form.passives.incomingDamageMultiplier || 1.0,
+            outgoingDamageMultiplier: form.passives.outgoingDamageMultiplier || 1.0
+        });
+        gameState.addLogMessage(`${sylvan.name} transforms into ${form.name}!`);
+        playTransformAnimation(sylvan, form.sprite, () => {
+            flashSprite(sylvan.id, 'lime', 400);
+            const spriteEl = document.getElementById(sylvan.id + '-sprite');
+            if (spriteEl) spriteEl.classList.add('transformed', 'form-' + formName.toLowerCase());
+            setTimeout(() => {
+                const ability = selectFormAbility(form);
+                executeFeralAbility(sylvan, ability);
+            }, 200);
+        });
+        updatePartyStatusUI();
+    }
+
+    function executeFeral(sylvan) {
+        if (!sylvan.isTransformed || !sylvan.currentForm) return;
+        const form = FORM_DATA[sylvan.currentForm];
+        const ability = selectFormAbility(form);
+        executeFeralAbility(sylvan, ability);
+    }
+
+    function executeFeralAbility(sylvan, ability) {
+        const form = FORM_DATA[sylvan.currentForm];
+        gameState.addLogMessage(`${sylvan.name} uses ${ability.name}!`);
+        const empowerBuff = sylvan.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2' || e.type === 'Empower3');
+        const lifelinkBuff = sylvan.statusEffects.find(e => e.type === 'Lifelink');
+        switch (ability.name) {
+            case 'Bite': executeBite(sylvan, ability, form, empowerBuff, lifelinkBuff); break;
+            case 'Maul': executeMaul(sylvan, ability, form, empowerBuff, lifelinkBuff); break;
+            case 'Revivify': executeRevivify(sylvan, ability); break;
+            case 'MagicHorn': executeMagicHorn(sylvan, ability, form, empowerBuff, lifelinkBuff); break;
+            case 'Fang': executeFang(sylvan, ability, form, empowerBuff, lifelinkBuff); break;
+            case 'AcidSpray': executeAcidSpray(sylvan, ability, form, empowerBuff); break;
+            case 'WingAttack': executeWingAttack(sylvan, ability, empowerBuff, lifelinkBuff); break;
+            case 'PhoenixFire': executePhoenixFire(sylvan, ability, empowerBuff); break;
+        }
+        sylvan.formTurnsRemaining--;
+        const status = sylvan.statusEffects.find(e => e.type === 'Transformed');
+        if (status) status.turnsRemaining = sylvan.formTurnsRemaining;
+        if (sylvan.formTurnsRemaining <= 0) {
+            setTimeout(() => endTransformation(sylvan), 600);
+        }
+    }
+
+    function endTransformation(sylvan, silent) {
+        sylvan.statusEffects = sylvan.statusEffects.filter(e => e.type !== 'Transformed');
+        sylvan.isTransformed = false;
+        sylvan.currentForm = null;
+        sylvan.formTurnsRemaining = 0;
+        const originalSrc = sylvan.originalSprite?.src || PLAYER_SPRITES['Sylvan'].src;
+        playTransformAnimation(sylvan, originalSrc, () => {
+            const spriteEl = document.getElementById(sylvan.id + '-sprite');
+            if (spriteEl) spriteEl.classList.remove('transformed', 'form-bear', 'form-unicorn', 'form-cobra', 'form-phoenix');
+        });
+        sylvan.originalSprite = null;
+        if (!silent) gameState.addLogMessage(`${sylvan.name} returns to normal form.`);
+        updatePartyStatusUI();
+    }
+
+    function executeBite(sylvan, ability, form, empowerBuff, lifelinkBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const tId = getCorrectElementId(target.id);
+        const aId = getCorrectElementId(sylvan.id);
+        let dmg = calculatePhysicalDamage(sylvan, target);
+        dmg = Math.round(dmg * ability.multiplier);
+        if (form.passives.outgoingDamageMultiplier) dmg = Math.round(dmg * form.passives.outgoingDamageMultiplier);
+        if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+        flashSprite(tId, 'saddlebrown', 200);
+        setTimeout(() => {
+            showFloatingNumber(tId, dmg, 'damage');
+            gameState.addLogMessage(`${target.name} takes ${dmg} damage!`);
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+            if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h = Math.round(dmg * lifelinkBuff.healPercent); if (h > 0) { sylvan.heal(h); showFloatingNumber(aId, h, 'heal'); } }
+            const furyBuff = sylvan.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && sylvan.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Bite!`);
+                    let d2 = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+                    if (form.passives.outgoingDamageMultiplier) d2 = Math.round(d2 * form.passives.outgoingDamageMultiplier);
+                    if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
+                    flashSprite(tId, 'saddlebrown', 200);
+                    setTimeout(() => {
+                        showFloatingNumber(tId, d2, 'damage'); target.currentHp -= d2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                        if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h2 = Math.round(d2 * lifelinkBuff.healPercent); if (h2 > 0) { sylvan.heal(h2); showFloatingNumber(aId, h2, 'heal'); } }
+                        updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                    }, 150);
+                }, 500);
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+        }, 200);
+    }
+
+    function executeMaul(sylvan, ability, form, empowerBuff, lifelinkBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const tId = getCorrectElementId(target.id);
+        const aId = getCorrectElementId(sylvan.id);
+        let dmg = sylvan.currentHp;
+        if (form.passives.outgoingDamageMultiplier) dmg = Math.round(dmg * form.passives.outgoingDamageMultiplier);
+        if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+        flashSprite(tId, 'brown', 300);
+        setTimeout(() => {
+            showFloatingNumber(tId, dmg, 'damage');
+            gameState.addLogMessage(`${target.name} takes ${dmg} damage from Maul!`);
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+            if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h = Math.round(dmg * lifelinkBuff.healPercent); if (h > 0) { sylvan.heal(h); showFloatingNumber(aId, h, 'heal'); } }
+            const furyBuff = sylvan.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && sylvan.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Maul!`);
+                    let d2 = sylvan.currentHp;
+                    if (form.passives.outgoingDamageMultiplier) d2 = Math.round(d2 * form.passives.outgoingDamageMultiplier);
+                    if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
+                    flashSprite(tId, 'brown', 300);
+                    setTimeout(() => {
+                        showFloatingNumber(tId, d2, 'damage'); target.currentHp -= d2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                        if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h2 = Math.round(d2 * lifelinkBuff.healPercent); if (h2 > 0) { sylvan.heal(h2); showFloatingNumber(aId, h2, 'heal'); } }
+                        updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                    }, 150);
+                }, 500);
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+        }, 300);
+    }
+
+    function executeRevivify(sylvan, ability) {
+        gameState.party.forEach((ally, idx) => {
+            setTimeout(() => {
+                const allyId = getCorrectElementId(ally.id);
+                const healAmt = Math.round(ally.maxHp * ability.healPercent);
+                if (!ally.isAlive && ability.canRevive) {
+                    ally.isAlive = true; ally.currentHp = 0; ally.heal(healAmt);
+                    gameState.addLogMessage(`${ally.name} is revived with ${healAmt} HP!`);
+                    showFloatingNumber(allyId, healAmt, 'heal'); flashSprite(ally.id, 'white', 300);
+                } else if (ally.isAlive) {
+                    const healed = ally.heal(healAmt);
+                    if (healed > 0) { showFloatingNumber(allyId, healed, 'heal'); flashSprite(ally.id, 'lime', 200); }
+                }
+            }, idx * 150);
+        });
+        setTimeout(() => { updatePartyStatusUI(); updateEnemySpritesUI(); }, 800);
+    }
+
+    function executeMagicHorn(sylvan, ability, form, empowerBuff, lifelinkBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const tId = getCorrectElementId(target.id);
+        const aId = getCorrectElementId(sylvan.id);
+        let dmg = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+        if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+        flashSprite(tId, 'hotpink', 200);
+        setTimeout(() => {
+            showFloatingNumber(tId, dmg, 'damage');
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+            const lsHeal = Math.round(dmg * ability.lifesteal);
+            if (sylvan.isAlive && lsHeal > 0) { sylvan.heal(lsHeal); showFloatingNumber(aId, lsHeal, 'heal'); gameState.addLogMessage(`${sylvan.name} drains ${lsHeal} HP!`); }
+            if (lifelinkBuff?.healPercent && sylvan.isAlive) { const ll = Math.round(dmg * lifelinkBuff.healPercent); if (ll > 0) { sylvan.heal(ll); showFloatingNumber(aId, ll, 'heal'); } }
+            const furyBuff = sylvan.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && sylvan.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Magic Horn!`);
+                    let d2 = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+                    if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
+                    flashSprite(tId, 'hotpink', 200);
+                    setTimeout(() => {
+                        showFloatingNumber(tId, d2, 'damage'); target.currentHp -= d2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                        const ls2 = Math.round(d2 * ability.lifesteal);
+                        if (sylvan.isAlive && ls2 > 0) { sylvan.heal(ls2); showFloatingNumber(aId, ls2, 'heal'); }
+                        if (lifelinkBuff?.healPercent && sylvan.isAlive) { const ll2 = Math.round(d2 * lifelinkBuff.healPercent); if (ll2 > 0) { sylvan.heal(ll2); showFloatingNumber(aId, ll2, 'heal'); } }
+                        updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                    }, 150);
+                }, 500);
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+        }, 200);
+    }
+
+    function executeFang(sylvan, ability, form, empowerBuff, lifelinkBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const tId = getCorrectElementId(target.id);
+        const aId = getCorrectElementId(sylvan.id);
+        let dmg = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+        if (form.passives.outgoingDamageMultiplier) dmg = Math.round(dmg * form.passives.outgoingDamageMultiplier);
+        if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+        flashSprite(tId, 'mediumpurple', 200);
+        setTimeout(() => {
+            showFloatingNumber(tId, dmg, 'damage');
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+            if (target.isAlive && Math.random() < ability.poisonChance) {
+                if (target.statusEffects && !target.statusEffects.some(s => s.type === 'Poison')) {
+                    target.statusEffects.push({ type: 'Poison', turns: 5 }); gameState.addLogMessage(`${target.name} is poisoned!`);
+                }
+            }
+            if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h = Math.round(dmg * lifelinkBuff.healPercent); if (h > 0) { sylvan.heal(h); showFloatingNumber(aId, h, 'heal'); } }
+            const furyBuff = sylvan.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && sylvan.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Fang!`);
+                    let d2 = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+                    if (form.passives.outgoingDamageMultiplier) d2 = Math.round(d2 * form.passives.outgoingDamageMultiplier);
+                    if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
+                    flashSprite(tId, 'mediumpurple', 200);
+                    setTimeout(() => {
+                        showFloatingNumber(tId, d2, 'damage'); target.currentHp -= d2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                        if (target.isAlive && Math.random() < ability.poisonChance) {
+                            if (!target.statusEffects.some(s => s.type === 'Poison')) { target.statusEffects.push({ type: 'Poison', turns: 5 }); gameState.addLogMessage(`${target.name} is poisoned!`); }
+                        }
+                        if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h2 = Math.round(d2 * lifelinkBuff.healPercent); if (h2 > 0) { sylvan.heal(h2); showFloatingNumber(aId, h2, 'heal'); } }
+                        updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                    }, 150);
+                }, 500);
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+        }, 200);
+    }
+
+    function executeAcidSpray(sylvan, ability, form, empowerBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        targets.forEach((target, idx) => {
+            setTimeout(() => {
+                const tId = getCorrectElementId(target.id);
+                let dmg = calculateMagicDamage(sylvan, target, 2);
+                dmg = Math.round(dmg * ability.multiplier);
+                if (form.passives.outgoingDamageMultiplier) dmg = Math.round(dmg * form.passives.outgoingDamageMultiplier);
+                if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+                flashSprite(tId, 'lime', 200);
+                setTimeout(() => {
+                    showFloatingNumber(tId, dmg, 'damage');
+                    gameState.addLogMessage(`${target.name} takes ${dmg} acid damage!`);
+                    target.currentHp -= dmg;
+                    if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                    if (target.isAlive && Math.random() < ability.poisonChance) {
+                        if (target.statusEffects && !target.statusEffects.some(s => s.type === 'Poison')) {
+                            target.statusEffects.push({ type: 'Poison', turns: 5 }); gameState.addLogMessage(`${target.name} is poisoned!`);
+                        }
+                    }
+                    updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                }, 100);
+            }, idx * 150);
+        });
+    }
+
+    function executeWingAttack(sylvan, ability, empowerBuff, lifelinkBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const tId = getCorrectElementId(target.id);
+        const aId = getCorrectElementId(sylvan.id);
+        let dmg = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+        if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+        flashSprite(tId, 'orange', 300);
+        setTimeout(() => {
+            showFloatingNumber(tId, dmg, 'damage');
+            gameState.addLogMessage(`${target.name} takes ${dmg} devastating damage!`);
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+            if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h = Math.round(dmg * lifelinkBuff.healPercent); if (h > 0) { sylvan.heal(h); showFloatingNumber(aId, h, 'heal'); } }
+            const furyBuff = sylvan.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && sylvan.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Wing Attack!`);
+                    let d2 = Math.round(calculatePhysicalDamage(sylvan, target) * ability.multiplier);
+                    if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
+                    flashSprite(tId, 'orange', 300);
+                    setTimeout(() => {
+                        showFloatingNumber(tId, d2, 'damage'); target.currentHp -= d2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                        if (lifelinkBuff?.healPercent && sylvan.isAlive) { const h2 = Math.round(d2 * lifelinkBuff.healPercent); if (h2 > 0) { sylvan.heal(h2); showFloatingNumber(aId, h2, 'heal'); } }
+                        updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                    }, 150);
+                }, 500);
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+        }, 300);
+    }
+
+    function executePhoenixFire(sylvan, ability, empowerBuff) {
+        const targets = gameState.enemies.filter(e => e.isAlive);
+        if (targets.length === 0) return;
+        targets.forEach((target, idx) => {
+            setTimeout(() => {
+                const tId = getCorrectElementId(target.id);
+                let dmg = calculateMagicDamage(sylvan, target, 3);
+                dmg = Math.round(dmg * ability.multiplier);
+                if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
+                flashSprite(tId, 'orangered', 250);
+                setTimeout(() => {
+                    showFloatingNumber(tId, dmg, 'damage');
+                    gameState.addLogMessage(`${target.name} takes ${dmg} Phoenix Fire damage!`);
+                    target.currentHp -= dmg;
+                    if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(sylvan); }
+                    updateEnemySpritesUI(); updatePartyStatusUI(); if (checkWinCondition()) handleWinWave();
+                }, 100);
+            }, idx * 150);
+        });
+    }
+
+    function executePhoenixSpecial(actor) {
+        const aId = getCorrectElementId(actor.id);
+        const hpHealed = actor.maxHp - actor.currentHp;
+        actor.currentHp = actor.maxHp;
+        if (hpHealed > 0) showFloatingNumber(aId, hpHealed, 'heal');
+        cleanseSylvanDebuffs(actor);
+        actor.originalSprite = PLAYER_SPRITES['Sylvan'];
+        actor.isTransformed = true;
+        actor.currentForm = 'Phoenix';
+        actor.formTurnsRemaining = 3;
+        actor.statusEffects.push({
+            type: 'Transformed', form: 'Phoenix', turnsRemaining: 3,
+            isSpecialForm: true, endOfRoundRevive: true,
+            incomingDamageMultiplier: 1.0, outgoingDamageMultiplier: 1.0
+        });
+        actor.limitGauge = 0;
+        gameState.addLogMessage(`${actor.name} transforms into the mighty Phoenix!`);
+        playTransformAnimation(actor, FORM_DATA.Phoenix.sprite, () => {
+            flashSprite(actor.id, 'orange', 500);
+            const spriteEl = document.getElementById(actor.id + '-sprite');
+            if (spriteEl) spriteEl.classList.add('transformed', 'form-phoenix');
+            setTimeout(() => {
+                const form = FORM_DATA.Phoenix;
+                const ability = selectFormAbility(form);
+                executeFeralAbility(actor, ability);
+            }, 300);
+        });
+        updatePartyStatusUI();
+        setTimeout(() => { removeSpecialVisuals(); }, 1500);
     }
 
     // --- Combat Actions ---
@@ -1958,6 +2501,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else if (p.effect === 'Heal') {
                 let healAmount = pN === 'Heal1' ? calculateHeal1Amount(c) : calculateHealing(c, p.level);
+                const unicornSylvan = gameState.party.find(c => c.isTransformed && c.currentForm === 'Unicorn' && c.isAlive);
+                if (unicornSylvan && t.id !== unicornSylvan.id) {
+                    healAmount = Math.floor(healAmount * 1.25);
+                }
                 const hd = t.heal(healAmount); if (hd > 0) showFloatingNumber(targetElementId, hd, 'heal');
                 gameState.addLogMessage(`${t.name} +${hd} HP.`); updatePartyStatusUI(); highlightActivePartyStatus(-1);
             }
@@ -2049,6 +2596,18 @@ document.addEventListener('DOMContentLoaded', () => {
             remove.forEach(t => { e.statusEffects = e.statusEffects.filter(s => s.type !== t); });
             if (poisonDmg > 0) { gameState.addLogMessage(`${e.name} takes ${poisonDmg} poison!`); showFloatingNumber(e.id, poisonDmg, 'damage'); e.currentHp -= poisonDmg; if (e.currentHp <= 0) { e.currentHp = 0; e.isAlive = false; gameState.addLogMessage(`${e.name} succumbed!`); } }
         });
+        // Phoenix Form end-of-round mass revival
+        const phoenixSylvan = gameState.party.find(c => c.isTransformed && c.currentForm === 'Phoenix' && c.isAlive);
+        if (phoenixSylvan) {
+            const deadAllies = gameState.party.filter(c => !c.isAlive && c.id !== phoenixSylvan.id);
+            deadAllies.forEach(ally => {
+                ally.isAlive = true;
+                ally.currentHp = 1;
+                gameState.addLogMessage(`Phoenix's blessing revives ${ally.name}!`);
+                showFloatingNumber(getCorrectElementId(ally.id), '+1', 'heal');
+                flashSprite(ally.id, 'orange', 300);
+            });
+        }
         updatePartyStatusUI(); updateEnemySpritesUI();
         if (checkLoseCondition()) handleGameOver();
         if (checkWinCondition()) handleWinWave();
