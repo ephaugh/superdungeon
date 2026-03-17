@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ENEMY_ARCHETYPES = {
         Weakling: { statMultipliers: { hp: 1.05, mp: 1.0, str: 1.1, def: 0.9, int: 1.0, mnd: 1.0 } },
-        Bruiser: { statMultipliers: { hp: 1.20, mp: 1.0, str: 1.2, def: 1.10, int: 1.0, mnd: 0.6 } },
+        Bruiser: { statMultipliers: { hp: 1.80, mp: 1.0, str: 1.2, def: 1.10, int: 1.0, mnd: 0.6 } },
         Caster: { statMultipliers: { hp: 1.0, mp: 1.0, str: 1.0, def: 0.8, int: 1.30, mnd: 1.3 } },
         Boss: { statMultipliers: { hp: 1.05, mp: 1.5, str: 2.0, def: 1.5, int: 1.3, mnd: 1.3 } }
     };
@@ -931,8 +931,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.textContent = formName;
                         menuContainer.appendChild(btn);
                     });
-                } else {
-                    menuContainer.innerHTML = '<p style="color: #aaa;">No forms known.</p>';
                 }
                 break;
             case 'targets':
@@ -1286,10 +1284,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 i += 2;  // +2 INT per wave
                 // DEF and MND don't increase in Arena
             } else {
-                // Normal progression (waves 1-90)
-                hp = Math.round(hp * 1.077);
-                mp = Math.round(mp * 1.12); 
-                s++; d++; i++; m++; 
+                // Normal progression (waves 1-90) — per-dungeon HP growth
+                const dungeonTier = Math.min(Math.floor(n / 15), 5);
+                const hpRates = [1.083, 1.083, 1.083, 1.089, 1.035, 1.082];
+                hp = Math.round(hp * hpRates[dungeonTier]);
+                mp = Math.round(mp * 1.12);
+                s++; d++; i++; m++;
             }
         }
         
