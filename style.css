@@ -14,6 +14,53 @@ body {
     overflow: hidden;
 }
 
+/* --- Mobile Viewport Scaling --- */
+@media (max-width: 820px) {
+    body {
+        align-items: flex-start;
+        overflow: hidden;
+    }
+    #game-container {
+        transform-origin: top center;
+        /* JS sets --game-scale via resizeGameContainer() */
+        transform: scale(var(--game-scale, 1));
+        margin: 0 auto;
+    }
+}
+
+/* --- Touch & Select Prevention --- */
+#game-container,
+.screen-overlay,
+#dynamic-menu-content button,
+.class-nav-btn,
+.help-btn,
+.help-close,
+.help-section-header,
+#victory-buttons button,
+.screen-overlay button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+#dynamic-menu-content button,
+.class-nav-btn,
+.help-btn,
+.help-close,
+.help-section-header,
+#victory-buttons button,
+.screen-overlay button {
+    touch-action: manipulation;
+}
+
+.sprite,
+#battlefield-enemy-area,
+#battlefield-party-area {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
 #game-container {
     border: 3px ridge #a0a0a0;
     width: 800px;
@@ -182,30 +229,39 @@ body {
 }
 
 /* --- Party Select Screen --- */
-#party-select-screen h2 { 
-    margin-bottom: 35px; 
+#party-select-screen {
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
-#party-select-slots { 
-    margin-bottom: 35px; 
-    font-size: 1.25em; 
-    min-width: 400px; 
-    text-align: left; 
-    background-color: rgba(30, 30, 50, 0.6); 
-    padding: 25px; 
-    border: 1px solid #557; 
-    border-radius: 6px; 
+#party-select-screen h2 {
+    margin-bottom: 16px;
 }
 
-.party-select-slot { 
-    padding: 10px 15px; 
-    margin-bottom: 10px; 
-    border: 3px solid transparent; 
-    transition: background-color 0.2s, border-color 0.2s; 
-    border-radius: 5px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+#party-select-slots {
+    margin-bottom: 12px;
+    font-size: 1.25em;
+    min-width: 400px;
+    text-align: left;
+    background-color: rgba(30, 30, 50, 0.6);
+    padding: 14px 20px;
+    border: 1px solid #557;
+    border-radius: 6px;
+}
+
+.party-select-slot {
+    padding: 7px 12px;
+    margin-bottom: 6px;
+    border: 3px solid transparent;
+    transition: background-color 0.2s, border-color 0.2s;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 44px;
+    touch-action: manipulation;
 }
 
 .party-select-slot.active { 
@@ -272,11 +328,12 @@ body {
     border-style: dashed; 
 }
 
-.instructions { 
-    font-size: 0.9em; 
-    color: #ccc; 
-    margin-top: 30px; 
-    line-height: 1.6; 
+.instructions {
+    font-size: 0.85em;
+    color: #ccc;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    line-height: 1.5;
 }
 
 /* --- Battlefield Area (Enemies + Party Sprites) --- */
@@ -1058,4 +1115,271 @@ button.rainbow-text {
 @keyframes phoenix-blaze { 0%, 100% { filter: drop-shadow(0 0 15px orange); } 50% { filter: drop-shadow(0 0 25px orangered); } }
 .sprite.form-bear.ko, .sprite.form-unicorn.ko, .sprite.form-cobra.ko, .sprite.form-phoenix.ko {
     filter: grayscale(100%) brightness(40%) !important; animation: none !important;
+}
+
+/* === MOBILE CLASS NAV BUTTONS === */
+.mobile-class-nav {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 8px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.class-nav-btn {
+    min-width: 80px;
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #444;
+    color: #fff;
+    border: 2px outset #777;
+    border-radius: 6px;
+    transition: background-color 0.15s, transform 0.1s;
+    touch-action: manipulation;
+}
+
+.class-nav-btn:active {
+    transform: scale(0.95);
+    opacity: 0.85;
+}
+
+.class-nav-confirm {
+    background-color: #2a6a2a;
+    border-color: #5a9a5a;
+}
+
+.class-nav-confirm:hover {
+    background-color: #3a7a3a;
+}
+
+.class-nav-back {
+    background-color: #555;
+}
+
+/* === CLASS INFO PANEL === */
+.class-info-panel {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
+    border: 2px solid #DAA520;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    width: 85%;
+    max-width: 420px;
+    box-sizing: border-box;
+    animation: fadeIn 0.3s ease;
+    text-align: left;
+}
+
+.class-info-header {
+    text-align: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #DAA520;
+    padding-bottom: 8px;
+}
+
+.class-info-header h3 {
+    color: #DAA520;
+    font-size: 1.2em;
+    margin: 0 0 2px 0;
+}
+
+.class-info-header span {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+#class-description {
+    color: #e0e0e0;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-size: 0.85em;
+}
+
+.class-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #aaa;
+    font-size: 0.85em;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.class-traits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 0.82em;
+}
+
+.strengths ul,
+.weaknesses ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 4px 0 0 0;
+}
+
+.strengths li {
+    color: #4ade80;
+    padding: 2px 0;
+}
+
+.weaknesses li {
+    color: #f87171;
+    padding: 2px 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === HELP BUTTON === */
+.help-btn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(26, 26, 46, 0.9);
+    border: 2px solid #DAA520;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 50;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-btn:hover,
+.help-btn:active {
+    transform: scale(1.1);
+    box-shadow: 0 0 12px #DAA520;
+}
+
+/* === HELP MODAL === */
+.help-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.help-modal.hidden {
+    display: none;
+}
+
+.help-modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #DAA520;
+    border-radius: 12px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 76vh;
+    overflow-y: auto;
+    padding: 20px 20px 16px 20px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.help-modal-content h2 {
+    color: #DAA520;
+    margin: 0 0 16px 0;
+    font-size: 1.3em;
+    text-align: center;
+    padding-right: 32px;
+}
+
+.help-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #DAA520;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    touch-action: manipulation;
+}
+
+.help-close:hover {
+    color: #fff;
+}
+
+.help-section {
+    margin-bottom: 8px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.help-section-header {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: #DAA520;
+    font-size: 0.95em;
+    touch-action: manipulation;
+}
+
+.help-section-header:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.help-chevron {
+    transition: transform 0.2s;
+    font-size: 0.8em;
+}
+
+.help-section.active .help-chevron {
+    transform: rotate(180deg);
+}
+
+.help-section-content {
+    padding: 14px 16px;
+    display: none;
+    color: #e0e0e0;
+    line-height: 1.65;
+    font-size: 0.88em;
+}
+
+.help-section.active .help-section-content {
+    display: block;
+}
+
+/* === TOUCH FEEDBACK === */
+#dynamic-menu-content button:active:not(:disabled) {
+    transform: scale(0.97);
+    opacity: 0.85;
+}
+
+/* Ensure minimum touch targets on combat buttons */
+#dynamic-menu-content button {
+    min-height: 44px;
+}
+
+/* Enlarge enemy/ally sprite hitboxes via padding on the sprite containers */
+.sprite.enemy,
+.sprite.party-member {
+    cursor: pointer;
 }
