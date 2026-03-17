@@ -1076,10 +1076,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (_touchControlsInitialized) return;
         _touchControlsInitialized = true;
 
-        // Title screen tap to begin
+        // Title screen tap/click to begin
         const titleScreen = document.getElementById('title-screen');
         if (titleScreen) {
+            let titleTouchHandled = false;
+            titleScreen.addEventListener('touchend', (e) => {
+                if (gameState.currentState === 'TITLE_SCREEN') {
+                    e.preventDefault();
+                    titleTouchHandled = true;
+                    gameState.setState('PARTY_SELECTION');
+                }
+            });
             titleScreen.addEventListener('click', () => {
+                if (titleTouchHandled) { titleTouchHandled = false; return; }
                 if (gameState.currentState === 'TITLE_SCREEN') gameState.setState('PARTY_SELECTION');
             });
         }
@@ -1161,8 +1170,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function resizeGameContainer() {
         const container = document.getElementById('game-container');
         if (!container) return;
-        const scale = Math.min(window.innerWidth / 800, window.innerHeight / 600, 1);
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const scale = Math.min(vw / 800, vh / 600, 1);
+        const offsetX = Math.max(0, (vw - 800 * scale) / 2);
         document.documentElement.style.setProperty('--game-scale', scale);
+        document.documentElement.style.setProperty('--game-offset-x', offsetX + 'px');
     }
 
     function setupHelpModal() {
