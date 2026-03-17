@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (lvl % 2 === 0) { str += 1; int += 1; } else { def += 1; mnd += 1; }
             }
             if (lvl > 1) { this.maxHp = Math.round(this.maxHp * 1.05); if (this.baseMp > 0) this.maxMp = Math.round(this.maxMp * 1.05); }
-            this.maxHp += hp; this.maxMp += mp; this.str += str; this.def += def; this.int += int; this.mnd += mnd;
+            this.maxHp = Math.ceil(this.maxHp + hp); this.maxMp += mp; this.str += str; this.def += def; this.int += int; this.mnd += mnd;
             this.maxHp = Math.min(this.maxHp, 9999); this.maxMp = Math.min(this.maxMp, 999);
         }
 
@@ -1060,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleMenuCancel() {
         switch (gameState.activeMenu) {
-            case 'Spell': case 'Prayer': case 'Arts': populateMenu('main'); gameState.currentAction = null; break;
+            case 'Spell': case 'Prayer': case 'Arts': case 'Shift': populateMenu('main'); gameState.currentAction = null; break;
             case 'targets':
                 const aT = gameState.currentAction?.type;
                 if (aT === 'Spell') populateMenu('Spell');
