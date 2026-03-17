@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             passives: { incomingDamageMultiplier: 0.75, outgoingDamageMultiplier: 1.25 },
             abilities: [
                 { name: 'Bite', chance: 0.60, type: 'Attack', multiplier: 1.3, target: 'single_enemy' },
-                { name: 'Maul', chance: 0.40, type: 'Attack', damageEqualsCurrentHp: true, target: 'single_enemy' }
+                { name: 'Maul', chance: 0.40, type: 'Attack', multiplier: 2.0, target: 'single_enemy' }
             ]
         },
         Unicorn: {
@@ -1468,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'Shift':
                 announceText = action.formName ? FORM_DATA[action.formName]?.name || 'Shift' : 'Shift';
-                announceDur = 800;
+                announceDur = 2000;
                 break;
             case 'Special':
                 announceText = action.specialName || actor.specialName;
@@ -1871,9 +1871,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = FORM_DATA[formName];
         if (!form) return;
         cleanseSylvanDebuffs(sylvan);
-        const shiftHeal = Math.round(sylvan.maxHp * 0.10);
-        const healed = sylvan.heal(shiftHeal);
-        if (healed > 0) showFloatingNumber(getCorrectElementId(sylvan.id), healed, 'heal');
         sylvan.originalSprite = PLAYER_SPRITES['Sylvan'];
         sylvan.isTransformed = true;
         sylvan.currentForm = formName;
@@ -1891,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 const ability = selectFormAbility(form);
                 executeFeralAbility(sylvan, ability);
-            }, 200);
+            }, 800);
         });
         updatePartyStatusUI();
     }
@@ -1984,7 +1981,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = targets[Math.floor(Math.random() * targets.length)];
         const tId = getCorrectElementId(target.id);
         const aId = getCorrectElementId(sylvan.id);
-        let dmg = sylvan.currentHp;
+        let dmg = calculatePhysicalDamage(sylvan, target);
+        dmg = Math.round(dmg * ability.multiplier);
         if (form.passives.outgoingDamageMultiplier) dmg = Math.round(dmg * form.passives.outgoingDamageMultiplier);
         if (empowerBuff?.damageMultiplier) dmg = Math.round(dmg * empowerBuff.damageMultiplier);
         flashSprite(tId, 'brown', 300);
@@ -1998,7 +1996,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (furyBuff && sylvan.isAlive && target.isAlive) {
                 setTimeout(() => {
                     gameState.addLogMessage(`${sylvan.name}'s Fury triggers a second Maul!`);
-                    let d2 = sylvan.currentHp;
+                    let d2 = calculatePhysicalDamage(sylvan, target);
+                    d2 = Math.round(d2 * ability.multiplier);
                     if (form.passives.outgoingDamageMultiplier) d2 = Math.round(d2 * form.passives.outgoingDamageMultiplier);
                     if (empowerBuff?.damageMultiplier) d2 = Math.round(d2 * empowerBuff.damageMultiplier);
                     flashSprite(tId, 'brown', 300);
@@ -2219,7 +2218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const form = FORM_DATA.Phoenix;
                 const ability = selectFormAbility(form);
                 executeFeralAbility(actor, ability);
-            }, 300);
+            }, 800);
         });
         updatePartyStatusUI();
         setTimeout(() => { removeSpecialVisuals(); }, 1500);
