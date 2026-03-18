@@ -1381,6 +1381,29 @@ button.rainbow-text {
     opacity: 0.85;
 }
 
+/* Back button styling */
+.back-button {
+    margin-top: 8px;
+    opacity: 0.8;
+    font-size: 0.9em;
+    background: linear-gradient(to bottom, #555, #333);
+    border-color: #666;
+}
+
+.back-button:hover {
+    opacity: 1;
+}
+
+/* Glove focus indicator */
+#focus-glove, #sprite-focus-glove {
+    animation: glove-point 0.6s ease-in-out infinite;
+}
+
+@keyframes glove-point {
+    0%, 100% { transform: scaleX(-1) translateX(0); }
+    50% { transform: scaleX(-1) translateX(4px); }
+}
+
 /* Ensure minimum touch targets on combat buttons */
 #dynamic-menu-content button {
     min-height: 44px;
