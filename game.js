@@ -829,14 +829,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Short descriptions for character select screen
     const CLASS_SHORT_DESC = {
-        Barbarian: "A pure physical powerhouse with extreme STR and HP.",
-        Valkyrie: "A stalwart warrior with access to Prayer magic.",
-        Ninja: "An adept equal in spell and blade.",
-        Shaman: "A caster that can use Prayers and Spells with equal mastery.",
-        Sorceress: "A master spellcaster with outrageous damage potential.",
-        Bishop: "A peerless healer with access to protective Prayers.",
-        Monk: "A master of martial arts with a wide arsenal of commands.",
-        Sylvan: "A mysterious shapeshifter that can rise to any challenge."
+        Barbarian: "A pure physical powerhouse with extreme STR and DEF. Rage command doubles damage dealt and taken.",
+        Sorceress: "A master spellcaster with outrageous damage potential. Learns the exclusive, devastating Omni spell.",
+        Bishop: "A peerless healer with access to protective Prayer magic. Learns the exclusive Miracle prayer, turning the tide of battle in your favor.",
+        Valkyrie: "A stalwart warrior with access to Prayer magic. An excellent battle priest.",
+        Ninja: "An adept equal in destructive Spells and physical attacks. Deftly alternates between single-target and multi-target damage.",
+        Shaman: "A flexible caster with that can use Prayers and Spells with equal mastery. Blast your foes and bolster your allies.",
+        Monk: "A master of martial arts with a wide arsenal of commands called Arts. Experienced monks can manipulate turn order, hit multiple foes at once, and even heal themselves.",
+        Sylvan: "A mysterious shapeshifter that can rise to any challenge. Unlocks additional animal forms as they level up."
     };
 
     // Display overrides: tweak stats on the hex graph to communicate class fantasy
