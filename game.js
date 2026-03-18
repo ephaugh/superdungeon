@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Ninja: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 17, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
         Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
-        Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1', 'Restore1'], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
+        Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1'/*, 'Restore1'*/], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
         Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } },
         Sylvan: { baseHp: 23, baseMp: 0, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 5, commands: ['Attack', 'Shift'], initialPowers: ['Bear'], growth: { hp: 4.5, mp: 0, str: 0.5, def: 0.5, int: 0.5, mnd: 0.3 } }
     };
@@ -51,10 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
         Omni: { level: 5, cost: 100, type: 'Spell', element: 'Darkness', target: 'enemies' },
         Heal1: { level: 1, cost: 5, type: 'Prayer', effect: 'Heal', target: 'ally' },
         Empower1: { level: 1, cost: 5, type: 'Prayer', effect: 'Empower', statusName: 'Empower1', turns: 4, target: 'ally', damageMultiplier: 1.5 },
-        Restore1: { level: 1, cost: 5, type: 'Prayer', effect: 'Restore', chance: 0.33, target: 'ally' },
+        // Restore1: { level: 1, cost: 5, type: 'Prayer', effect: 'Restore', chance: 0.33, target: 'ally' },
         Heal2: { level: 2, cost: 15, type: 'Prayer', effect: 'Heal', target: 'ally' },
         Empower2: { level: 2, cost: 15, type: 'Prayer', effect: 'Empower', statusName: 'Empower2', turns: 4, target: 'ally', damageMultiplier: 3.0 },
-        Restore2: { level: 2, cost: 15, type: 'Prayer', effect: 'Restore', chance: 0.66, target: 'ally' },
+        // Restore2: { level: 2, cost: 15, type: 'Prayer', effect: 'Restore', chance: 0.66, target: 'ally' },
         Revive: { level: 2, cost: 15, type: 'Prayer', effect: 'Revive', hpPercent: 0.25, target: 'ally_ko' },
         Fury: { level: 2, cost: 20, type: 'Prayer', effect: 'Fury', statusName: 'Fury', turns: 4, target: 'ally' },
         Lifelink: { level: 2, cost: 20, type: 'Prayer', effect: 'Lifelink', statusName: 'Lifelink', turns: 4, target: 'ally', healPercent: 0.5 },
@@ -109,26 +109,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const UNLOCK_SCHEDULE = {
         10: { Sorceress: ['Fire2'], Bishop: ['Heal2'], Monk: ['Zen'], Sylvan: ['Unicorn'] },
-        16: { Valkyrie: ['Empower1', 'Restore1'], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1', 'Restore1'] },
+        16: { Valkyrie: ['Empower1'/*, 'Restore1'*/], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1'/*, 'Restore1'*/] },
         18: { Sorceress: ['Frost2', 'Hydro2'], Bishop: ['Empower2'] },
         20: { Monk: ['Focus'] },
-        24: { Sorceress: ['Shock2'], Bishop: ['Restore2'] },
-        25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'], Sylvan: ['Cobra'] },
+        24: { Sorceress: ['Shock2']/*, Bishop: ['Restore2']*/ },
+        25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'], Sylvan: ['Cobra'], Bishop: ['Revive'] },
         28: { Bishop: ['Fury'] },
-        30: { Sorceress: ['Slow'], Bishop: ['Revive'], Monk: ['Kick'] },
+        30: { Sorceress: ['Slow'], Monk: ['Kick'] },
         32: { Valkyrie: ['Empower2'], Ninja: ['Frost2'] },
         33: { Shaman: ['Empower2', 'Frost2'] },
         35: { Valkyrie: ['Fury'], Shaman: ['Fury'] },
-        38: { Valkyrie: ['Restore2'], Ninja: ['Shock2'] },
-        39: { Shaman: ['Restore2', 'Shock2'] },
-        40: { Sorceress: ['Fire3'], Bishop: ['Heal3'] },
+        38: { /*Valkyrie: ['Restore2'],*/ Ninja: ['Shock2'] },
+        39: { Shaman: [/*'Restore2',*/ 'Shock2'], Valkyrie: ['Revive'] },
+        40: { Sorceress: ['Fire3'], Bishop: ['Heal3'], Shaman: ['Revive'] },
         42: { Bishop: ['Lifelink'] },
-        44: { Valkyrie: ['Revive'], Ninja: ['Slow'] },
-        45: { Shaman: ['Revive', 'Slow'] },
+        44: { Ninja: ['Slow'] },
+        45: { Shaman: ['Slow'] },
         46: { Valkyrie: ['Lifelink'], Shaman: ['Lifelink', 'Fire3'], Ninja: ['Fire3'] },
         50: { Sorceress: ['Frost3', 'Hydro3', 'Shock3'], Bishop: ['Empower3'] },
         60: { Valkyrie: ['Empower3'], Shaman: ['Empower3', 'Frost3', 'Hydro3', 'Shock3'], Ninja: ['Frost3', 'Hydro3', 'Shock3'] },
-        65: { Sorceress: ['Omni'], Bishop: ['Miracle'] },
+        65: { Sorceress: ['Omni'], Bishop: ['Miracle'], Valkyrie: ['Heal3'] },
     };
 
     const CLASS_LIST = Object.keys(CLASS_DATA);
@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Short descriptions for character select screen
     const CLASS_SHORT_DESC = {
-        Barbarian: "A pure physical powerhouse with extreme STR and DEF. Rage command doubles damage dealt and taken.",
+        Barbarian: "A pure physical powerhouse with extreme STR and HP.",
         Valkyrie: "A stalwart warrior with access to Prayer magic.",
         Ninja: "An adept equal in spell and blade.",
         Shaman: "A caster that can use Prayers and Spells with equal mastery.",
@@ -839,10 +839,13 @@ document.addEventListener('DOMContentLoaded', () => {
         Sylvan: "A mysterious shapeshifter that can rise to any challenge."
     };
 
-    // Display override: Barbarian and Monk show INT as 1 on the graph
+    // Display overrides: tweak stats on the hex graph to communicate class fantasy
     const STAT_DISPLAY_OVERRIDES = {
-        Barbarian: { baseInt: 1 },
-        Monk: { baseInt: 1 }
+        Barbarian: { baseInt: 1, baseHp: 30 },  // pure physical, max HP
+        Monk: { baseInt: 1 },                     // pure physical
+        Bishop: { baseStr: 1 },                   // no physical identity
+        Sorceress: { baseStr: 1 },                // no physical identity
+        Shaman: { baseStr: 3 }                    // low but not zero STR
     };
 
     function updatePartySelectUI() {
@@ -850,22 +853,37 @@ document.addEventListener('DOMContentLoaded', () => {
         cont.innerHTML = '';
         const allConfirmed = gameState.partySelectionIndex >= 4;
         for (let i = 0; i < 4; i++) {
-            const d = document.createElement('div');
-            d.className = 'party-select-slot';
-            d.id = `select-slot-${i}`;
             let cN = null;
             let isConfirmed = false;
-            let isActive = (i === gameState.partySelectionIndex);
+            let isActive = (i === gameState.partySelectionIndex && !allConfirmed);
             if (allConfirmed) {
                 cN = gameState.selectedClasses[i];
                 isConfirmed = true;
-                isActive = false;
             } else if (i < gameState.partySelectionIndex) {
                 cN = gameState.selectedClasses[i];
                 isConfirmed = true;
             } else if (i === gameState.partySelectionIndex) {
                 cN = gameState.tempSelectedClass;
             }
+            // Insert left arrow before active slot
+            if (isActive) {
+                const arrowL = document.createElement('button');
+                arrowL.className = 'cs-arrow';
+                arrowL.innerHTML = '&#9664;';
+                arrowL.addEventListener('click', () => {
+                    if (gameState.currentState !== 'PARTY_SELECTION') return;
+                    handlePartySelectKeyPress({ key: 'ArrowLeft' });
+                });
+                cont.appendChild(arrowL);
+            } else if (i > 0) {
+                // Spacer gap between non-active slots
+                const gap = document.createElement('div');
+                gap.className = 'cs-slot-gap';
+                cont.appendChild(gap);
+            }
+            // Build slot
+            const d = document.createElement('div');
+            d.className = 'party-select-slot';
             if (isActive) d.classList.add('active');
             if (isConfirmed) d.classList.add('confirmed');
             if (cN && PLAYER_SPRITES[cN]) {
@@ -880,53 +898,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 num.textContent = i + 1;
                 d.appendChild(num);
             }
+            // Click on confirmed slot to go back
+            const slotIndex = i;
+            const slotClass = cN;
             d.addEventListener('click', () => {
                 if (gameState.currentState !== 'PARTY_SELECTION') return;
-                if (allConfirmed) {
-                    // Allow clicking a confirmed slot to go back and re-select from that slot
-                    gameState.partySelectionIndex = i;
-                    gameState.tempSelectedClass = gameState.selectedClasses[i] || CLASS_LIST[0];
-                    gameState.selectedClasses[i] = null;
-                    updatePartySelectUI();
-                } else if (isConfirmed) {
-                    // Go back to this slot
-                    for (let j = gameState.partySelectionIndex - 1; j >= i; j--) {
-                        gameState.selectedClasses[j] = null;
-                    }
-                    gameState.partySelectionIndex = i;
-                    gameState.tempSelectedClass = cN || CLASS_LIST[0];
+                if (allConfirmed || isConfirmed) {
+                    gameState.partySelectionIndex = slotIndex;
+                    gameState.tempSelectedClass = gameState.selectedClasses[slotIndex] || slotClass || CLASS_LIST[0];
+                    for (let j = slotIndex; j < 4; j++) gameState.selectedClasses[j] = null;
                     updatePartySelectUI();
                 }
             });
             cont.appendChild(d);
+            // Insert right arrow after active slot
+            if (isActive) {
+                const arrowR = document.createElement('button');
+                arrowR.className = 'cs-arrow';
+                arrowR.innerHTML = '&#9654;';
+                arrowR.addEventListener('click', () => {
+                    if (gameState.currentState !== 'PARTY_SELECTION') return;
+                    handlePartySelectKeyPress({ key: 'ArrowRight' });
+                });
+                cont.appendChild(arrowR);
+            }
         }
-        // Update class browser name
+        // Update info area
         const nameEl = document.getElementById('cs-class-name');
-        if (nameEl) nameEl.textContent = allConfirmed ? '' : gameState.tempSelectedClass;
-        // Update class info
-        updateClassInfoPanel(allConfirmed ? null : gameState.tempSelectedClass);
-        // Update stat graph
-        drawStatHexagon(allConfirmed ? null : gameState.tempSelectedClass);
-        // Show/hide class browser arrows
-        const browser = document.getElementById('cs-class-browser');
-        if (browser) browser.style.visibility = allConfirmed ? 'hidden' : 'visible';
-        // Update Start Adventure button
-        updateStartAdventureButton();
-    }
-
-    function updateClassInfoPanel(className) {
-        const panel = document.getElementById('class-info-panel');
-        if (!panel) return;
         const descEl = document.getElementById('class-description');
-        if (!descEl) return;
-        if (!className) {
-            descEl.textContent = 'All characters selected! Press Start Adventure to begin.';
-            return;
+        const infoArea = document.getElementById('cs-info-area');
+        const startBtn = document.getElementById('start-adventure-btn');
+        const buttonBar = document.getElementById('cs-button-bar');
+        if (allConfirmed) {
+            if (infoArea) infoArea.style.display = 'none';
+            if (buttonBar) buttonBar.style.display = 'none';
+            if (startBtn) startBtn.style.display = 'block';
+            drawStatHexagon(null);
+        } else {
+            if (infoArea) infoArea.style.display = 'flex';
+            if (buttonBar) buttonBar.style.display = 'flex';
+            if (startBtn) startBtn.style.display = 'none';
+            if (nameEl) nameEl.textContent = gameState.tempSelectedClass;
+            if (descEl) descEl.textContent = CLASS_SHORT_DESC[gameState.tempSelectedClass] || '';
+            drawStatHexagon(gameState.tempSelectedClass);
         }
-        descEl.textContent = CLASS_SHORT_DESC[className] || '';
-        panel.style.animation = 'none';
-        panel.offsetHeight;
-        panel.style.animation = 'fadeIn 0.3s ease';
     }
 
     function drawStatHexagon(className) {
@@ -1023,15 +1038,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = '#aaa';
             ctx.fillText(statLabels[i], x, y);
         }
-    }
-
-    function updateStartAdventureButton() {
-        const btn = document.getElementById('start-adventure-btn');
-        if (!btn) return;
-        const allSelected = gameState.partySelectionIndex >= 4;
-        btn.disabled = !allSelected;
-        if (allSelected) btn.classList.add('ready');
-        else btn.classList.remove('ready');
     }
 
     function highlightActivePartyStatus(index) {
@@ -1285,31 +1291,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: true });
         }
 
-        // Class cycling arrows
-        const csArrowLeft = document.getElementById('cs-arrow-left');
-        const csArrowRight = document.getElementById('cs-arrow-right');
-        if (csArrowLeft) csArrowLeft.addEventListener('click', () => {
-            if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowLeft' });
-        });
-        if (csArrowRight) csArrowRight.addEventListener('click', () => {
-            if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowRight' });
-        });
-
-        // Mobile class nav buttons
+        // Button bar controls (arrows are created dynamically in updatePartySelectUI)
         const prevBtn = document.getElementById('class-prev-btn');
         const nextBtn = document.getElementById('class-next-btn');
         const confirmBtn = document.getElementById('class-confirm-btn');
         const backBtn = document.getElementById('class-back-btn');
         if (prevBtn) prevBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            // Prev slot = go back
             handlePartySelectKeyPress({ key: 'Escape' });
         });
         if (nextBtn) nextBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            // Next slot = confirm and advance
             handlePartySelectKeyPress({ key: 'Enter' });
         });
         if (confirmBtn) confirmBtn.addEventListener('click', () => {
@@ -2999,12 +2991,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 shimmerSprite(targetElementId, 'gold', 2000);
                 updatePartyStatusUI(); updateEnemySpritesUI(); highlightActivePartyStatus(-1);
             }
-            else if (p.effect === 'Restore') {
-                const ch = p.chance || 1.0;
-                if (Math.random() < ch) { let rem = false; if ('clearNegativeStatuses' in t) rem = t.clearNegativeStatuses(); else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('clearNegativeStatuses' in t) updatePartyStatusUI(); }
-                else { gameState.addLogMessage(`${pN} no effect.`); }
-                highlightActivePartyStatus(-1);
-            }
+            // else if (p.effect === 'Restore') {
+            //     const ch = p.chance || 1.0;
+            //     if (Math.random() < ch) { let rem = false; if ('clearNegativeStatuses' in t) rem = t.clearNegativeStatuses(); else if (t.statusEffects) { const len = t.statusEffects.length; t.statusEffects = t.statusEffects.filter(s => !['Poison', 'Slow'].includes(s.type)); rem = t.statusEffects.length < len; } if (rem) gameState.addLogMessage(`${t.name}'s ailments fade.`); else gameState.addLogMessage(`${pN} no effect.`); if ('clearNegativeStatuses' in t) updatePartyStatusUI(); }
+            //     else { gameState.addLogMessage(`${pN} no effect.`); }
+            //     highlightActivePartyStatus(-1);
+            // }
         });
     }
 

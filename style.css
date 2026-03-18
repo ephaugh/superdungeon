@@ -244,112 +244,146 @@ body {
 #party-select-screen {
     justify-content: flex-start;
     overflow: hidden;
-    padding: 10px 15px;
+    padding: 8px 20px 0 20px;
     gap: 0;
 }
 
 .cs-title {
-    font-size: 1.6em !important;
-    margin-bottom: 8px !important;
+    font-size: 1.5em !important;
+    margin-bottom: 6px !important;
+    margin-top: 0 !important;
     letter-spacing: 2px;
 }
 
+/* --- Slots Row (slots + arrows inline) --- */
 #party-select-slots {
     display: flex;
-    gap: 12px;
-    margin-bottom: 6px;
+    align-items: center;
     justify-content: center;
+    gap: 0;
+    margin-bottom: 4px;
+    width: 100%;
 }
 
 .party-select-slot {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border: 3px solid #555;
-    border-radius: 8px;
-    background-color: rgba(30, 30, 50, 0.7);
+    border-radius: 4px;
+    background-color: rgba(20, 20, 30, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
     transition: border-color 0.2s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .party-select-slot.active {
     border-color: #d4a537;
-    box-shadow: 0 0 12px rgba(212, 165, 55, 0.6);
+    border-width: 3px;
+    box-shadow: 0 0 8px rgba(212, 165, 55, 0.4);
 }
 
 .party-select-slot.confirmed {
-    border-color: #888;
-    opacity: 1;
+    border-color: #555;
 }
 
 .party-select-slot .slot-number {
-    font-size: 2em;
+    font-size: 3em;
     font-weight: bold;
-    color: #555;
+    color: #444;
 }
 
 .party-select-slot .slot-sprite {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
     image-rendering: pixelated;
 }
 
-/* Class browser (arrows + name) */
-#cs-class-browser {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 4px 0;
-}
-
+/* Arrows between slots (only next to active slot) */
 .cs-arrow {
     background: none;
-    border: 2px solid #d4a537;
+    border: none;
     color: #d4a537;
-    font-size: 1.4em;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    font-size: 2em;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.15s, transform 0.1s;
-    touch-action: manipulation;
-    padding: 0;
+    padding: 0 6px;
     line-height: 1;
+    transition: transform 0.1s;
+    touch-action: manipulation;
+    flex-shrink: 0;
 }
 
 .cs-arrow:hover {
-    background-color: rgba(212, 165, 55, 0.2);
+    color: #ffd700;
+    transform: scale(1.2);
 }
 
 .cs-arrow:active {
     transform: scale(0.9);
 }
 
+/* Spacer between slots where no arrow is */
+.cs-slot-gap {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+/* --- Info Area (class desc left, hex graph right) --- */
+#cs-info-area {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+    align-items: flex-start;
+    margin-top: 2px;
+}
+
+#cs-info-left {
+    flex: 1;
+    text-align: left;
+    padding-left: 10px;
+    padding-top: 4px;
+}
+
 #cs-class-name {
-    font-size: 1.3em;
+    font-size: 1.5em;
     font-weight: bold;
     color: #c47f35;
     font-style: italic;
-    min-width: 140px;
-    text-align: center;
+    margin-bottom: 6px;
 }
 
-/* Stat graph container */
-#cs-stat-graph-container {
-    margin: 2px 0;
+#class-description {
+    color: #ccc;
+    font-style: italic;
+    font-size: 0.88em;
+    line-height: 1.5;
+}
+
+#cs-info-right {
+    flex-shrink: 0;
     display: flex;
+    align-items: flex-start;
     justify-content: center;
 }
 
 #cs-stat-canvas {
     display: block;
+}
+
+/* --- Button Bar --- */
+#cs-button-bar {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+    padding: 8px 0 4px 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    margin-top: auto;
 }
 
 /* Start Adventure button */
@@ -358,29 +392,17 @@ body {
     font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
-    background: linear-gradient(to bottom, #4a4a4a, #333);
-    color: #777;
-    border: 2px solid #555;
-    border-radius: 6px;
-    margin-top: 4px;
-    transition: all 0.3s;
-}
-
-.start-adventure-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.start-adventure-btn.ready {
     background: linear-gradient(to bottom, #d4a537, #b8860b);
     color: #fff;
-    border-color: #ffd700;
+    border: 2px solid #ffd700;
+    border-radius: 6px;
+    margin-top: auto;
+    transition: all 0.3s;
     box-shadow: 0 0 15px rgba(212, 165, 55, 0.5);
-    opacity: 1;
     animation: adventure-pulse 1.5s infinite;
 }
 
-.start-adventure-btn.ready:hover {
+.start-adventure-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 0 25px rgba(212, 165, 55, 0.8);
 }
@@ -391,7 +413,7 @@ body {
 }
 
 .instructions {
-    font-size: 0.75em;
+    font-size: 0.78em;
     color: #888;
     margin-top: 4px;
     margin-bottom: 0;
@@ -1179,15 +1201,7 @@ button.rainbow-text {
     filter: grayscale(100%) brightness(40%) !important; animation: none !important;
 }
 
-/* === MOBILE CLASS NAV BUTTONS === */
-.mobile-class-nav {
-    display: flex;
-    gap: 8px;
-    margin: 12px 0 8px 0;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
+/* === NAV BUTTONS === */
 .class-nav-btn {
     min-width: 80px;
     min-height: 44px;
@@ -1219,28 +1233,6 @@ button.rainbow-text {
 
 .class-nav-back {
     background-color: #555;
-}
-
-/* === CLASS INFO PANEL === */
-.class-info-panel {
-    background: none;
-    border: none;
-    border-radius: 0;
-    padding: 0 20px;
-    margin: 0;
-    width: 85%;
-    max-width: 500px;
-    box-sizing: border-box;
-    animation: fadeIn 0.3s ease;
-    text-align: center;
-}
-
-#class-description {
-    color: #ccc;
-    line-height: 1.4;
-    margin: 0;
-    font-size: 0.82em;
-    font-style: italic;
 }
 
 @keyframes fadeIn {
