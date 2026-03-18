@@ -850,22 +850,37 @@ document.addEventListener('DOMContentLoaded', () => {
         cont.innerHTML = '';
         const allConfirmed = gameState.partySelectionIndex >= 4;
         for (let i = 0; i < 4; i++) {
-            const d = document.createElement('div');
-            d.className = 'party-select-slot';
-            d.id = `select-slot-${i}`;
             let cN = null;
             let isConfirmed = false;
-            let isActive = (i === gameState.partySelectionIndex);
+            let isActive = (i === gameState.partySelectionIndex && !allConfirmed);
             if (allConfirmed) {
                 cN = gameState.selectedClasses[i];
                 isConfirmed = true;
-                isActive = false;
             } else if (i < gameState.partySelectionIndex) {
                 cN = gameState.selectedClasses[i];
                 isConfirmed = true;
             } else if (i === gameState.partySelectionIndex) {
                 cN = gameState.tempSelectedClass;
             }
+            // Insert left arrow before active slot
+            if (isActive) {
+                const arrowL = document.createElement('button');
+                arrowL.className = 'cs-arrow';
+                arrowL.innerHTML = '&#9664;';
+                arrowL.addEventListener('click', () => {
+                    if (gameState.currentState !== 'PARTY_SELECTION') return;
+                    handlePartySelectKeyPress({ key: 'ArrowLeft' });
+                });
+                cont.appendChild(arrowL);
+            } else if (i > 0) {
+                // Spacer gap between non-active slots
+                const gap = document.createElement('div');
+                gap.className = 'cs-slot-gap';
+                cont.appendChild(gap);
+            }
+            // Build slot
+            const d = document.createElement('div');
+            d.className = 'party-select-slot';
             if (isActive) d.classList.add('active');
             if (isConfirmed) d.classList.add('confirmed');
             if (cN && PLAYER_SPRITES[cN]) {
@@ -880,53 +895,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 num.textContent = i + 1;
                 d.appendChild(num);
             }
+            // Click on confirmed slot to go back
+            const slotIndex = i;
+            const slotClass = cN;
             d.addEventListener('click', () => {
                 if (gameState.currentState !== 'PARTY_SELECTION') return;
-                if (allConfirmed) {
-                    // Allow clicking a confirmed slot to go back and re-select from that slot
-                    gameState.partySelectionIndex = i;
-                    gameState.tempSelectedClass = gameState.selectedClasses[i] || CLASS_LIST[0];
-                    gameState.selectedClasses[i] = null;
-                    updatePartySelectUI();
-                } else if (isConfirmed) {
-                    // Go back to this slot
-                    for (let j = gameState.partySelectionIndex - 1; j >= i; j--) {
-                        gameState.selectedClasses[j] = null;
-                    }
-                    gameState.partySelectionIndex = i;
-                    gameState.tempSelectedClass = cN || CLASS_LIST[0];
+                if (allConfirmed || isConfirmed) {
+                    gameState.partySelectionIndex = slotIndex;
+                    gameState.tempSelectedClass = gameState.selectedClasses[slotIndex] || slotClass || CLASS_LIST[0];
+                    for (let j = slotIndex; j < 4; j++) gameState.selectedClasses[j] = null;
                     updatePartySelectUI();
                 }
             });
             cont.appendChild(d);
+            // Insert right arrow after active slot
+            if (isActive) {
+                const arrowR = document.createElement('button');
+                arrowR.className = 'cs-arrow';
+                arrowR.innerHTML = '&#9654;';
+                arrowR.addEventListener('click', () => {
+                    if (gameState.currentState !== 'PARTY_SELECTION') return;
+                    handlePartySelectKeyPress({ key: 'ArrowRight' });
+                });
+                cont.appendChild(arrowR);
+            }
         }
-        // Update class browser name
+        // Update info area
         const nameEl = document.getElementById('cs-class-name');
-        if (nameEl) nameEl.textContent = allConfirmed ? '' : gameState.tempSelectedClass;
-        // Update class info
-        updateClassInfoPanel(allConfirmed ? null : gameState.tempSelectedClass);
-        // Update stat graph
-        drawStatHexagon(allConfirmed ? null : gameState.tempSelectedClass);
-        // Show/hide class browser arrows
-        const browser = document.getElementById('cs-class-browser');
-        if (browser) browser.style.visibility = allConfirmed ? 'hidden' : 'visible';
-        // Update Start Adventure button
-        updateStartAdventureButton();
-    }
-
-    function updateClassInfoPanel(className) {
-        const panel = document.getElementById('class-info-panel');
-        if (!panel) return;
         const descEl = document.getElementById('class-description');
-        if (!descEl) return;
-        if (!className) {
-            descEl.textContent = 'All characters selected! Press Start Adventure to begin.';
-            return;
+        const infoArea = document.getElementById('cs-info-area');
+        const startBtn = document.getElementById('start-adventure-btn');
+        const buttonBar = document.getElementById('cs-button-bar');
+        if (allConfirmed) {
+            if (infoArea) infoArea.style.display = 'none';
+            if (buttonBar) buttonBar.style.display = 'none';
+            if (startBtn) startBtn.style.display = 'block';
+            drawStatHexagon(null);
+        } else {
+            if (infoArea) infoArea.style.display = 'flex';
+            if (buttonBar) buttonBar.style.display = 'flex';
+            if (startBtn) startBtn.style.display = 'none';
+            if (nameEl) nameEl.textContent = gameState.tempSelectedClass;
+            if (descEl) descEl.textContent = CLASS_SHORT_DESC[gameState.tempSelectedClass] || '';
+            drawStatHexagon(gameState.tempSelectedClass);
         }
-        descEl.textContent = CLASS_SHORT_DESC[className] || '';
-        panel.style.animation = 'none';
-        panel.offsetHeight;
-        panel.style.animation = 'fadeIn 0.3s ease';
     }
 
     function drawStatHexagon(className) {
@@ -1023,15 +1035,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = '#aaa';
             ctx.fillText(statLabels[i], x, y);
         }
-    }
-
-    function updateStartAdventureButton() {
-        const btn = document.getElementById('start-adventure-btn');
-        if (!btn) return;
-        const allSelected = gameState.partySelectionIndex >= 4;
-        btn.disabled = !allSelected;
-        if (allSelected) btn.classList.add('ready');
-        else btn.classList.remove('ready');
     }
 
     function highlightActivePartyStatus(index) {
@@ -1285,31 +1288,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: true });
         }
 
-        // Class cycling arrows
-        const csArrowLeft = document.getElementById('cs-arrow-left');
-        const csArrowRight = document.getElementById('cs-arrow-right');
-        if (csArrowLeft) csArrowLeft.addEventListener('click', () => {
-            if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowLeft' });
-        });
-        if (csArrowRight) csArrowRight.addEventListener('click', () => {
-            if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowRight' });
-        });
-
-        // Mobile class nav buttons
+        // Button bar controls (arrows are created dynamically in updatePartySelectUI)
         const prevBtn = document.getElementById('class-prev-btn');
         const nextBtn = document.getElementById('class-next-btn');
         const confirmBtn = document.getElementById('class-confirm-btn');
         const backBtn = document.getElementById('class-back-btn');
         if (prevBtn) prevBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            // Prev slot = go back
             handlePartySelectKeyPress({ key: 'Escape' });
         });
         if (nextBtn) nextBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            // Next slot = confirm and advance
             handlePartySelectKeyPress({ key: 'Enter' });
         });
         if (confirmBtn) confirmBtn.addEventListener('click', () => {
