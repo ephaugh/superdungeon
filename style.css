@@ -243,109 +243,159 @@ body {
 /* --- Party Select Screen --- */
 #party-select-screen {
     justify-content: flex-start;
-    overflow-y: auto;
-    padding-top: 15px;
-    padding-bottom: 15px;
+    overflow: hidden;
+    padding: 10px 15px;
+    gap: 0;
 }
 
-#party-select-screen h2 {
-    margin-bottom: 16px;
+.cs-title {
+    font-size: 1.6em !important;
+    margin-bottom: 8px !important;
+    letter-spacing: 2px;
 }
 
 #party-select-slots {
-    margin-bottom: 12px;
-    font-size: 1.25em;
-    min-width: 400px;
-    text-align: left;
-    background-color: rgba(30, 30, 50, 0.6);
-    padding: 14px 20px;
-    border: 1px solid #557;
-    border-radius: 6px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 6px;
+    justify-content: center;
 }
 
 .party-select-slot {
-    padding: 7px 12px;
-    margin-bottom: 6px;
-    border: 3px solid transparent;
-    transition: background-color 0.2s, border-color 0.2s;
-    border-radius: 5px;
+    width: 100px;
+    height: 100px;
+    border: 3px solid #555;
+    border-radius: 8px;
+    background-color: rgba(30, 30, 50, 0.7);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    min-height: 44px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.party-select-slot.active {
+    border-color: #d4a537;
+    box-shadow: 0 0 12px rgba(212, 165, 55, 0.6);
+}
+
+.party-select-slot.confirmed {
+    border-color: #888;
+    opacity: 1;
+}
+
+.party-select-slot .slot-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #555;
+}
+
+.party-select-slot .slot-sprite {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* Class browser (arrows + name) */
+#cs-class-browser {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 4px 0;
+}
+
+.cs-arrow {
+    background: none;
+    border: 2px solid #d4a537;
+    color: #d4a537;
+    font-size: 1.4em;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s, transform 0.1s;
     touch-action: manipulation;
+    padding: 0;
+    line-height: 1;
 }
 
-.party-select-slot.active { 
-    border-color: #ffffaa; 
-    background-color: rgba(90, 90, 40, 0.4); 
+.cs-arrow:hover {
+    background-color: rgba(212, 165, 55, 0.2);
 }
 
-.party-select-slot.confirmed { 
-    opacity: 0.65; 
+.cs-arrow:active {
+    transform: scale(0.9);
 }
 
-.selected-class { 
-    display: inline-block; 
-    min-width: 130px; 
-    font-weight: bold; 
-    padding: 5px 10px; 
-    border-radius: 4px; 
-    text-align: center; 
-    border: 1px solid rgba(255, 255, 255, 0.4); 
-    margin-left: 20px; 
+#cs-class-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #c47f35;
+    font-style: italic;
+    min-width: 140px;
+    text-align: center;
 }
 
-.selected-class.Barbarian { 
-    background-color: #c6713b; 
-    color: #fff; 
+/* Stat graph container */
+#cs-stat-graph-container {
+    margin: 2px 0;
+    display: flex;
+    justify-content: center;
 }
 
-.selected-class.Valkyrie { 
-    background-color: #cad8e6; 
-    color: #222; 
+#cs-stat-canvas {
+    display: block;
 }
 
-.selected-class.Ninja { 
-    background-color: #000080; 
-    color: #fff; 
+/* Start Adventure button */
+.start-adventure-btn {
+    padding: 10px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #4a4a4a, #333);
+    color: #777;
+    border: 2px solid #555;
+    border-radius: 6px;
+    margin-top: 4px;
+    transition: all 0.3s;
 }
 
-.selected-class.Shaman { 
-    background-color: #355E3B; 
-    color: #fff; 
+.start-adventure-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.selected-class.Sorceress { 
-    background-color: #D648D7; 
-    color: #fff; 
-}
-
-.selected-class.Bishop { 
-    background-color: #fff59d; 
-    color: #333; 
-}
-
-.selected-class.Monk {
-    background-color: #87CEEB;
+.start-adventure-btn.ready {
+    background: linear-gradient(to bottom, #d4a537, #b8860b);
     color: #fff;
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(212, 165, 55, 0.5);
+    opacity: 1;
+    animation: adventure-pulse 1.5s infinite;
 }
 
-.selected-class.Sylvan {
-    background-color: #2E8B57;
-    color: #fff;
+.start-adventure-btn.ready:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(212, 165, 55, 0.8);
 }
 
-.party-select-slot.confirmed .selected-class { 
-    border-style: dashed; 
+@keyframes adventure-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(212, 165, 55, 0.5); }
+    50% { box-shadow: 0 0 25px rgba(212, 165, 55, 0.8); }
 }
 
 .instructions {
-    font-size: 0.85em;
-    color: #ccc;
-    margin-top: 8px;
-    margin-bottom: 4px;
-    line-height: 1.5;
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 4px;
+    margin-bottom: 0;
+    line-height: 1.4;
 }
 
 /* --- Battlefield Area (Enemies + Party Sprites) --- */
@@ -1173,76 +1223,24 @@ button.rainbow-text {
 
 /* === CLASS INFO PANEL === */
 .class-info-panel {
-    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
-    border: 2px solid #DAA520;
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-top: 10px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 20px;
+    margin: 0;
     width: 85%;
-    max-width: 420px;
+    max-width: 500px;
     box-sizing: border-box;
     animation: fadeIn 0.3s ease;
-    text-align: left;
-}
-
-.class-info-header {
     text-align: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #DAA520;
-    padding-bottom: 8px;
-}
-
-.class-info-header h3 {
-    color: #DAA520;
-    font-size: 1.2em;
-    margin: 0 0 2px 0;
-}
-
-.class-info-header span {
-    color: #aaa;
-    font-style: italic;
-    font-size: 0.9em;
 }
 
 #class-description {
-    color: #e0e0e0;
-    line-height: 1.5;
-    margin-bottom: 10px;
-    font-size: 0.85em;
-}
-
-.class-meta {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    color: #aaa;
-    font-size: 0.85em;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.class-traits {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    color: #ccc;
+    line-height: 1.4;
+    margin: 0;
     font-size: 0.82em;
-}
-
-.strengths ul,
-.weaknesses ul {
-    list-style: none;
-    padding-left: 0;
-    margin: 4px 0 0 0;
-}
-
-.strengths li {
-    color: #4ade80;
-    padding: 2px 0;
-}
-
-.weaknesses li {
-    color: #f87171;
-    padding: 2px 0;
+    font-style: italic;
 }
 
 @keyframes fadeIn {

@@ -22,40 +22,34 @@
 
         <!-- Party Selection Screen (Starts Hidden) -->
         <div class="screen-overlay" id="party-select-screen" style="display: none;">
-             <h2>Choose Your Party</h2>
+             <h2 class="cs-title">CHOOSE YOUR CHARACTERS!</h2>
              <div id="party-select-slots">
-                 <!-- JS Populates -->
+                 <!-- JS populates 4 character slots horizontally -->
              </div>
-             <!-- Mobile navigation buttons -->
-             <div id="mobile-class-nav" class="mobile-class-nav">
-                 <button id="class-prev-btn" class="class-nav-btn" aria-label="Previous class">&#8592; Prev</button>
-                 <button id="class-back-btn" class="class-nav-btn class-nav-back" aria-label="Go back">Back</button>
-                 <button id="class-confirm-btn" class="class-nav-btn class-nav-confirm" aria-label="Confirm class">Confirm &#10003;</button>
-                 <button id="class-next-btn" class="class-nav-btn" aria-label="Next class">Next &#8594;</button>
+             <!-- Class cycling arrows + class name -->
+             <div id="cs-class-browser">
+                 <button id="cs-arrow-left" class="cs-arrow" aria-label="Previous class">&#9664;</button>
+                 <span id="cs-class-name">Barbarian</span>
+                 <button id="cs-arrow-right" class="cs-arrow" aria-label="Next class">&#9654;</button>
              </div>
-             <p class="instructions">Use ARROW KEYS or swipe to change Class.<br>Press ENTER or tap Confirm to select.<br>Press SHIFT/ESC or tap Back to go back.</p>
              <!-- Class info panel -->
              <div id="class-info-panel" class="class-info-panel">
-                 <div class="class-info-header">
-                     <h3 id="class-title">Barbarian</h3>
-                     <span id="class-subtitle">The Berserker</span>
-                 </div>
                  <p id="class-description">A pure physical powerhouse who trades defense for offense.</p>
-                 <div class="class-meta">
-                     <span class="role"><strong>Role:</strong> <span id="class-role">Damage Dealer</span></span>
-                     <span class="difficulty"><strong>Difficulty:</strong> <span id="class-difficulty">&#9733;&#9733;&#9734;&#9734;&#9734;</span></span>
-                 </div>
-                 <div class="class-traits">
-                     <div class="strengths">
-                         <strong>&#10003; Strengths:</strong>
-                         <ul id="class-strengths"></ul>
-                     </div>
-                     <div class="weaknesses">
-                         <strong>&#10007; Weaknesses:</strong>
-                         <ul id="class-weaknesses"></ul>
-                     </div>
-                 </div>
              </div>
+             <!-- Hexagon stat graph -->
+             <div id="cs-stat-graph-container">
+                 <canvas id="cs-stat-canvas" width="200" height="200"></canvas>
+             </div>
+             <!-- Control buttons -->
+             <div id="mobile-class-nav" class="mobile-class-nav">
+                 <button id="class-prev-btn" class="class-nav-btn" aria-label="Previous slot">&#8592; Prev</button>
+                 <button id="class-back-btn" class="class-nav-btn class-nav-back" aria-label="Go back">Back</button>
+                 <button id="class-confirm-btn" class="class-nav-btn class-nav-confirm" aria-label="Confirm class">Confirm &#10003;</button>
+                 <button id="class-next-btn" class="class-nav-btn" aria-label="Next slot">Next &#8594;</button>
+             </div>
+             <!-- Start Adventure button -->
+             <button id="start-adventure-btn" class="start-adventure-btn" disabled>Start Adventure</button>
+             <p class="instructions">Use &#8592; &#8594; to cycle classes. ENTER to confirm. SHIFT/ESC to go back.</p>
         </div>
 
         <!-- Action Announcement Bar (Starts Hidden) -->
