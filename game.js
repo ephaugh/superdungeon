@@ -3118,10 +3118,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const r = Math.random();
         if (r < 0.49) i2 = 'Serum';
         else i2 = 'Scroll';
+        const ITEM_DESCRIPTIONS = {
+            Potion: "Heals all living allies for 10% max HP",
+            Serum: "Restores 50% max MP to all living allies",
+            Scroll: "Revives all fallen allies with 33% HP"
+        };
         [i1, i2].forEach(iN => {
             const b = document.createElement('button');
             b.dataset.item = iN;
-            b.textContent = iN;
+            b.innerHTML = `${iN}<span style="display:block; font-size:0.75em; opacity:0.7; margin-top:4px;">${ITEM_DESCRIPTIONS[iN]}</span>`;
             b.addEventListener('click', handleItemChoice);
             o.appendChild(b);
         });
@@ -3129,7 +3134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyItemEffect(iN) {
         switch (iN) {
-            case 'Potion': gameState.party.forEach(c => { if (c.isAlive) c.heal(Math.round(c.maxHp * 0.05)); }); gameState.addLogMessage("Party +5% HP!"); break;
+            case 'Potion': gameState.party.forEach(c => { if (c.isAlive) c.heal(Math.round(c.maxHp * 0.10)); }); gameState.addLogMessage("Party +10% HP!"); break;
             case 'Serum': gameState.party.forEach(c => { if (c.isAlive) c.restoreMp(Math.round(c.maxMp * 0.50)); }); gameState.addLogMessage("Party +50% MP!"); break;
             case 'Scroll': gameState.party.forEach(c => { if (!c.isAlive) { c.isAlive = true; const healAmount = Math.round(c.maxHp * 0.33); c.heal(healAmount); } }); gameState.addLogMessage("Scroll revives fallen!"); break;
         }
