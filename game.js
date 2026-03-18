@@ -1131,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         glove.src = 'https://i.imgur.com/gmgXzQT.png';
         glove.alt = '';
         glove.setAttribute('aria-hidden', 'true');
-        glove.style.cssText = 'position:absolute;width:24px;height:24px;pointer-events:none;z-index:1000;display:none;transform:scaleX(-1);';
+        glove.style.cssText = 'position:absolute;width:24px;height:24px;pointer-events:none;z-index:1000;display:none;';
         document.body.appendChild(glove);
         return glove;
     }
@@ -1142,7 +1142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         spriteGlove.src = 'https://i.imgur.com/gmgXzQT.png';
         spriteGlove.alt = '';
         spriteGlove.setAttribute('aria-hidden', 'true');
-        spriteGlove.style.cssText = 'position:absolute;width:32px;height:32px;pointer-events:none;z-index:500;display:none;transform:scaleX(-1);filter:drop-shadow(2px 2px 2px rgba(0,0,0,0.5));';
+        spriteGlove.style.cssText = 'position:absolute;width:32px;height:32px;pointer-events:none;z-index:500;display:none;filter:drop-shadow(2px 2px 2px rgba(0,0,0,0.5));';
         document.body.appendChild(spriteGlove);
         return spriteGlove;
     }
