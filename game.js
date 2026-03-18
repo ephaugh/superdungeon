@@ -444,6 +444,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (helpBtn) {
                 const combatStates = ['PLAYER_COMMAND', 'ACTION_RESOLUTION', 'BETWEEN_WAVES'];
                 helpBtn.style.display = combatStates.includes(this.currentState) ? 'flex' : 'none';
+                helpBtn.style.bottom = '245px';
+                helpBtn.style.left = '10px';
+                helpBtn.style.right = 'auto';
             }
             // Hide help modal on state change
             const helpModal = document.getElementById('help-modal');
