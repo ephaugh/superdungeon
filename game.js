@@ -1354,8 +1354,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
-        const scale = Math.min(vw / 800, vh / 600, 1);
-        const offsetX = Math.max(0, (vw - 800 * scale) / 2);
+        const scale = Math.min(vw / 960, vh / 640, 1);
+        const offsetX = Math.max(0, (vw - 960 * scale) / 2);
         document.documentElement.style.setProperty('--game-scale', scale);
         document.documentElement.style.setProperty('--game-offset-x', offsetX + 'px');
     }
