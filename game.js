@@ -1120,6 +1120,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Glove Focus Indicator ---
+    let inputMode = 'keyboard';
+    let gloveElement = null;
+    let spriteGloveElement = null;
+
+    function createGloveIndicator() {
+        const glove = document.createElement('img');
+        glove.id = 'focus-glove';
+        glove.src = 'https://i.imgur.com/gmgXzQT.png';
+        glove.alt = '';
+        glove.setAttribute('aria-hidden', 'true');
+        glove.style.cssText = 'position:absolute;width:24px;height:24px;pointer-events:none;z-index:1000;display:none;transform:scaleX(-1);';
+        document.body.appendChild(glove);
+        return glove;
+    }
+
+    function createSpriteGlove() {
+        const spriteGlove = document.createElement('img');
+        spriteGlove.id = 'sprite-focus-glove';
+        spriteGlove.src = 'https://i.imgur.com/gmgXzQT.png';
+        spriteGlove.alt = '';
+        spriteGlove.setAttribute('aria-hidden', 'true');
+        spriteGlove.style.cssText = 'position:absolute;width:32px;height:32px;pointer-events:none;z-index:500;display:none;transform:scaleX(-1);filter:drop-shadow(2px 2px 2px rgba(0,0,0,0.5));';
+        document.body.appendChild(spriteGlove);
+        return spriteGlove;
+    }
+
+    function initGloves() {
+        gloveElement = createGloveIndicator();
+        spriteGloveElement = createSpriteGlove();
+
+        document.addEventListener('touchstart', () => {
+            if (inputMode !== 'touch') {
+                inputMode = 'touch';
+                hideGloveIndicator();
+                hideSpriteGlove();
+            }
+        }, { passive: true });
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Shift', 'Escape'].includes(e.key)) {
+                if (inputMode !== 'keyboard') {
+                    inputMode = 'keyboard';
+                    showGloveIndicator();
+                }
+            }
+        });
+    }
+
+    function positionGloveAtElement(targetElement) {
+        if (!gloveElement || !targetElement || inputMode !== 'keyboard') return;
+        const rect = targetElement.getBoundingClientRect();
+        gloveElement.style.left = `${rect.left - 28}px`;
+        gloveElement.style.top = `${rect.top + (rect.height / 2) - 12}px`;
+        gloveElement.style.display = 'block';
+    }
+
+    function hideGloveIndicator() {
+        if (gloveElement) gloveElement.style.display = 'none';
+    }
+
+    function hideSpriteGlove() {
+        if (spriteGloveElement) spriteGloveElement.style.display = 'none';
+    }
+
+    function showGloveIndicator() {
+        const focusedBtn = document.querySelector('#dynamic-menu-content button.focused');
+        if (focusedBtn) positionGloveAtElement(focusedBtn);
+    }
+
+    function positionSpriteGlove(targetId) {
+        if (!spriteGloveElement || inputMode !== 'keyboard') { hideSpriteGlove(); return; }
+        const spriteElement = document.getElementById(targetId + '-sprite') || document.getElementById(targetId);
+        if (!spriteElement) { hideSpriteGlove(); return; }
+        const rect = spriteElement.getBoundingClientRect();
+        spriteGloveElement.style.left = `${rect.left - 36}px`;
+        spriteGloveElement.style.top = `${rect.top + (rect.height / 2) - 16}px`;
+        spriteGloveElement.style.display = 'block';
+    }
+
     // --- Initialization Function ---
     function initializeGame() {
         gameState.currentWave = 0; gameState.currentDungeon = 0; gameState.messageLog = []; gameState.party = []; gameState.enemies = []; gameState.nextWaveEffect = null; gameState.partySelectionIndex = 0; gameState.selectedClasses = [null, null, null, null]; gameState.tempSelectedClass = CLASS_LIST[0]; gameState.activeMenu = 'main'; gameState.focusedIndex = 0; gameState.actionQueue = [];
@@ -1128,6 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.setState('TITLE_SCREEN');
         setupGlobalKeyListener();
         setupTouchControls();
+        if (!gloveElement) initGloves();
     }
 
     // --- Menu Population Function ---
@@ -1172,6 +1253,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                     }
+                    // Show back button on main menu for characters 2/3/4 if a previous character has a queued action
+                    const hasPreviousAction = gameState.actionQueue.some(item => {
+                        const qChar = gameState.getCharacterById(item.actorId);
+                        return qChar && gameState.party.indexOf(qChar) < gameState.activeCharacterIndex;
+                    });
+                    if (hasPreviousAction) {
+                        const backBtn = document.createElement('button');
+                        backBtn.textContent = '\u2190 BACK';
+                        backBtn.dataset.action = 'back-to-previous-character';
+                        backBtn.classList.add('back-button');
+                        menuContainer.appendChild(backBtn);
+                    }
                     updateActionMenuUI(char);
                 }
                 break;
@@ -1188,11 +1281,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.disabled = caster.currentMp < p.cost;
                         menuContainer.appendChild(btn);
                     });
+                    const backBtn = document.createElement('button');
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
+                    menuContainer.appendChild(backBtn);
                 } else {
                     menuContainer.innerHTML = `<p style="color: #aaa;">No ${menuType} known.</p>`;
                     const backBtn = document.createElement('button');
-                    backBtn.textContent = "Back";
-                    backBtn.onclick = handleMenuCancel;
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
                     menuContainer.appendChild(backBtn);
                 }
                 break;
@@ -1209,11 +1308,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.disabled = sbCaster.currentMp < p.cost;
                         menuContainer.appendChild(btn);
                     });
+                    const backBtn = document.createElement('button');
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
+                    menuContainer.appendChild(backBtn);
                 } else {
                     menuContainer.innerHTML = `<p style="color: #aaa;">No Spellblade attacks known.</p>`;
                     const backBtn = document.createElement('button');
-                    backBtn.textContent = "Back";
-                    backBtn.onclick = handleMenuCancel;
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
                     menuContainer.appendChild(backBtn);
                 }
                 break;
@@ -1229,11 +1334,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.disabled = false;
                         menuContainer.appendChild(btn);
                     });
+                    const backBtn = document.createElement('button');
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
+                    menuContainer.appendChild(backBtn);
                 } else {
                     menuContainer.innerHTML = `<p style="color: #aaa;">No Arts known.</p>`;
                     const backBtn = document.createElement('button');
-                    backBtn.textContent = "Back";
-                    backBtn.onclick = handleMenuCancel;
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
                     menuContainer.appendChild(backBtn);
                 }
                 break;
@@ -1248,6 +1359,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.textContent = formName;
                         menuContainer.appendChild(btn);
                     });
+                }
+                {
+                    const backBtn = document.createElement('button');
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
+                    menuContainer.appendChild(backBtn);
                 }
                 break;
             case 'targets':
@@ -1275,9 +1393,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (!found) {
                     menuContainer.innerHTML += `<p style="color: #aaa;">No valid targets.</p>`;
+                }
+                {
                     const backBtn = document.createElement('button');
-                    backBtn.textContent = "Back";
-                    backBtn.onclick = handleMenuCancel;
+                    backBtn.textContent = '\u2190 BACK';
+                    backBtn.dataset.action = 'back';
+                    backBtn.classList.add('back-button');
                     menuContainer.appendChild(backBtn);
                 }
                 break;
@@ -1503,6 +1624,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCombatButtonClick(e) {
         if (e.target.tagName === 'BUTTON' && gameState.currentState === 'PLAYER_COMMAND') {
             const button = e.target;
+            // Handle back buttons first
+            if (button.dataset.action === 'back') { handleMenuCancel(); return; }
+            if (button.dataset.action === 'back-to-previous-character') { goBackToPreviousCharacter(); return; }
             if (button.dataset.form) handleShiftFormSelection(button);
             else if (button.dataset.action) handleActionClick(button);
             else if (button.dataset.power) handlePowerSelection(button);
@@ -1536,13 +1660,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateMenuFocus(btns, newIdx) {
-        btns.forEach((b, i) => { if (i === newIdx) b.classList.add('focused'); else b.classList.remove('focused'); });
+        btns.forEach((b, i) => {
+            if (i === newIdx) {
+                b.classList.add('focused');
+                if (inputMode === 'keyboard') {
+                    positionGloveAtElement(b);
+                    // Position sprite glove for target selection
+                    if (b.dataset.targetId) positionSpriteGlove(b.dataset.targetId);
+                    else hideSpriteGlove();
+                }
+            } else {
+                b.classList.remove('focused');
+            }
+        });
     }
 
     function handleMenuCancel() {
         switch (gameState.activeMenu) {
             case 'Spell': case 'Prayer': case 'Arts': case 'Shift': case 'Spellblade': populateMenu('main'); gameState.currentAction = null; break;
             case 'targets':
+                hideSpriteGlove();
                 const aT = gameState.currentAction?.type;
                 if (aT === 'Spell') populateMenu('Spell');
                 else if (aT === 'Prayer') populateMenu('Prayer');
@@ -1550,8 +1687,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 else if (aT === 'Spellblade') populateMenu('Spellblade');
                 else { populateMenu('main'); gameState.currentAction = null; }
                 break;
-            case 'main': break;
+            case 'main':
+                goBackToPreviousCharacter();
+                break;
         }
+    }
+
+    function goBackToPreviousCharacter() {
+        if (gameState.activeCharacterIndex === 0) return;
+
+        let previousCharIndex = -1;
+        for (let i = gameState.activeCharacterIndex - 1; i >= 0; i--) {
+            const char = gameState.party[i];
+            if (!char.isAlive) continue;
+            const hasQueuedAction = gameState.actionQueue.some(item => item.actorId === char.id);
+            if (hasQueuedAction) {
+                previousCharIndex = i;
+                break;
+            }
+        }
+
+        if (previousCharIndex === -1) return;
+
+        const previousChar = gameState.party[previousCharIndex];
+
+        // Remove the previous character's action from the queue
+        gameState.actionQueue = gameState.actionQueue.filter(item => item.actorId !== previousChar.id);
+
+        // Undo Rage state if Barbarian's Rage action is being cancelled
+        if (previousChar.className === 'Barbarian' && previousChar.isRaging) {
+            previousChar.isRaging = false;
+        }
+
+        // Set active character back to the previous one
+        gameState.activeCharacterIndex = previousCharIndex;
+        gameState.currentAction = null;
+        gameState.activeMenu = 'main';
+
+        // Update UI
+        populateMenu('main');
+        highlightActivePartyStatus(previousCharIndex);
+        gameState.addLogMessage(`--- ${previousChar.name}, command? ---`);
     }
 
     function resetFocusToMenu(menuName) {
@@ -1874,6 +2050,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Action Resolution ---
     function startActionResolution() {
         if (gameState.actionQueue.length === 0) { endRound(); return; }
+        hideGloveIndicator();
+        hideSpriteGlove();
         gameState.setState('ACTION_RESOLUTION');
         gameState.actionQueue.forEach(i => {
             i.speedRoll = Math.floor(Math.random() * 100);
