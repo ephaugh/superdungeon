@@ -827,46 +827,211 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeLimitGauges();
     }
 
+    // Short descriptions for character select screen
+    const CLASS_SHORT_DESC = {
+        Barbarian: "A pure physical powerhouse with extreme STR and DEF. Rage command doubles damage dealt and taken.",
+        Valkyrie: "A stalwart warrior with access to Prayer magic.",
+        Ninja: "An adept equal in spell and blade.",
+        Shaman: "A caster that can use Prayers and Spells with equal mastery.",
+        Sorceress: "A master spellcaster with outrageous damage potential.",
+        Bishop: "A peerless healer with access to protective Prayers.",
+        Monk: "A master of martial arts with a wide arsenal of commands.",
+        Sylvan: "A mysterious shapeshifter that can rise to any challenge."
+    };
+
+    // Display override: Barbarian and Monk show INT as 1 on the graph
+    const STAT_DISPLAY_OVERRIDES = {
+        Barbarian: { baseInt: 1 },
+        Monk: { baseInt: 1 }
+    };
+
     function updatePartySelectUI() {
         const cont = document.getElementById('party-select-slots');
         cont.innerHTML = '';
+        const allConfirmed = gameState.partySelectionIndex >= 4;
         for (let i = 0; i < 4; i++) {
             const d = document.createElement('div');
             d.className = 'party-select-slot';
             d.id = `select-slot-${i}`;
-            let cN = '', conf = false, act = (i === gameState.partySelectionIndex);
-            if (i < gameState.partySelectionIndex) { cN = gameState.selectedClasses[i]; conf = true; }
-            else if (i === gameState.partySelectionIndex) { cN = gameState.tempSelectedClass; }
-            else { cN = '---'; }
-            d.innerHTML = `Character ${i + 1}: <span class="selected-class"></span>`;
-            const s = d.querySelector('.selected-class');
-            s.textContent = cN;
-            CLASS_LIST.forEach(c => s.classList.remove(c));
-            if (cN !== '---' && CLASS_DATA[cN]) s.classList.add(cN);
-            if (act) d.classList.add('active');
-            if (conf) d.classList.add('confirmed');
+            let cN = null;
+            let isConfirmed = false;
+            let isActive = (i === gameState.partySelectionIndex);
+            if (allConfirmed) {
+                cN = gameState.selectedClasses[i];
+                isConfirmed = true;
+                isActive = false;
+            } else if (i < gameState.partySelectionIndex) {
+                cN = gameState.selectedClasses[i];
+                isConfirmed = true;
+            } else if (i === gameState.partySelectionIndex) {
+                cN = gameState.tempSelectedClass;
+            }
+            if (isActive) d.classList.add('active');
+            if (isConfirmed) d.classList.add('confirmed');
+            if (cN && PLAYER_SPRITES[cN]) {
+                const img = document.createElement('img');
+                img.className = 'slot-sprite';
+                img.src = PLAYER_SPRITES[cN].src;
+                img.alt = cN;
+                d.appendChild(img);
+            } else {
+                const num = document.createElement('span');
+                num.className = 'slot-number';
+                num.textContent = i + 1;
+                d.appendChild(num);
+            }
+            d.addEventListener('click', () => {
+                if (gameState.currentState !== 'PARTY_SELECTION') return;
+                if (allConfirmed) {
+                    // Allow clicking a confirmed slot to go back and re-select from that slot
+                    gameState.partySelectionIndex = i;
+                    gameState.tempSelectedClass = gameState.selectedClasses[i] || CLASS_LIST[0];
+                    gameState.selectedClasses[i] = null;
+                    updatePartySelectUI();
+                } else if (isConfirmed) {
+                    // Go back to this slot
+                    for (let j = gameState.partySelectionIndex - 1; j >= i; j--) {
+                        gameState.selectedClasses[j] = null;
+                    }
+                    gameState.partySelectionIndex = i;
+                    gameState.tempSelectedClass = cN || CLASS_LIST[0];
+                    updatePartySelectUI();
+                }
+            });
             cont.appendChild(d);
         }
-        updateClassInfoPanel(gameState.tempSelectedClass);
+        // Update class browser name
+        const nameEl = document.getElementById('cs-class-name');
+        if (nameEl) nameEl.textContent = allConfirmed ? '' : gameState.tempSelectedClass;
+        // Update class info
+        updateClassInfoPanel(allConfirmed ? null : gameState.tempSelectedClass);
+        // Update stat graph
+        drawStatHexagon(allConfirmed ? null : gameState.tempSelectedClass);
+        // Show/hide class browser arrows
+        const browser = document.getElementById('cs-class-browser');
+        if (browser) browser.style.visibility = allConfirmed ? 'hidden' : 'visible';
+        // Update Start Adventure button
+        updateStartAdventureButton();
     }
 
     function updateClassInfoPanel(className) {
-        const info = CLASS_DESCRIPTIONS[className];
-        if (!info) return;
         const panel = document.getElementById('class-info-panel');
         if (!panel) return;
-        document.getElementById('class-title').textContent = info.title;
-        document.getElementById('class-subtitle').textContent = info.subtitle;
-        document.getElementById('class-description').textContent = info.description;
-        document.getElementById('class-role').textContent = info.role;
-        document.getElementById('class-difficulty').textContent = info.difficulty;
-        const strengthsList = document.getElementById('class-strengths');
-        strengthsList.innerHTML = info.strengths.map(s => `<li>\u2022 ${s}</li>`).join('');
-        const weaknessesList = document.getElementById('class-weaknesses');
-        weaknessesList.innerHTML = info.weaknesses.map(w => `<li>\u2022 ${w}</li>`).join('');
+        const descEl = document.getElementById('class-description');
+        if (!descEl) return;
+        if (!className) {
+            descEl.textContent = 'All characters selected! Press Start Adventure to begin.';
+            return;
+        }
+        descEl.textContent = CLASS_SHORT_DESC[className] || '';
         panel.style.animation = 'none';
-        panel.offsetHeight; // force reflow
+        panel.offsetHeight;
         panel.style.animation = 'fadeIn 0.3s ease';
+    }
+
+    function drawStatHexagon(className) {
+        const canvas = document.getElementById('cs-stat-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        const cx = W / 2, cy = H / 2;
+        const R = 70; // radius of hex
+        ctx.clearRect(0, 0, W, H);
+        if (!className) return;
+        const data = CLASS_DATA[className];
+        if (!data) return;
+        // Stat order: HP (top), STR (top-right), INT (bottom-right), MP (bottom), MND (bottom-left), DEF (top-left)
+        const statKeys = ['baseHp', 'baseStr', 'baseInt', 'baseMp', 'baseMnd', 'baseDef'];
+        const statLabels = ['HP', 'STR', 'INT', 'MP', 'MND', 'DEF'];
+        const statMaxes = [30, 10, 10, 20, 10, 10];
+        // Apply display overrides
+        const overrides = STAT_DISPLAY_OVERRIDES[className] || {};
+        const statValues = statKeys.map(k => overrides[k] !== undefined ? overrides[k] : data[k]);
+        // Normalize to 0-1
+        const normalized = statValues.map((v, i) => Math.min(1, v / statMaxes[i]));
+        // Draw background hex (outline)
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+            const x = cx + R * Math.cos(angle);
+            const y = cy + R * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        // Draw grid lines (inner hexagons at 25%, 50%, 75%)
+        [0.25, 0.5, 0.75].forEach(scale => {
+            ctx.strokeStyle = 'rgba(85, 85, 85, 0.4)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+                const x = cx + R * scale * Math.cos(angle);
+                const y = cy + R * scale * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        });
+        // Draw axis lines
+        ctx.strokeStyle = 'rgba(85, 85, 85, 0.3)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < 6; i++) {
+            const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
+            ctx.stroke();
+        }
+        // Draw filled stat polygon
+        ctx.fillStyle = 'rgba(212, 165, 55, 0.35)';
+        ctx.strokeStyle = '#d4a537';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+            const r = R * Math.max(0.08, normalized[i]);
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        // Draw dots at vertices
+        for (let i = 0; i < 6; i++) {
+            const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+            const r = R * Math.max(0.08, normalized[i]);
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+        }
+        // Draw labels
+        ctx.font = 'bold 11px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const labelR = R + 16;
+        for (let i = 0; i < 6; i++) {
+            const angle = -Math.PI / 2 + (i * Math.PI * 2) / 6;
+            const x = cx + labelR * Math.cos(angle);
+            const y = cy + labelR * Math.sin(angle);
+            ctx.fillStyle = '#aaa';
+            ctx.fillText(statLabels[i], x, y);
+        }
+    }
+
+    function updateStartAdventureButton() {
+        const btn = document.getElementById('start-adventure-btn');
+        if (!btn) return;
+        const allSelected = gameState.partySelectionIndex >= 4;
+        btn.disabled = !allSelected;
+        if (allSelected) btn.classList.add('ready');
+        else btn.classList.remove('ready');
     }
 
     function highlightActivePartyStatus(index) {
@@ -1107,6 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: true });
             partyScreen.addEventListener('touchend', (e) => {
                 if (gameState.currentState !== 'PARTY_SELECTION') return;
+                if (gameState.partySelectionIndex >= 4) return; // all selected
                 const dx = swipeTouchStartX - e.changedTouches[0].screenX;
                 const dy = swipeTouchStartY - e.changedTouches[0].screenY;
                 if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
@@ -1119,6 +1285,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }, { passive: true });
         }
 
+        // Class cycling arrows
+        const csArrowLeft = document.getElementById('cs-arrow-left');
+        const csArrowRight = document.getElementById('cs-arrow-right');
+        if (csArrowLeft) csArrowLeft.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'ArrowLeft' });
+        });
+        if (csArrowRight) csArrowRight.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            handlePartySelectKeyPress({ key: 'ArrowRight' });
+        });
+
         // Mobile class nav buttons
         const prevBtn = document.getElementById('class-prev-btn');
         const nextBtn = document.getElementById('class-next-btn');
@@ -1126,11 +1304,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const backBtn = document.getElementById('class-back-btn');
         if (prevBtn) prevBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowLeft' });
+            // Prev slot = go back
+            handlePartySelectKeyPress({ key: 'Escape' });
         });
         if (nextBtn) nextBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
-            handlePartySelectKeyPress({ key: 'ArrowRight' });
+            // Next slot = confirm and advance
+            handlePartySelectKeyPress({ key: 'Enter' });
         });
         if (confirmBtn) confirmBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
@@ -1139,6 +1319,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (backBtn) backBtn.addEventListener('click', () => {
             if (gameState.currentState !== 'PARTY_SELECTION') return;
             handlePartySelectKeyPress({ key: 'Escape' });
+        });
+
+        // Start Adventure button
+        const startBtn = document.getElementById('start-adventure-btn');
+        if (startBtn) startBtn.addEventListener('click', () => {
+            if (gameState.currentState !== 'PARTY_SELECTION') return;
+            if (gameState.partySelectionIndex >= 4) finalizePartySelection();
         });
 
         // Enemy sprite tap for targeting
@@ -1222,6 +1409,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handlePartySelectKeyPress(event) {
+        // If all 4 are selected, Enter starts adventure
+        if (gameState.partySelectionIndex >= 4) {
+            if (event.key === 'Enter') {
+                finalizePartySelection();
+            } else if (event.key === 'Shift' || event.key === 'Escape') {
+                // Go back to slot 4
+                gameState.partySelectionIndex = 3;
+                gameState.tempSelectedClass = gameState.selectedClasses[3] || CLASS_LIST[0];
+                gameState.selectedClasses[3] = null;
+                updatePartySelectUI();
+            }
+            return;
+        }
         const curI = CLASS_LIST.indexOf(gameState.tempSelectedClass);
         let newI = curI;
         switch (event.key) {
@@ -1230,8 +1430,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'Enter':
                 gameState.selectedClasses[gameState.partySelectionIndex] = gameState.tempSelectedClass;
                 gameState.partySelectionIndex++;
-                if (gameState.partySelectionIndex >= 4) finalizePartySelection();
-                else { gameState.tempSelectedClass = CLASS_LIST[0]; updatePartySelectUI(); }
+                if (gameState.partySelectionIndex < 4) {
+                    gameState.tempSelectedClass = CLASS_LIST[0];
+                }
+                updatePartySelectUI();
                 return;
             case 'Shift': case 'Escape':
                 if (gameState.partySelectionIndex > 0) {
