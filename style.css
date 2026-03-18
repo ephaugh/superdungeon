@@ -881,10 +881,16 @@ button.rainbow-text {
     border: 1px solid white; 
 }
 
-.floating-number.heal { 
-    color: #ffffff; 
-    background-color: rgba(0, 180, 0, 0.7); 
-    border: 1px solid white; 
+.floating-number.heal {
+    color: #ffffff;
+    background-color: rgba(0, 180, 0, 0.7);
+    border: 1px solid white;
+}
+
+.floating-number.mp-restore {
+    color: #ffffff;
+    background-color: rgba(0, 140, 220, 0.7);
+    border: 1px solid #00ddff;
 }
 
 @keyframes floatAndFade { 

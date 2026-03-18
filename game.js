@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
         Barbarian: { baseHp: 30, baseMp: 0, baseStr: 7, baseDef: 7, baseInt: 5, baseMnd: 4, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 6, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
         Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
         Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1'/*, 'Restore1'*/], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
-        Valkyrie: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
-        Ninja: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
+        Valkyrie: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Prayer', 'Rally'], initialPowers: ['Heal1', 'Rally'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
+        Ninja: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Spellblade'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 17, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
         Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } },
         Sylvan: { baseHp: 23, baseMp: 0, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 5, commands: ['Attack', 'Shift'], initialPowers: ['Bear'], growth: { hp: 4.5, mp: 0, str: 0.5, def: 0.5, int: 0.5, mnd: 0.3 } }
@@ -65,6 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Focus: { level: 1, cost: 0, type: 'Art', effect: 'EnhancedStrike', target: 'enemy', damageMultiplier: 1.8, alwaysLast: true },
         Zen: { level: 1, cost: 0, type: 'Art', effect: 'SelfHeal', target: 'self', healPercent: 0.27 },
         Kick: { level: 1, cost: 0, type: 'Art', effect: 'AOE_Attack', target: 'all_enemies', damageMultiplier: 1.0 },
+        FireBlade: { level: 10, cost: 20, type: 'Spellblade', element: 'Fire', target: 'enemy' },
+        FrostBlade: { level: 20, cost: 20, type: 'Spellblade', element: 'Frost', target: 'enemy' },
+        ShockBlade: { level: 30, cost: 20, type: 'Spellblade', element: 'Shock', target: 'enemy' },
+        HydroBlade: { level: 40, cost: 20, type: 'Spellblade', element: 'Hydro', target: 'enemy' },
+        Rally: { level: 1, cost: 0, type: 'Rally', target: 'party', effect: 'Rally' },
     };
 
     const FORM_DATA = {
@@ -108,20 +113,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const UNLOCK_SCHEDULE = {
-        10: { Sorceress: ['Fire2'], Bishop: ['Heal2'], Monk: ['Zen'], Sylvan: ['Unicorn'] },
+        10: { Sorceress: ['Fire2'], Bishop: ['Heal2'], Monk: ['Zen'], Sylvan: ['Unicorn'], Ninja: ['FireBlade'] },
         16: { Valkyrie: ['Empower1'/*, 'Restore1'*/], Ninja: ['Fire1', 'Frost1', 'Hydro1', 'Poison'], Shaman: ['Fire1', 'Frost1', 'Hydro1', 'Poison', 'Empower1'/*, 'Restore1'*/] },
         18: { Sorceress: ['Frost2', 'Hydro2'], Bishop: ['Empower2'] },
-        20: { Monk: ['Focus'] },
+        20: { Monk: ['Focus'], Ninja: ['FrostBlade'] },
         24: { Sorceress: ['Shock2']/*, Bishop: ['Restore2']*/ },
         25: { Valkyrie: ['Heal2'], Ninja: ['Fire2'], Shaman: ['Heal2', 'Fire2'], Sylvan: ['Cobra'], Bishop: ['Revive'] },
         28: { Bishop: ['Fury'] },
-        30: { Sorceress: ['Slow'], Monk: ['Kick'] },
+        30: { Sorceress: ['Slow'], Monk: ['Kick'], Ninja: ['ShockBlade'] },
         32: { Valkyrie: ['Empower2'], Ninja: ['Frost2'] },
         33: { Shaman: ['Empower2', 'Frost2'] },
         35: { Valkyrie: ['Fury'], Shaman: ['Fury'] },
         38: { /*Valkyrie: ['Restore2'],*/ Ninja: ['Shock2'] },
         39: { Shaman: [/*'Restore2',*/ 'Shock2'], Valkyrie: ['Revive'] },
-        40: { Sorceress: ['Fire3'], Bishop: ['Heal3'], Shaman: ['Revive'] },
+        40: { Sorceress: ['Fire3'], Bishop: ['Heal3'], Shaman: ['Revive'], Ninja: ['HydroBlade'] },
         42: { Bishop: ['Lifelink'] },
         44: { Ninja: ['Slow'] },
         45: { Shaman: ['Slow'] },
@@ -391,11 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
         useMp(amt) { if (this.currentMp < amt) return false; this.currentMp -= amt; return true; }
         restoreMp(amt) { if (!this.isAlive) return 0; const r = Math.max(0, amt); const p = this.currentMp; this.currentMp = Math.min(this.maxMp, this.currentMp + r); return this.currentMp - p; }
         addStatus(effect) {
+            const empowerRank = { 'Empower1': 1, 'Empower2': 2, 'Empower3': 3 };
+            if (effect.type in empowerRank) {
+                const existingEmpower = this.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2' || e.type === 'Empower3');
+                if (existingEmpower) {
+                    const existingR = empowerRank[existingEmpower.type];
+                    const newR = empowerRank[effect.type];
+                    if (newR > existingR) {
+                        this.statusEffects = this.statusEffects.filter(s => s.type !== 'Empower1' && s.type !== 'Empower2' && s.type !== 'Empower3');
+                        gameState.addLogMessage(`${this.name}'s Empower is upgraded!`);
+                    } else {
+                        return false;
+                    }
+                }
+                this.statusEffects.push({ ...effect }); return true;
+            }
             const idx = this.statusEffects.findIndex(s => s.type === effect.type);
             if (idx !== -1) {
-                if (effect.type === 'Empower1' || effect.type === 'Empower2' || effect.type === 'Empower3') {
-                    this.statusEffects = this.statusEffects.filter(s => s.type !== 'Empower1' && s.type !== 'Empower2' && s.type !== 'Empower3');
-                } else if (effect.type === 'Fury' || effect.type === 'Lifelink' || effect.type === 'Dodge' || effect.type === 'Taunt') {
+                if (effect.type === 'Fury' || effect.type === 'Lifelink' || effect.type === 'Dodge' || effect.type === 'Taunt') {
                     this.statusEffects.splice(idx, 1);
                 } else { return false; }
             }
@@ -559,6 +577,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let baseMultiplier = attacker.isRaging ? 3.00 : (1.5 + Math.random() * 0.45);
         let offenseValue = (attacker.level + attackerStr) * baseMultiplier;
         let defenseValue = (defender.level + defenderDef);
+        let rawDamage = offenseValue - defenseValue;
+        return Math.max(1, Math.round(rawDamage));
+    }
+
+    function calculateSpellbladeDamage(attacker, defender) {
+        const attackerStr = attacker.getCurrentStat ? attacker.getCurrentStat('str') : attacker.str;
+        const attackerInt = attacker.getCurrentStat ? attacker.getCurrentStat('int') : attacker.int;
+        const defenderDef = defender.getCurrentStat ? defender.getCurrentStat('def') : defender.def;
+        const defenderMnd = defender.getCurrentStat ? defender.getCurrentStat('mnd') : defender.mnd;
+        let baseMultiplier = 1.5 + Math.random() * 0.45;
+        let offenseValue = (attacker.level + attackerStr + attackerInt) * baseMultiplier;
+        let defenseValue = (defender.level + (defenderDef + defenderMnd) / 2);
         let rawDamage = offenseValue - defenseValue;
         return Math.max(1, Math.round(rawDamage));
     }
@@ -743,6 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (a === 'Spell' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spell')) available = false;
             if (a === 'Prayer' && !char.powers.some(p => POWER_DATA[p]?.type === 'Prayer')) available = false;
             if (a === 'Arts' && !char.powers.some(p => POWER_DATA[p]?.type === 'Art')) available = false;
+            if (a === 'Spellblade' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spellblade')) available = false;
             if (a === 'Special' && char.limitGauge < 100) available = false;
             b.style.display = available ? 'block' : 'none';
             b.disabled = !available;
@@ -1124,12 +1155,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             specialBtn.classList.add('rainbow-text');
                             menuContainer.appendChild(specialBtn);
                         }
-                        ['Attack', 'Spell', 'Prayer', 'Rage', 'Arts', 'Shift'].forEach(cmd => {
+                        ['Attack', 'Spell', 'Prayer', 'Rage', 'Arts', 'Shift', 'Spellblade', 'Rally'].forEach(cmd => {
                             let available = char.commands.includes(cmd);
                             if (cmd === 'Attack' && hasSpecial) available = false;
                             if (cmd === 'Spell' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spell')) available = false;
                             if (cmd === 'Prayer' && !char.powers.some(p => POWER_DATA[p]?.type === 'Prayer')) available = false;
                             if (cmd === 'Arts' && !char.powers.some(p => POWER_DATA[p]?.type === 'Art')) available = false;
+                            if (cmd === 'Spellblade' && !char.powers.some(p => POWER_DATA[p]?.type === 'Spellblade')) available = false;
                             if (cmd === 'Shift' && char.className !== 'Sylvan') available = false;
                             if (cmd === 'Shift' && char.isTransformed) available = false;
                             if (available) {
@@ -1158,6 +1190,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else {
                     menuContainer.innerHTML = `<p style="color: #aaa;">No ${menuType} known.</p>`;
+                    const backBtn = document.createElement('button');
+                    backBtn.textContent = "Back";
+                    backBtn.onclick = handleMenuCancel;
+                    menuContainer.appendChild(backBtn);
+                }
+                break;
+            case 'Spellblade':
+                menuContainer.className = 'sub-menu-box';
+                const sbCaster = gameState.party[gameState.activeCharacterIndex];
+                const sbList = sbCaster.powers.filter(p => POWER_DATA[p]?.type === 'Spellblade');
+                if (sbList.length > 0) {
+                    sbList.forEach(pN => {
+                        const p = POWER_DATA[pN];
+                        const btn = document.createElement('button');
+                        btn.dataset.power = pN;
+                        btn.textContent = `${pN} (${p.cost} MP)`;
+                        btn.disabled = sbCaster.currentMp < p.cost;
+                        menuContainer.appendChild(btn);
+                    });
+                } else {
+                    menuContainer.innerHTML = `<p style="color: #aaa;">No Spellblade attacks known.</p>`;
                     const backBtn = document.createElement('button');
                     backBtn.textContent = "Back";
                     backBtn.onclick = handleMenuCancel;
@@ -1488,12 +1541,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleMenuCancel() {
         switch (gameState.activeMenu) {
-            case 'Spell': case 'Prayer': case 'Arts': case 'Shift': populateMenu('main'); gameState.currentAction = null; break;
+            case 'Spell': case 'Prayer': case 'Arts': case 'Shift': case 'Spellblade': populateMenu('main'); gameState.currentAction = null; break;
             case 'targets':
                 const aT = gameState.currentAction?.type;
                 if (aT === 'Spell') populateMenu('Spell');
                 else if (aT === 'Prayer') populateMenu('Prayer');
                 else if (aT === 'Art') populateMenu('Arts');
+                else if (aT === 'Spellblade') populateMenu('Spellblade');
                 else { populateMenu('main'); gameState.currentAction = null; }
                 break;
             case 'main': break;
@@ -1521,6 +1575,14 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'Spell': populateMenu('Spell'); break;
             case 'Prayer': populateMenu('Prayer'); break;
             case 'Arts': populateMenu('Arts'); break;
+            case 'Spellblade': populateMenu('Spellblade'); break;
+            case 'Rally':
+                gameState.currentAction = { type: 'Rally', casterId: char.id, powerName: 'Rally', targets: gameState.party.filter(p => p.isAlive).map(p => p.id) };
+                queueAction(char.id, gameState.currentAction);
+                gameState.currentAction = null;
+                highlightActivePartyStatus(-1);
+                prepareCommandPhase();
+                break;
             case 'Special':
                 gameState.currentAction = { type: 'Special', casterId: char.id, specialName: char.specialName, targets: [] };
                 queueAction(char.id, gameState.currentAction);
@@ -1849,7 +1911,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!actor || !actor.isAlive) { setTimeout(executeNextQueuedAction, 50); return; }
         let canAfford = true; let cost = 0;
         const isPlayerActor = !!gameState.getCharacterById(actorId);
-        if (action.type === 'Spell' || action.type === 'Prayer') {
+        if (action.type === 'Spell' || action.type === 'Prayer' || action.type === 'Spellblade') {
             cost = action.powerCost || POWER_DATA[action.powerName]?.cost || 0;
         } else if (action.type === 'Orison') {
             cost = ORISONS[action.orisonName]?.mpCost || 0;
@@ -1882,6 +1944,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 else applyCastingAnimation(actorId, 'spell', 1200);
                 break;
             case 'Prayer': applyCastingAnimation(actorId, 'prayer', 1300); break;
+            case 'Spellblade':
+                const sbData = POWER_DATA[action.powerName];
+                if (sbData?.element) applyCastingAnimation(actorId, sbData.element.toLowerCase(), 1200);
+                break;
+            case 'Rally': announceText = 'Rally'; announceDur = 1300; applyCastingAnimation(actorId, 'prayer', 1300); break;
             case 'Orison':
                 const orisonData = ORISONS[action.orisonName];
                 if (orisonData?.element) applyCastingAnimation(actorId, orisonData.element.toLowerCase(), 1200);
@@ -1915,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isRevive = (action.type === 'Prayer' && action.powerName === 'Revive');
                 const isMiracle = (action.type === 'Prayer' && action.powerName === 'Miracle');
                 if (!primaryTarget || (isRevive && primaryTarget.isAlive) || (!isRevive && !isMiracle && !primaryTarget.isAlive)) {
-                    if (action.type === 'Attack' || action.type === 'Rage' || action.type === 'BruiserAbility' || action.type === 'Orison' || (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy') || (action.type === 'Art' && POWER_DATA[action.powerName]?.target === 'enemy')) {
+                    if (action.type === 'Attack' || action.type === 'Rage' || action.type === 'BruiserAbility' || action.type === 'Orison' || action.type === 'Spellblade' || (action.type === 'Spell' && POWER_DATA[action.powerName]?.target === 'enemy') || (action.type === 'Art' && POWER_DATA[action.powerName]?.target === 'enemy')) {
                         const livingEnemies = gameState.enemies.filter(e => e.isAlive);
                         if (livingEnemies.length > 0) { primaryTarget = livingEnemies[Math.floor(Math.random() * livingEnemies.length)]; finalTargets = [primaryTarget]; }
                     } else if (action.type === 'Prayer' && !isRevive) {
@@ -1927,7 +1994,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const pInfo = POWER_DATA[action.powerName];
                 if (pInfo?.target === 'enemies' || pInfo?.target === 'all_enemies') finalTargets = gameState.enemies.filter(e => e.isAlive);
-                else if (pInfo?.target === 'allies') finalTargets = gameState.party.filter(p => p.isAlive);
+                else if (pInfo?.target === 'allies' || pInfo?.target === 'party') finalTargets = gameState.party.filter(p => p.isAlive);
                 else if (pInfo?.target === 'random_enemies') finalTargets = gameState.enemies.filter(e => e.isAlive);
                 else finalTargets = initialTargets.filter(t => t.isAlive);
             }
@@ -1935,6 +2002,8 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (action.type) {
             case 'Attack': case 'Rage': performAttack(actor, primaryTarget); break;
             case 'Spell': case 'Prayer': performPower(actor, action.powerName, finalTargets); break;
+            case 'Spellblade': performSpellblade(actor, action.powerName, primaryTarget); break;
+            case 'Rally': performRally(actor); break;
             case 'Art': performArt(actor, action.powerName, finalTargets); break;
             case 'Orison': performOrison(actor, action.orisonName, finalTargets); break;
             case 'BruiserAbility': performBruiserAbility(actor, action.abilityName, primaryTarget); break;
@@ -2998,6 +3067,112 @@ document.addEventListener('DOMContentLoaded', () => {
             //     highlightActivePartyStatus(-1);
             // }
         });
+    }
+
+    function performSpellblade(actor, powerName, target) {
+        const p = POWER_DATA[powerName]; if (!p) return;
+        if (!target || !target.isAlive) {
+            const livingEnemies = gameState.enemies.filter(e => e.isAlive);
+            if (livingEnemies.length > 0) target = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+            else { gameState.addLogMessage(`No valid targets remain.`); return; }
+        }
+        gameState.addLogMessage(`${actor.name} uses ${powerName}!`);
+        const targetElementId = getCorrectElementId(target.id);
+        const actorElementId = getCorrectElementId(actor.id);
+        let elementColor = 'purple';
+        if (p.element) { switch (p.element) { case 'Fire': elementColor = 'orange'; break; case 'Frost': elementColor = 'aqua'; break; case 'Hydro': elementColor = 'blue'; break; case 'Shock': elementColor = 'yellow'; break; } }
+        let dmg = calculateSpellbladeDamage(actor, target);
+        const empowerBuff = actor.statusEffects.find(e => e.type === 'Empower1' || e.type === 'Empower2' || e.type === 'Empower3');
+        if (empowerBuff?.damageMultiplier) { dmg = Math.round(dmg * empowerBuff.damageMultiplier); gameState.addLogMessage(`${actor.name}'s attack is empowered!`); }
+        const debuffStat = ELEMENT_DEBUFF_MAP[p.element];
+        flashSprite(targetElementId, elementColor, 250);
+        if (debuffStat) { if (Array.isArray(debuffStat)) debuffStat.forEach(stat => applyStatDebuff(target, stat, 2)); else applyStatDebuff(target, debuffStat, 2); }
+        setTimeout(() => {
+            showFloatingNumber(targetElementId, dmg, 'damage');
+            gameState.addLogMessage(`${target.name} takes ${dmg} ${p.element} dmg.`);
+            target.currentHp -= dmg;
+            if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(actor); }
+            const lifelinkBuff = actor.statusEffects.find(e => e.type === 'Lifelink');
+            if (lifelinkBuff?.healPercent && actor.isAlive) {
+                const healAmount = Math.round(dmg * lifelinkBuff.healPercent);
+                if (healAmount > 0) { actor.heal(healAmount); showFloatingNumber(actorElementId, healAmount, 'heal'); }
+            }
+            updateEnemySpritesUI(); updatePartyStatusUI(); highlightActivePartyStatus(-1);
+            const furyBuff = actor.statusEffects.find(e => e.type === 'Fury');
+            if (furyBuff && actor.isAlive && target.isAlive) {
+                setTimeout(() => {
+                    showActionAnnouncement(`Fury ${powerName}`, 1000);
+                    gameState.addLogMessage(`${actor.name}'s Fury triggers a second attack!`);
+                    let dmg2 = calculateSpellbladeDamage(actor, target);
+                    if (empowerBuff?.damageMultiplier) dmg2 = Math.round(dmg2 * empowerBuff.damageMultiplier);
+                    flashSprite(targetElementId, elementColor, 250);
+                    if (debuffStat) { if (Array.isArray(debuffStat)) debuffStat.forEach(stat => applyStatDebuff(target, stat, 2)); else applyStatDebuff(target, debuffStat, 2); }
+                    setTimeout(() => {
+                        showFloatingNumber(targetElementId, dmg2, 'damage');
+                        gameState.addLogMessage(`${target.name} takes ${dmg2} additional ${p.element} dmg!`);
+                        target.currentHp -= dmg2;
+                        if (target.currentHp <= 0) { target.currentHp = 0; target.isAlive = false; gameState.addLogMessage(`${target.name} defeated!`); grantKillCredit(actor); }
+                        if (lifelinkBuff?.healPercent && actor.isAlive) {
+                            const h2 = Math.round(dmg2 * lifelinkBuff.healPercent);
+                            if (h2 > 0) { actor.heal(h2); showFloatingNumber(actorElementId, h2, 'heal'); }
+                        }
+                        updateEnemySpritesUI(); updatePartyStatusUI();
+                        if (checkWinCondition()) handleWinWave();
+                        if (checkLoseCondition()) handleGameOver();
+                    }, 200);
+                }, 800);
+            }
+            if (checkWinCondition()) handleWinWave();
+            if (checkLoseCondition()) handleGameOver();
+        }, 150);
+    }
+
+    function performRally(actor) {
+        gameState.addLogMessage(`${actor.name} uses Rally!`);
+        const actorElementId = getCorrectElementId(actor.id);
+        shimmerSprite(actorElementId, 'gold', 1200);
+        const livingParty = gameState.party.filter(c => c.isAlive);
+        livingParty.forEach((char, idx) => {
+            setTimeout(() => {
+                const charElementId = getCorrectElementId(char.id);
+                flashSprite(charElementId, 'gold', 300);
+                // HP restoration: 10% of individual max HP
+                const hpHeal = Math.floor(char.maxHp * 0.10);
+                const actualHpHeal = char.heal(hpHeal);
+                if (actualHpHeal > 0) {
+                    showFloatingNumber(charElementId, actualHpHeal, 'heal');
+                    gameState.addLogMessage(`${char.name} +${actualHpHeal} HP.`);
+                }
+                // MP restoration: 10% of max MP, min 5, max 75 (skip for 0 maxMp chars)
+                if (char.maxMp > 0) {
+                    const mpRestore = Math.min(75, Math.max(5, Math.floor(char.maxMp * 0.10)));
+                    const actualMpRestore = char.restoreMp(mpRestore);
+                    if (actualMpRestore > 0) {
+                        setTimeout(() => {
+                            // Show MP number with offset to avoid overlapping HP number
+                            const tE = document.getElementById(charElementId);
+                            if (tE) {
+                                const nE = document.createElement('span');
+                                nE.textContent = actualMpRestore;
+                                nE.className = 'floating-number mp-restore';
+                                const cont = document.getElementById('game-container');
+                                const targetRect = tE.getBoundingClientRect();
+                                const contRect = cont.getBoundingClientRect();
+                                let sX = targetRect.left - contRect.left + (targetRect.width / 2) + 30;
+                                let sY = targetRect.top - contRect.top + 20;
+                                nE.style.left = `${sX - 15}px`;
+                                nE.style.top = `${sY}px`;
+                                nE.style.color = '#00ddff';
+                                cont.appendChild(nE);
+                                nE.addEventListener('animationend', () => { if (nE.parentNode === cont) cont.removeChild(nE); }, { once: true });
+                            }
+                            gameState.addLogMessage(`${char.name} +${actualMpRestore} MP.`);
+                        }, 350);
+                    }
+                }
+            }, idx * 200);
+        });
+        setTimeout(() => { updatePartyStatusUI(); highlightActivePartyStatus(-1); }, livingParty.length * 200 + 400);
     }
 
     function endRound() {
