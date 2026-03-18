@@ -330,22 +330,20 @@ body {
     flex-shrink: 0;
 }
 
-/* --- Info Area (class desc left, hex graph right) --- */
+/* --- Info Area (class name+desc above, hex graph below) --- */
 #cs-info-area {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
-    gap: 10px;
     flex: 1;
     min-height: 0;
-    align-items: flex-start;
     margin-top: 2px;
 }
 
 #cs-info-left {
-    flex: 1;
-    text-align: left;
-    padding-left: 10px;
-    padding-top: 4px;
+    text-align: center;
+    padding: 0 10px;
 }
 
 #cs-class-name {
@@ -353,7 +351,7 @@ body {
     font-weight: bold;
     color: #c47f35;
     font-style: italic;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
 }
 
 #class-description {
@@ -361,6 +359,7 @@ body {
     font-style: italic;
     font-size: 0.88em;
     line-height: 1.5;
+    margin-bottom: 4px;
 }
 
 #cs-info-right {
