@@ -13,11 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const CLASS_DATA = {
         Barbarian: { baseHp: 30, baseMp: 0, baseStr: 7, baseDef: 7, baseInt: 5, baseMnd: 4, commands: ['Attack', 'Rage'], initialPowers: [], growth: { hp: 6, mp: 0, str: 1, def: 1, int: 0, mnd: 0 } },
+        Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
+        Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1'/*, 'Restore1'*/], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
         Valkyrie: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Ninja: { baseHp: 20, baseMp: 10, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell'], initialPowers: ['Shock1'], growth: { hp: 4, mp: 1, str: 0.5, def: 0.5, int: 0.5, mnd: 0.5 } },
         Shaman: { baseHp: 17, baseMp: 15, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 6, commands: ['Attack', 'Spell', 'Prayer'], initialPowers: ['Heal1', 'Shock1'], growth: { hp: 3, mp: 2, str: 0, def: 0.5, int: 1, mnd: 0.5 } },
-        Sorceress: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 6, baseMnd: 7, commands: ['Attack', 'Spell'], initialPowers: ['Fire1', 'Frost1', 'Shock1', 'Hydro1', 'Poison'], growth: { hp: 2, mp: 3, str: 0, def: 0, int: 2, mnd: 1 } },
-        Bishop: { baseHp: 15, baseMp: 20, baseStr: 5, baseDef: 5, baseInt: 7, baseMnd: 6, commands: ['Attack', 'Prayer'], initialPowers: ['Heal1', 'Empower1'/*, 'Restore1'*/], growth: { hp: 2, mp: 5, str: 0, def: 0, int: 2, mnd: 1 } },
         Monk: { baseHp: 25, baseMp: 0, baseStr: 6, baseDef: 7, baseInt: 5, baseMnd: 7, commands: ['Attack', 'Arts'], initialPowers: ['Rapid'], growth: { hp: 5, mp: 0, str: 1, def: 1, int: 0, mnd: 1 } },
         Sylvan: { baseHp: 23, baseMp: 0, baseStr: 6, baseDef: 6, baseInt: 6, baseMnd: 5, commands: ['Attack', 'Shift'], initialPowers: ['Bear'], growth: { hp: 4.5, mp: 0, str: 0.5, def: 0.5, int: 0.5, mnd: 0.3 } }
     };
@@ -136,56 +136,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const CLASS_DESCRIPTIONS = {
         Barbarian: {
             title: "Barbarian", subtitle: "The Berserker",
-            description: "A pure physical powerhouse who trades defense for offense. Rage doubles damage output but also doubles damage taken. Charges Limit Break fastest due to high damage intake. Best paired with a dedicated healer.",
+            description: "A pure physical powerhouse with extreme STR and DEF. Rage command doubles damage dealt and taken.",
             role: "Damage Dealer", difficulty: "\u2605\u2605\u2606\u2606\u2606",
             strengths: ["Highest damage output", "Fast Limit charging", "Simple to play"],
             weaknesses: ["Takes 2x damage during Rage", "No magic", "No self-sustain"]
         },
+        Sorceress: {
+            title: "Sorceress", subtitle: "The Destroyer",
+            description: "A master spellcaster with outrageous damage potential. Learns the exclusive, devastating Omni spell.",
+            role: "Magic Damage", difficulty: "\u2605\u2605\u2605\u2606\u2606",
+            strengths: ["Highest magic damage", "AOE destruction", "Enemy debuffs"],
+            weaknesses: ["Very low HP", "MP hungry", "Needs protection"]
+        },
+        Bishop: {
+            title: "Bishop", subtitle: "The Divine",
+            description: "A peerless healer with access to protective Prayer magic. Learns the exclusive Miracle prayer, turning the tide of battle in your favor.",
+            role: "Healer / Support", difficulty: "\u2605\u2605\u2606\u2606\u2606",
+            strengths: ["Best healing", "Party revive", "Essential for hard content"],
+            weaknesses: ["Low damage", "Target priority", "Slower Limit charging"]
+        },
         Valkyrie: {
             title: "Valkyrie", subtitle: "The Commander",
-            description: "A balanced warrior who excels at supporting the team while dealing solid damage. Her Battle Cry Special grants the entire party Empower3 and Fury, turning any fight into a decisive victory.",
+            description: "A stalwart warrior with access to Prayer magic. An excellent battle priest.",
             role: "Support / Damage", difficulty: "\u2605\u2605\u2606\u2606\u2606",
             strengths: ["Party-wide buffs", "Good survivability", "Versatile"],
             weaknesses: ["Lower single-target damage", "No healing", "Jack of all trades"]
         },
         Ninja: {
             title: "Ninja", subtitle: "The Assassin",
-            description: "A swift hybrid fighter combining physical attacks with offensive magic. Access to Fire spells and Poison makes the Ninja deadly against all enemy types. Night Slash poisons the entire battlefield.",
+            description: "An adept equal in destructive Spells and physical attacks. Deftly alternates between single-target and multi-target damage.",
             role: "Hybrid Damage", difficulty: "\u2605\u2605\u2605\u2606\u2606",
             strengths: ["Magic + Physical", "AOE poison", "High speed"],
             weaknesses: ["Low HP", "MP dependent", "Fragile"]
         },
-        Sorceress: {
-            title: "Sorceress", subtitle: "The Destroyer",
-            description: "The ultimate offensive spellcaster. Wields devastating Fire magic and can Slow enemies to control the battlefield. Meteor Storm Special rains destruction on all foes while debuffing their stats.",
-            role: "Magic Damage", difficulty: "\u2605\u2605\u2605\u2606\u2606",
-            strengths: ["Highest magic damage", "AOE destruction", "Enemy debuffs"],
-            weaknesses: ["Very low HP", "MP hungry", "Needs protection"]
-        },
         Shaman: {
             title: "Shaman", subtitle: "The Elementalist",
-            description: "Master of the four elements. Each spell debuffs a different stat: Hydro (MND), Fire (STR), Frost (DEF), Shock (INT). Elemental Fury Special casts all four in sequence for total battlefield control.",
+            description: "A flexible caster that can use Prayers and Spells with equal mastery. Blast your foes and bolster your allies.",
             role: "Debuffer / Magic", difficulty: "\u2605\u2605\u2605\u2605\u2606",
             strengths: ["All-stat debuffs", "Element coverage", "Tactical depth"],
             weaknesses: ["Lower burst damage", "Complex rotation", "MP management"]
         },
-        Bishop: {
-            title: "Bishop", subtitle: "The Divine",
-            description: "The ultimate healer with access to the most powerful prayers. Heal, Revive, and buff allies to keep the party fighting. Angelic Chorus Special fully heals and revives the entire party instantly.",
-            role: "Healer / Support", difficulty: "\u2605\u2605\u2606\u2606\u2606",
-            strengths: ["Best healing", "Party revive", "Essential for hard content"],
-            weaknesses: ["Low damage", "Target priority", "Slower Limit charging"]
-        },
         Monk: {
             title: "Monk", subtitle: "The Martial Artist",
-            description: "A tactical physical fighter using Arts that cost 0 MP. Highest DEF makes Monk incredibly durable. Focus hits hard but acts last. Dodge ignores all damage. Taunt protects allies. Nirvana Fist grants self-Miracle then devastates.",
+            description: "A master of martial arts with a wide arsenal of commands called Arts. Experienced monks can manipulate turn order, hit multiple foes at once, and even heal themselves.",
             role: "Tank / Tactical", difficulty: "\u2605\u2605\u2605\u2605\u2605",
             strengths: ["Highest defense", "0 MP abilities", "Tactical flexibility"],
             weaknesses: ["Complex decision-making", "Lower raw damage", "Slower Limit charging"]
         },
         Sylvan: {
             title: "Sylvan", subtitle: "The Shapeshifter",
-            description: "A nature warrior who transforms into powerful animal forms. Each form lasts 3 turns with unique abilities and passives. Bear tanks and mauls. Unicorn heals and revives. Cobra poisons with speed priority. Phoenix Form Special grants immortality and devastation.",
+            description: "A mysterious shapeshifter that can rise to any challenge. Unlocks additional animal forms as they level up.",
             role: "Hybrid / Versatile", difficulty: "\u2605\u2605\u2605\u2605\u2605",
             strengths: ["Extreme versatility", "Form-specific passives", "Cleanses debuffs on shift"],
             weaknesses: ["RNG ability selection", "Form commitment (3 turns)", "Complex management"]
@@ -841,11 +841,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Display overrides: tweak stats on the hex graph to communicate class fantasy
     const STAT_DISPLAY_OVERRIDES = {
-        Barbarian: { baseInt: 1, baseHp: 30 },  // pure physical, max HP
-        Monk: { baseInt: 1 },                     // pure physical
-        Bishop: { baseStr: 1 },                   // no physical identity
-        Sorceress: { baseStr: 1 },                // no physical identity
-        Shaman: { baseStr: 3 }                    // low but not zero STR
+        Barbarian: { baseStr: 10, baseInt: 1, baseHp: 30 },  // pure physical, max STR + HP
+        Monk: { baseStr: 7, baseInt: 1 },                     // strong physical
+        Bishop: { baseStr: 1 },                               // no physical identity
+        Sorceress: { baseStr: 1 },                            // no physical identity
+        Shaman: { baseStr: 3 }                                // low but not zero STR
     };
 
     function updatePartySelectUI() {
