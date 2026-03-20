@@ -8,48 +8,29 @@
 📋 PARTY SELECTION - CHOOSE YOUR HEROES
 ══════════════════════════════════════════════════════
 
-🗡️ BARBARIAN - The Tank
-• High HP & Physical Stats, Zero MP
-• Commands: Attack, Rage (2x damage, takes 2x damage)
-• Perfect for: Frontline tanking and raw damage
-• Growth: Becomes a nearly invincible damage dealer
+🗡️ BARBARIAN - The Berserker
+Pure physical powerhouse. Rage doubles Attack damage at target, but Barbarian will take double damage for the round.
 
-🔮 SORCERESS - Top-tier Spellcaster
-• Massive MP pool, devastating magic
-• Commands: Attack, Spell (All 4 elements + Poison at start!)
-• Perfect for: Area damage and status effects
-• Growth: Unlocks all spells, including the sorceress-exclusive Omni
+🔮 SORCERESS - The Destroyer
+Master of Spells. Immense wide-area destructive output, but extremely fragile. Learns the exclusive and hard-hitting Omni spell.
 
-⛪ BISHOP - Ultimate Healer
-• Massive MP pool, ultimate support magic  
-• Commands: Attack, Prayer (Heal1, Empower1, Restore1 at start)
-• Perfect for: Keeping the party alive and buffed
-• Growth: Unlocks all Prayers, including the bishop-exclusive Miracle
+⛪ BISHOP - The Divine
+Master of Prayers. Immense healing and buff output, but extremely fragile. Learns the exclusive Miracle prayer, which completely restores an ally's HP and grants Empower3, Lifelink, and Fury all at once!
 
-⚔️ VALKYRIE - Divine Warrior
-• Balanced fighter with healing magic
-• Commands: Attack, Prayer (Heal1 at start)
-• Perfect for: Versatile combat and party support
-• Growth: Gains powerful buffs and revival magic
+⚔️ VALKYRIE - The Commander
+Balanced fighter with access to Prayers. Can use the Rally command to restore a small amount of HP and MP to the entire party.
 
-🥷 NINJA - Warrior Mage 
-• Balanced attacker with offensive magic
-• Commands: Attack, Spell (Shock1 at start)
-• Perfect for: Burst damage and crowd control
-• Growth: Good physical and Spell Damage
+🥷 NINJA - The Assassin
+Balanced fighter with access to Spells. Can use the Spellblade command to deal significant single-target damage.
 
-🌟 SHAMAN - Jack of all Trades
-• Unique hybrid with Spells AND Prayers
-• Commands: Attack, Spell, Prayer (Heal1 + Shock1 at start)
-• Perfect for: Ultimate versatility and adaptability
-• Growth: Has most Spells and Prayers
+🌟 SHAMAN - The Elementalist
+Balanced magic-user that can cast Spells and Prayers with equal proficiency.
 
-🥋 MONK - The Tactical Fighter
-• High HP & Highest DEF, Zero MP
-• Commands: Attack, Arts (special 0 MP abilities!)
-• Perfect for: Consistent damage and tactical versatility
-• Growth: Unlocks utility Arts for any situation
-• Arts: Rapid (start), Zen (lv10), Focus (lv20), Kick (lv30)
+🥋 MONK - The Martial Artist
+Stalwart martial-artist with access to Arts as Monk increases in level. Can manipulate turn order with Rapid (two weak attacks that always go first) and Focus (heavy-hitting blow that's always last), attack multiple foes at once (Kick and Rapid), and even heal itself (Zen).
+
+🌿 SYLVAN - The Shapeshifter
+Dynamic shapeshifter. Shift command transforms the Sylvan into an animal for a limited time. Be careful, you cannot control the Sylvan while they are feral! Bear is a bulky juggernaut; Unicorn boosts healing of your allies and revives the party; Cobra hits hard and always goes first.
 
 
 
@@ -68,7 +49,6 @@
 🎯 SPELL MAGIC (Offensive):
 • Fire/Frost/Shock/Hydro: Elemental damage + stat debuffs
 • Poison: Deals 5% of target's maximum health at the end of the round for 5 turns.
-• Slow: (SLOW IS CURRENTLY NON-FUNCTIONAL)
 • Higher levels = more damage, longer debuffs
 • Each element weakens a different stat!
 • Omni hits for massive damage
@@ -78,7 +58,7 @@
 • Empower:  Multiply physical damage (1.5x/3x/5x for levels 1/2/3!) for 4 rounds*
 • Fury: Double attack on every turn for 4 rounds*
 • Lifelink: Heal for 50% of damage dealt for 4 rounds *
-• Restore: Remove poison/slow effects (CURRENTLY NON-FUNCTIONAL)
+• Restore: Remove poison effects
 • Revive: Bring back fallen allies with 25% HP
 • Miracle: Full heal + all buffs (Empower3, Lifelink, Fury) + works on KO'd allies!
 *Winning a round extends the duration of your buffs!
@@ -93,7 +73,7 @@
 
 
 ══════════════════════════════════════════════════════
-💥 SPECIAL ATTACKS - LIMIT BREAK SYSTEM
+💥 SPECIAL ATTACKS - SPECIAL COMMAND SYSTEM
 ══════════════════════════════════════════════════════
 
 Every character has a powerful SPECIAL ability that charges during combat!
@@ -152,11 +132,12 @@ Every character has a powerful SPECIAL ability that charges during combat!
 
 Every 15 waves = New Dungeon with tougher enemies!
 1. Overworld (Waves 1-15): Rats, Goblins, Kobolds
-2. Desert (Waves 16-30): Sand Worms, Thieves, Mummies  
+2. Desert (Waves 16-30): Sand Worms, Thieves, Mummies
 3. Catacombs (Waves 31-45): Skeletons, Oozes, Banshees
 4. Jungle (Waves 46-60): Raptors, Megasaurus, Nessiedon
 5. Badlands (Waves 61-75): Doomhounds, Dracoguards, Elite Kobolds
 6. ??? (Waves 76-90): Mi-go, Shoggoths, Elder Things
+7. Arena (Waves 91+): Post-game endless waves mode unlocked after defeating the final boss
 
 🐉 BOSS FIGHTS (Every 15th Wave):
 Dragons with devastating area attacks!

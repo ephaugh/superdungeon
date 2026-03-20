@@ -114,7 +114,7 @@
                             &bull; Tap a command (Attack, Spell, etc.) to select it<br>
                             &bull; Tap an enemy to target them<br>
                             &bull; Tap an ally for healing/buffs<br>
-                            &bull; Actions execute in speed order each round<br>
+                            &bull; Actions execute in speed order each round (speed is calculated based on the priority class of the action, with ties decided through RNG)<br>
                             &bull; Swipe left/right on class select to cycle classes
                         </div>
                     </div>
@@ -126,21 +126,21 @@
                         </div>
                         <div class="help-section-content">
                             <strong>BARBARIAN</strong> - The Berserker<br>
-                            Pure physical powerhouse. Uses Rage for massive damage but takes 2x damage while active. Charges Special fastest due to damage taken.<br><br>
-                            <strong>VALKYRIE</strong> - The Commander<br>
-                            Balanced fighter with strong physical attacks. Battle Cry Special buffs entire party with Empower3 + Fury.<br><br>
-                            <strong>NINJA</strong> - The Assassin<br>
-                            Fast and deadly. Mixes physical attacks with offensive magic (Fire, Poison). Night Slash poisons all enemies.<br><br>
+                            Pure physical powerhouse. Rage doubles Attack damage at target, but Barbarian will take double damage for the round.<br><br>
                             <strong>SORCERESS</strong> - The Destroyer<br>
-                            Pure offensive magic. Fire spells + Slow debuff. Glass cannon with low HP but devastating Meteor Storm Special.<br><br>
-                            <strong>SHAMAN</strong> - The Elementalist<br>
-                            Master of elements. Hydro (&darr;MND), Fire (&darr;STR), Frost (&darr;DEF), Shock (&darr;INT). Elemental Fury casts all four.<br><br>
+                            Master of Spells. Immense wide-area destructive output, but extremely fragile. Learns the exclusive and hard-hitting Omni spell.<br><br>
                             <strong>BISHOP</strong> - The Divine<br>
-                            Ultimate healer. Powerful healing prayers + Revive. Angelic Chorus Special fully heals and revives entire party.<br><br>
+                            Master of Prayers. Immense healing and buff output, but extremely fragile. Learns the exclusive Miracle prayer, which completely restores an ally's HP and grants Empower3, Lifelink, and Fury all at once!<br><br>
+                            <strong>VALKYRIE</strong> - The Commander<br>
+                            Balanced fighter with access to Prayers. Can use the Rally command to restore a small amount of HP and MP to the entire party.<br><br>
+                            <strong>NINJA</strong> - The Assassin<br>
+                            Balanced fighter with access to Spells. Can use the Spellblade command to deal significant single-target damage.<br><br>
+                            <strong>SHAMAN</strong> - The Elementalist<br>
+                            Balanced magic-user that can cast Spells and Prayers with equal proficiency.<br><br>
                             <strong>MONK</strong> - The Martial Artist<br>
-                            Tactical fighter using Arts (0 MP cost). Highest DEF in game. Focus hits hard but goes last. Dodge avoids all damage.<br><br>
+                            Stalwart martial-artist with access to Arts as Monk increases in level. Can manipulate turn order with Rapid (two weak attacks that always go first) and Focus (heavy-hitting blow that's always last), attack multiple foes at once (Kick and Rapid), and even heal itself (Zen).<br><br>
                             <strong>SYLVAN</strong> - The Shapeshifter<br>
-                            Transforms into animal forms (Bear, Unicorn, Cobra) for 3 turns each. Phoenix Form Special grants immortality + devastation.
+                            Dynamic shapeshifter. Shift command transforms the Sylvan into an animal for a limited time. Be careful, you cannot control the Sylvan while they are feral! Bear is a bulky juggernaut; Unicorn boosts healing of your allies and revives the party; Cobra hits hard and always goes first.
                         </div>
                     </div>
 
@@ -152,7 +152,7 @@
                         <div class="help-section-content">
                             <strong>TURN ORDER:</strong><br>
                             1. Specials (100% Limit Gauge)<br>
-                            2. Always First (Monk: Rapid, Dodge, Taunt)<br>
+                            2. Always First (Monk: Rapid)<br>
                             3. Boss Abilities (Dragon Breath)<br>
                             4. Normal Actions (by speed)<br>
                             5. Always Last (Monk: Focus)<br><br>
@@ -162,7 +162,6 @@
                             &bull; Lifelink: Heal 50% of damage dealt<br><br>
                             <strong>DEBUFFS:</strong><br>
                             &bull; Poison: 5% max HP per turn<br>
-                            &bull; Slow: Reduced speed<br>
                             &bull; Stat Downs: -15% to STR/DEF/INT/MND<br><br>
                             <strong>ELEMENTS:</strong><br>
                             &bull; Hydro &rarr; &darr;MND (more magic damage)<br>
@@ -175,7 +174,7 @@
 
                     <div class="help-section">
                         <div class="help-section-header" role="button" tabindex="0">
-                            <span>&#128165; Limit Break System</span>
+                            <span>&#128165; Special Command System</span>
                             <span class="help-chevron">&#9660;</span>
                         </div>
                         <div class="help-section-content">
@@ -197,12 +196,9 @@
                         </div>
                         <div class="help-section-content">
                             <strong>WORLDS:</strong><br>
-                            Forest &rarr; Cave &rarr; Jungle &rarr; Badlands &rarr; ???<br><br>
-                            Each world has 4 enemy types:<br>
-                            &bull; <strong>Weaklings:</strong> Basic attackers<br>
-                            &bull; <strong>Bruisers:</strong> Special physical abilities<br>
-                            &bull; <strong>Casters:</strong> Magic users with orisons<br>
-                            &bull; <strong>Bosses:</strong> Powerful foes with unique attacks
+                            Overworld &rarr; Desert &rarr; Catacombs &rarr; Jungle &rarr; Badlands &rarr; ??? &rarr; Arena<br><br>
+                            <strong>ARENA:</strong><br>
+                            The post-game endless waves mode unlocked after defeating the final boss.
                         </div>
                     </div>
 
