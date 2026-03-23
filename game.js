@@ -1186,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showGloveIndicator() {
-        const focusedBtn = document.querySelector('#dynamic-menu-content button.focused');
+        const focusedBtn = document.querySelector('#dynamic-menu-content button.focused') || document.querySelector('#item-options button.focused');
         if (focusedBtn) positionGloveAtElement(focusedBtn);
     }
 
@@ -1569,6 +1569,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'TITLE_SCREEN': if (event.key === 'Enter') { prevent = true; gameState.setState('PARTY_SELECTION'); } break;
             case 'PARTY_SELECTION': prevent = true; handlePartySelectKeyPress(event); break;
             case 'PLAYER_COMMAND': prevent = handleCombatKeyPress(event); break;
+            case 'BETWEEN_WAVES': prevent = handleItemChoiceKeyPress(event); break;
             case 'GAME_OVER': if (event.key === 'Enter') { prevent = true; document.getElementById('restart-button')?.click(); } break;
         }
         if (prevent) event.preventDefault();
@@ -1652,6 +1653,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (handled && newF !== curF) { updateMenuFocus(btns, newF); gameState.focusedIndex = newF; }
         return handled;
+    }
+
+    function handleItemChoiceKeyPress(event) {
+        const container = document.getElementById('item-options');
+        if (!container) return false;
+        const btns = getVisibleEnabledButtons(container);
+        if (btns.length === 0) return false;
+        let curF = gameState.focusedIndex;
+        if (curF < 0 || curF >= btns.length) curF = 0;
+        let newF = curF;
+        let handled = false;
+        switch (event.key) {
+            case 'ArrowUp': case 'ArrowLeft': newF = (curF - 1 + btns.length) % btns.length; handled = true; break;
+            case 'ArrowDown': case 'ArrowRight': newF = (curF + 1) % btns.length; handled = true; break;
+            case 'Enter': if (btns[curF]) btns[curF].click(); handled = true; break;
+        }
+        if (handled && newF !== curF) {
+            gameState.focusedIndex = newF;
+            updateItemChoiceFocus(btns, newF);
+        }
+        return handled;
+    }
+
+    function updateItemChoiceFocus(btns, newIdx) {
+        btns.forEach((b, i) => {
+            if (i === newIdx) {
+                b.classList.add('focused');
+                if (inputMode === 'keyboard') positionGloveAtElement(b);
+            } else {
+                b.classList.remove('focused');
+            }
+        });
     }
 
     function getVisibleEnabledButtons(parent) {
@@ -3450,6 +3483,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleItemChoice(e) {
         const iN = e.currentTarget.dataset.item;
+        hideGloveIndicator();
         gameState.addLogMessage(`Chosen: ${iN}`);
         applyItemEffect(iN);
         gameState.setState('COMBAT_LOADING');
@@ -3475,6 +3509,9 @@ document.addEventListener('DOMContentLoaded', () => {
             b.addEventListener('click', handleItemChoice);
             o.appendChild(b);
         });
+        gameState.focusedIndex = 0;
+        const btns = getVisibleEnabledButtons(o);
+        if (btns.length > 0) updateItemChoiceFocus(btns, 0);
     }
 
     function applyItemEffect(iN) {

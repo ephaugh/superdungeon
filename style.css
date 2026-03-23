@@ -749,8 +749,12 @@ button.rainbow-text {
     border-bottom: 1px solid #88cc88;
 }
 
-#dynamic-menu-content button.focused { 
-    color: yellow; 
+#dynamic-menu-content button.focused {
+    color: yellow;
+}
+
+#item-options button.focused {
+    color: yellow;
 }
 
 /* --- Party Status Area (Right) --- */
